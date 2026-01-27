@@ -14,7 +14,7 @@
         </div>
         <div>
           <p class="font-bold text-lg capitalize text-slate-900">{{ user.name }}</p>
-          <p v-if="isCurrentUser" class="text-xs text-green-600 font-bold">En ligne</p>
+          
         </div>
       </div>
 
