@@ -1,92 +1,82 @@
-import { defineStore } from 'pinia'
+import { defineStore } from "pinia"
 
-export const useSportStore = defineStore('sport', {
+export const useSportStore = defineStore("sport", {
   state: () => ({
+    users: [],
     currentUser: null,
-    sessions: [],
-    leaderboard: [
-      { name: 'Walid', sessions: 42, streak: 12 },
-      { name: 'Sarah', sessions: 38, streak: 5 },
-      { name: 'Thomas', sessions: 35, streak: 8 },
-      { name: 'Julie', sessions: 29, streak: 2 },
-      { name: 'Karim', sessions: 22, streak: 0 },
-      { name: 'Lucas', sessions: 18, streak: 3 },
-      { name: 'Emma', sessions: 15, streak: 1 },
-      { name: 'Paul', sessions: 10, streak: 0 },
-      { name: 'Sofia', sessions: 8, streak: 4 },
-      { name: 'Marc', sessions: 2, streak: 0 },
-    ],
-    badges: [
-      { id: 1, name: 'Débutant', icon: 'i-heroicons-star', unlocked: false },
-      { id: 2, name: 'Lève-tôt', icon: 'i-heroicons-sun', unlocked: false },
-      { id: 3, name: 'Machine', icon: 'i-heroicons-fire', unlocked: false },
-    ]
+    allSessions: []
   }),
 
   getters: {
-    isAuthenticated: (state) => !!state.currentUser,
-    totalSessions: (state) => state.sessions.filter(s => s.sport?.done).length,
-    getDayByDate: (state) => (dateStr) => state.sessions.find(s => s.date === dateStr) || {}
+    sessions(state) {
+      if (state.currentUser === null) return []
+      return state.allSessions.filter(
+        session => session.username === state.currentUser
+      )
+    }
   },
 
   actions: {
-    login(username) {
+    register(username, password) {
+      const user = this.users.find(
+        u => u.username === username
+      )
+      if (user) return false
+      this.users.push({ username, password })
       this.currentUser = username
+      return true
+    },
+
+    login(username, password) {
+      const user = this.users.find(
+        u => u.username === username && u.password === password
+      )
+      if (!user) return false
+      this.currentUser = username
+      return true
     },
 
     logout() {
       this.currentUser = null
     },
 
-    saveSportSession(date, data) {
-      let day = this.sessions.find(s => s.date === date)
-      
-      if (!day) {
-        day = { date, sport: {}, nutrition: {} }
-        this.sessions.push(day)
+    saveSportSession(date, sport) {
+      if (this.currentUser === null) return
+      const session = this.allSessions.find(
+        s => s.username === this.currentUser && s.date === date
+      )
+      if (session) {
+        session.sport = sport
+      } else {
+        this.allSessions.push({
+          username: this.currentUser,
+          date: date,
+          sport: sport
+        })
       }
-
-      day.sport = {
-        done: true,
-        type: data.type,
-        exercises: data.exercises
-      }
-
-      this.checkBadges()
     },
 
-    saveNutrition(date, data) {
-      let day = this.sessions.find(s => s.date === date)
-      
-      if (!day) {
-        day = { date, sport: {}, nutrition: {} }
-        this.sessions.push(day)
+    updateUsername(newPseudo) {
+      if (this.currentUser === null) return false
+      if (!newPseudo) return false
+      const taken = this.users.find(
+        u => u.username === newPseudo
+      )
+      if (taken) return false
+      const user = this.users.find(
+        u => u.username === this.currentUser
+      )
+      if (!user) return false
+      for (const session of this.allSessions) {
+        if (session.username === this.currentUser) {
+          session.username = newPseudo
+        }
       }
-      
-      day.nutrition = data
-    },
-
-    checkBadges() {
-      if (this.totalSessions >= 1) this.badges[0].unlocked = true
-      if (this.totalSessions >= 5) this.badges[2].unlocked = true
-    },
-
-    calculerBadges(nombreSeances) {
-      let badgesMerites = []
-
-      if (nombreSeances >= 1) {
-        badgesMerites.push({ name: 'Débutant', icon: 'i-heroicons-star' })
-      }
-
-      if (nombreSeances >= 10) {
-        badgesMerites.push({ name: 'Lève-tôt', icon: 'i-heroicons-sun' })
-      }
-
-      if (nombreSeances >= 20) {
-        badgesMerites.push({ name: 'Machine', icon: 'i-heroicons-fire' })
-      }
-
-      return badgesMerites
+      user.username = newPseudo
+      this.currentUser = newPseudo
+      return true
     }
-  }
+  },
+
+  persist: true
 })
