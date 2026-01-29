@@ -22,9 +22,9 @@
 <script setup>
 import { useSportStore } from "~/stores/sport"
 import Calendrier from "~/components/custom/Calendrier.vue"
-import VideoSection from "~/pages/video.vue"
-import AlimentationSection from "~/pages/alimentation.vue"
-import ModalSeance from "~/components/seance.vue"
+import VideoSection from "~/components/custom/video.vue"
+import AlimentationSection from "~/components/custom/alimentation.vue"
+import ModalSeance from "~/components/custom/seance.vue"
 
 const store = useSportStore()
 const router = useRouter()
