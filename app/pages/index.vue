@@ -4,7 +4,7 @@
       <div class="relative z-10 w-full">
         <div class="flex justify-between w-full items-start gap-4">
           <div>
-            <h1 class="text-3xl font-black mb-2">Bonjour, {{ store.currentUser||"Invité" }} !</h1>
+            <h1 class="text-3xl font-black mb-2">Bonjour, {{ userName }} !</h1>
             <p class="text-slate-300 font-medium">Voici ton historique d'activités.</p>
           </div>
           <button @click="handleLogout" class="text-xs bg-red-500/20 text-red-300 px-3 py-2 rounded-xl hover:bg-red-500 hover:text-white transition font-bold">Se déconnecter</button>
@@ -14,9 +14,7 @@
     </div>
     <Calendrier @select-date="onDateSelected" />
     <section class="space-y-4"><AlimentationSection /></section>
-    <section class="space-y-4">
-      <VideoSection />
-    </section>
+    <section class="space-y-4"><VideoSection /></section>
     <ModalSeance v-if="isModalOpen" :date="selectedDate" :initial-data="sessionToEdit" @close="closeModal" @save="saveSession" />
   </div>
 </template>
@@ -27,16 +25,63 @@ import Calendrier from "~/components/custom/Calendrier.vue"
 import VideoSection from "~/pages/video.vue"
 import AlimentationSection from "~/pages/alimentation.vue"
 import ModalSeance from "~/components/seance.vue"
-const store=useSportStore()
-const router=useRouter()
-onMounted(()=>{if(!store.currentUser)router.push("/login")})
-function handleLogout(){store.logout();router.push("/login")}
-const isModalOpen=ref(false)
-const selectedDate=ref(null)
-const sessionToEdit=ref(null)
-const clone=(data)=>{try{return structuredClone(data)}catch{return data?JSON.parse(JSON.stringify(data)):null}}
-const getSportSession=(date)=>{const s=(store.sessions||[]).find(x=>x.date===date);return s&&s.sport?clone(s.sport):null}
-function onDateSelected(date){if(!date)return;selectedDate.value=date;sessionToEdit.value=getSportSession(date);isModalOpen.value=true}
-function closeModal(){isModalOpen.value=false}
-function saveSession(payload){if(payload&&payload.type==="sport")store.saveSportSession(selectedDate.value,payload.data);closeModal()}
+
+const store = useSportStore()
+const router = useRouter()
+
+const isModalOpen = ref(false)
+const selectedDate = ref(null)
+const sessionToEdit = ref(null)
+
+const userName = computed(() => (store.currentUser ? store.currentUser : "Invité"))
+
+onMounted(() => redirectIfNotLoggedIn())
+
+function redirectIfNotLoggedIn() {
+  if (!store.currentUser) router.push("/login")
+}
+
+function handleLogout() {
+  store.logout()
+  router.push("/login")
+}
+
+function onDateSelected(date) {
+  if (!date) return
+  selectedDate.value = date
+  sessionToEdit.value = getSportSession(date)
+  isModalOpen.value = true
+}
+
+function closeModal() {
+  isModalOpen.value = false
+}
+
+function saveSession(payload) {
+  if (!payload) return
+  if (payload.type !== "sport") return
+  store.saveSportSession(selectedDate.value, payload.data)
+  closeModal()
+}
+
+function getSportSession(date) {
+  const session = findSessionByDate(date)
+  if (!session) return null
+  if (!session.sport) return null
+  return deepCopy(session.sport)
+}
+
+function findSessionByDate(date) {
+  const sessions = Array.isArray(store.sessions) ? store.sessions : []
+  return sessions.find(session => session.date === date) || null
+}
+
+function deepCopy(data) {
+  try {
+    return structuredClone(data)
+  } catch {
+    if (!data) return null
+    return JSON.parse(JSON.stringify(data))
+  }
+}
 </script>

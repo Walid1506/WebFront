@@ -15,7 +15,7 @@
         <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 pl-1">Ton Prénom</label>
         <div class="relative">
           <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><UIcon name="i-heroicons-user" class="text-gray-400 text-xl" /></div>
-          <input v-model="pseudo" v-bind="pseudoAttrs" type="text" placeholder="Ex: Walid" class="block w-full pl-11 pr-4 py-4 border-2 rounded-2xl text-gray-900 bg-gray-50 focus:bg-white focus:outline-none transition font-medium" :class="errors.pseudo?'border-red-500 bg-red-50':'border-gray-100 focus:border-green-500'" />
+          <input v-model="pseudo" v-bind="pseudoAttrs" type="text" placeholder="Ex: Walid" class="block w-full pl-11 pr-4 py-4 border-2 rounded-2xl text-gray-900 bg-gray-50 focus:bg-white focus:outline-none transition font-medium" :class="errors.pseudo ? 'border-red-500 bg-red-50' : 'border-gray-100 focus:border-green-500'" />
         </div>
         <p v-if="errors.pseudo" class="text-red-500 text-xs font-bold mt-1 pl-1">{{ errors.pseudo }}</p>
       </div>
@@ -23,7 +23,7 @@
         <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 pl-1">Mot de passe</label>
         <div class="relative">
           <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><UIcon name="i-heroicons-lock-closed" class="text-gray-400 text-xl" /></div>
-          <input v-model="password" v-bind="passwordAttrs" type="password" placeholder="••••••••" class="block w-full pl-11 pr-4 py-4 border-2 rounded-2xl text-gray-900 bg-gray-50 focus:bg-white focus:outline-none transition font-medium" :class="errors.password?'border-red-500 bg-red-50':'border-gray-100 focus:border-green-500'" />
+          <input v-model="password" v-bind="passwordAttrs" type="password" placeholder="••••••••" class="block w-full pl-11 pr-4 py-4 border-2 rounded-2xl text-gray-900 bg-gray-50 focus:bg-white focus:outline-none transition font-medium" :class="errors.password ? 'border-red-500 bg-red-50' : 'border-gray-100 focus:border-green-500'" />
         </div>
         <p v-if="errors.password" class="text-red-500 text-xs font-bold mt-1 pl-1">{{ errors.password }}</p>
       </div>
@@ -40,16 +40,30 @@
 import { useSportStore } from "~/stores/sport"
 import { useForm } from "vee-validate"
 import * as yup from "yup"
+
 definePageMeta({ layout: "auth" })
-const store=useSportStore()
-const router=useRouter()
-const schema=yup.object({pseudo:yup.string().required("Le pseudo est requis"),password:yup.string().required("Le mot de passe est requis")})
-const { defineField, handleSubmit, errors, setErrors }=useForm({validationSchema:schema})
-const [pseudo,pseudoAttrs]=defineField("pseudo")
-const [password,passwordAttrs]=defineField("password")
-const onSubmit=handleSubmit(values=>{
-const ok=store.login(values.pseudo,values.password)
-if(ok)router.push("/")
-else setErrors({password:"Pseudo ou mot de passe incorrect"})
+
+const store = useSportStore()
+const router = useRouter()
+
+const schema = yup.object({
+  pseudo: yup.string().required("Le pseudo est requis"),
+  password: yup.string().required("Le mot de passe est requis")
 })
+
+const { defineField, handleSubmit, errors, setErrors } = useForm({ validationSchema: schema })
+
+const [pseudo, pseudoAttrs] = defineField("pseudo")
+const [password, passwordAttrs] = defineField("password")
+
+const onSubmit = handleSubmit(values => handleLogin(values))
+
+function handleLogin(values) {
+  const ok = store.login(values.pseudo, values.password)
+  if (ok) {
+    router.push("/")
+    return
+  }
+  setErrors({ password: "Pseudo ou mot de passe incorrect" })
+}
 </script>
