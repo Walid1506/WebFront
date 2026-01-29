@@ -5,31 +5,33 @@ export const useSportStore = defineStore("sport", {
     users: [],
     currentUser: null,
     allSessions: [],
-    userGoals: { weight: null, targetCal: null, targetProt: null, consumedCal: 0, consumedProt: 0 }
+    weightHistory: []
   }),
   getters: {
     sessions(state) {
       if (!state.currentUser) return []
       return state.allSessions.filter(session => session.username === state.currentUser)
     },
-    caloriesBurnedToday(state) {
-      if (!state.currentUser) return 0
-      const today = toFrCA(new Date())
-      const session = state.allSessions.find(item => item.username === state.currentUser && item.date === today) || null
-      if (!session) return 0
-      if (!session.sport) return 0
-      return estimateCaloriesBurned(session.sport.type)
+    myWeightHistory(state) {
+      if (!state.currentUser) return []
+      return state.weightHistory.filter(item => item.username === state.currentUser).sort((a, b) => new Date(a.date) - new Date(b.date))
+    },
+    currentWeight() {
+      const history = this.myWeightHistory
+      if (history.length === 0) return null
+      return history[history.length - 1].weight
+    },
+    isUsernameTaken: state => username => {
+      return state.users.some(user => user.username.toLowerCase() === String(username || "").toLowerCase())
     }
   },
   actions: {
     register(username, password) {
       if (!username) return false
       if (!password) return false
-      if (this.users.find(user => user.username === username)) return false
-      const goals = createEmptyGoals()
-      this.users.push({ username, password, goals })
+      if (this.isUsernameTaken(username)) return false
+      this.users.push({ username, password })
       this.currentUser = username
-      this.userGoals = createEmptyGoals()
       return true
     },
     login(username, password) {
@@ -38,12 +40,10 @@ export const useSportStore = defineStore("sport", {
       const user = this.users.find(item => item.username === username && item.password === password) || null
       if (!user) return false
       this.currentUser = username
-      this.userGoals = normalizeGoals(user.goals)
       return true
     },
     logout() {
       this.currentUser = null
-      this.userGoals = createEmptyGoals()
     },
     saveSportSession(date, sport) {
       if (!this.currentUser) return
@@ -55,53 +55,61 @@ export const useSportStore = defineStore("sport", {
       }
       this.allSessions.push({ username: this.currentUser, date, sport })
     },
+    addWeightEntry(weight) {
+      if (!this.currentUser) return
+      if (!isWeightValid(weight)) return
+      const today = toFrCA(new Date())
+      const existingEntry = this.weightHistory.find(item => item.username === this.currentUser && item.date === today) || null
+      if (existingEntry) {
+        existingEntry.weight = weight
+        return
+      }
+      this.weightHistory.push({ username: this.currentUser, date: today, weight })
+    },
     updateUsername(newPseudo) {
       if (!this.currentUser) return false
       if (!newPseudo) return false
-      if (this.users.find(user => user.username === newPseudo)) return false
-      const user = this.users.find(item => item.username === this.currentUser) || null
-      if (!user) return false
-      for (const session of this.allSessions) {
-        if (session.username === this.currentUser) session.username = newPseudo
-      }
-      user.username = newPseudo
+      const oldPseudo = this.currentUser
+      if (!canUseUsername(this.users, newPseudo, oldPseudo)) return false
+      updateUserInList(this.users, oldPseudo, newPseudo)
+      updateUsernameInSessions(this.allSessions, oldPseudo, newPseudo)
+      updateUsernameInWeightHistory(this.weightHistory, oldPseudo, newPseudo)
       this.currentUser = newPseudo
       return true
-    },
-    updateGoals(newGoals) {
-      if (!this.currentUser) return
-      this.userGoals = mergeGoals(this.userGoals, newGoals)
-      const user = this.users.find(item => item.username === this.currentUser) || null
-      if (!user) return
-      user.goals = mergeGoals(normalizeGoals(user.goals), newGoals)
     }
   },
   persist: true
 })
 
-function createEmptyGoals() {
-  return { weight: null, targetCal: null, targetProt: null, consumedCal: 0, consumedProt: 0 }
-}
-
-function normalizeGoals(goals) {
-  return mergeGoals(createEmptyGoals(), goals || {})
-}
-
-function mergeGoals(baseGoals, newGoals) {
-  return { ...baseGoals, ...(newGoals || {}) }
-}
-
 function toFrCA(date) {
   return date.toLocaleDateString("fr-CA")
 }
 
-function estimateCaloriesBurned(type) {
-  const value = typeof type === "string" ? type.toLowerCase() : ""
-  if (value.includes("muscu") || value.includes("gym")) return 300
-  if (value.includes("cardio") || value.includes("course") || value.includes("running")) return 500
-  if (value.includes("crossfit") || value.includes("hiit")) return 600
-  if (value.includes("yoga") || value.includes("pilates")) return 150
-  if (value.includes("natation")) return 400
-  if (value.includes("foot") || value.includes("basket") || value.includes("tennis")) return 450
-  return 250
+function isWeightValid(weight) {
+  if (!weight) return false
+  if (weight <= 0) return false
+  return true
+}
+
+function canUseUsername(users, newPseudo, oldPseudo) {
+  const next = String(newPseudo).toLowerCase()
+  const current = String(oldPseudo).toLowerCase()
+  return !users.some(user => user.username.toLowerCase() === next && user.username.toLowerCase() !== current)
+}
+
+function updateUserInList(users, oldPseudo, newPseudo) {
+  const user = users.find(item => item.username === oldPseudo) || null
+  if (user) user.username = newPseudo
+}
+
+function updateUsernameInSessions(sessions, oldPseudo, newPseudo) {
+  for (const session of sessions) {
+    if (session.username === oldPseudo) session.username = newPseudo
+  }
+}
+
+function updateUsernameInWeightHistory(history, oldPseudo, newPseudo) {
+  for (const entry of history) {
+    if (entry.username === oldPseudo) entry.username = newPseudo
+  }
 }
