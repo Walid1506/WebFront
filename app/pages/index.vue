@@ -12,6 +12,7 @@
       </div>
       <div class="absolute top-0 right-0 w-64 h-64 -mr-16 -mt-16 bg-white opacity-5 rounded-full pointer-events-none"></div>
     </div>
+    <Dashboard />
     <Calendrier @select-date="onDateSelected" />
     <section class="space-y-4"><AlimentationSection /></section>
     <section class="space-y-4"><VideoSection /></section>
@@ -25,6 +26,7 @@ import Calendrier from "~/components/custom/Calendrier.vue"
 import VideoSection from "~/components/custom/video.vue"
 import AlimentationSection from "~/components/custom/alimentation.vue"
 import ModalSeance from "~/components/custom/seance.vue"
+import Dashboard from "~/components/custom/Dashboard.vue"
 
 const store = useSportStore()
 const router = useRouter()
@@ -72,15 +74,14 @@ function getSportSession(date) {
 }
 
 function findSessionByDate(date) {
-  const sessions = Array.isArray(store.sessions) ? store.sessions : []
-  return sessions.find(session => session.date === date) || null
+  return (store.sessions || []).find(session => session.date === date) || null
 }
 
 function deepCopy(data) {
+  if (!data) return null
   try {
     return structuredClone(data)
   } catch {
-    if (!data) return null
     return JSON.parse(JSON.stringify(data))
   }
 }
