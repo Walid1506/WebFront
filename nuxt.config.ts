@@ -10,12 +10,13 @@ export default defineNuxtConfig({
     '@nuxt/test-utils/module',
     '@pinia/nuxt',
     '@pinia-plugin-persistedstate/nuxt'
+    
   ],
 
-  // Configuration spécifique pour forcer la sauvegarde
+  
   piniaPluginPersistedstate: {
     storage: 'localStorage',
-    debug: true, // Affiche les logs dans la console si ça bug
+    debug: true, 
   },
 
   components: {
