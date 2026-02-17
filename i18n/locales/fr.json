@@ -1,0 +1,14 @@
+{
+  "profile": {
+    "title": "Profil",
+    "my_profile": "Mon profil",
+    "system_language": "Langue du système",
+    "new_name_placeholder": "Nouveau nom",
+    "badges": {
+      "beginner": "Débutant",
+      "early_bird": "Lève-tôt",
+      "machine": "Machine",
+      "spartan": "Spartiate"
+    }
+  }
+}

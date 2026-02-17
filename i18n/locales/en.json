@@ -1,0 +1,14 @@
+{
+  "profile": {
+    "title": "Profile",
+    "my_profile": "My Profile",
+    "system_language": "System Language",
+    "new_name_placeholder": "New name",
+    "badges": {
+      "beginner": "Beginner",
+      "early_bird": "Early Bird",
+      "machine": "Machine",
+      "spartan": "Spartan"
+    }
+  }
+}
