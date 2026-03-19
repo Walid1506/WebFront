@@ -220,7 +220,7 @@
 
                   <button
                     @click="removeItem(index)"
-                    class="text-red-500/50 hover:text-red-500 p-3 bg-red-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-all"
+                    class="text-red-400 hover:text-white p-3 bg-red-500/10 hover:bg-red-500 rounded-xl transition-all shrink-0"
                   >
                     <UIcon name="i-heroicons-trash" class="text-xl" />
                   </button>
@@ -253,7 +253,7 @@
             <div class="overflow-x-auto no-scrollbar">
               <div class="flex gap-3 min-w-max pb-1">
                 <button
-                  v-for="cat in catFilters"
+                  v-for="cat in allCatFilters"
                   :key="cat"
                   @click="activeCatFilter = cat"
                   :class="activeCatFilter === cat ? 'bg-[#2F6BFF] text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800'"
@@ -468,6 +468,7 @@ const scanError = ref('')
 const manualInputOpen = ref(false)
 const manualBarcode = ref('')
 const lastScreenBeforeQuantity = ref('main')
+const sharedFoods = ref([])
 
 const profil = reactive({
   poids: 75,
@@ -495,6 +496,19 @@ const formattedSelectedDate = computed(() =>
   })
 )
 
+const allCatFilters = computed(() => {
+  const sharedCats = sharedFoods.value.map(f => f.cat).filter(Boolean)
+  return [...new Set([...catFilters, ...sharedCats])]
+})
+
+const mergedFoodLibrary = computed(() => {
+  const base = [...foodLibrary]
+  const existingNames = new Set(base.map(f => String(f.name).toLowerCase().trim()))
+
+  const extras = sharedFoods.value.filter(f => !existingNames.has(String(f.name).toLowerCase().trim()))
+  return [...extras, ...base]
+})
+
 onMounted(async () => {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
@@ -510,12 +524,60 @@ onMounted(async () => {
     if (globals.shopping_list) shoppingList.value = globals.shopping_list
   }
 
-  await fetchDaily()
+  await Promise.all([fetchDaily(), fetchSharedFoods()])
 })
 
 onBeforeUnmount(async () => {
   await stopScanner()
 })
+
+async function fetchSharedFoods() {
+  const { data, error } = await supabase
+    .from('food_library_shared')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Erreur fetchSharedFoods:', error)
+    return
+  }
+
+  sharedFoods.value = (data || []).map(item => ({
+    id: item.id,
+    barcode: item.barcode,
+    name: item.name,
+    img: item.img || 'https://placehold.co/600x600/1e293b/94a3b8?text=Aliment',
+    k: Number(item.k || 0),
+    p: Number(item.p || 0),
+    c: Number(item.c || 0),
+    f: Number(item.f || 0),
+    cat: item.cat || 'Scannés'
+  }))
+}
+
+async function saveScannedFoodToSharedLibrary(barcode, food) {
+  const payload = {
+    barcode,
+    name: food.name,
+    img: food.img,
+    k: Number(food.k || 0),
+    p: Number(food.p || 0),
+    c: Number(food.c || 0),
+    f: Number(food.f || 0),
+    cat: 'Scannés'
+  }
+
+  const { error } = await supabase
+    .from('food_library_shared')
+    .upsert(payload, { onConflict: 'barcode' })
+
+  if (error) {
+    console.error('Erreur saveScannedFoodToSharedLibrary:', error)
+    return
+  }
+
+  await fetchSharedFoods()
+}
 
 async function fetchDaily() {
   const { data: { user } } = await supabase.auth.getUser()
@@ -701,8 +763,6 @@ async function closeScanner() {
 }
 
 async function onScanSuccess(decodedText) {
-  console.log('CODE SCANNÉ :', decodedText)
-
   try {
     await stopScanner()
     await lookupBarcode(decodedText)
@@ -713,26 +773,69 @@ async function onScanSuccess(decodedText) {
 }
 
 async function lookupBarcode(barcode) {
+  const localShared = sharedFoods.value.find(item => item.barcode === barcode)
+
+  if (localShared) {
+    scanResult.value = {
+      nom: localShared.name,
+      message: 'Produit trouvé dans la base partagée ! Clique pour ajouter.',
+      data: localShared
+    }
+    scanError.value = ''
+    return
+  }
+
+  const { data: existingShared } = await supabase
+    .from('food_library_shared')
+    .select('*')
+    .eq('barcode', barcode)
+    .maybeSingle()
+
+  if (existingShared) {
+    const food = {
+      id: existingShared.id,
+      barcode: existingShared.barcode,
+      name: existingShared.name,
+      img: existingShared.img || 'https://placehold.co/600x600/1e293b/94a3b8?text=Aliment',
+      k: Number(existingShared.k || 0),
+      p: Number(existingShared.p || 0),
+      c: Number(existingShared.c || 0),
+      f: Number(existingShared.f || 0),
+      cat: existingShared.cat || 'Scannés'
+    }
+
+    scanResult.value = {
+      nom: food.name,
+      message: 'Produit trouvé dans la base partagée ! Clique pour ajouter.',
+      data: food
+    }
+    scanError.value = ''
+    await fetchSharedFoods()
+    return
+  }
+
   const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`)
   const data = await res.json()
-
-  console.log('RÉPONSE OFF :', data)
 
   if (data.status === 1) {
     const p = data.product
 
     const food = {
+      barcode,
       name: p.product_name || p.product_name_fr || 'Produit inconnu',
       img: p.image_url || p.image_front_url || 'https://placehold.co/600x600/1e293b/94a3b8?text=Aliment',
       k: Math.round(p.nutriments?.['energy-kcal_100g'] || p.nutriments?.['energy-kcal'] || 0),
       p: Number(p.nutriments?.proteins_100g || 0),
       c: Number(p.nutriments?.carbohydrates_100g || 0),
       f: Number(p.nutriments?.fat_100g || 0),
+      cat: 'Scannés'
     }
+
+    await saveScannedFoodToSharedLibrary(barcode, food)
 
     scanResult.value = {
       nom: food.name,
-      message: 'Produit trouvé ! Clique pour ajouter.',
+      message: 'Produit trouvé ! Ajouté à la base partagée, clique pour ajouter.',
       data: food
     }
 
@@ -873,7 +976,7 @@ function clearCart() {
 }
 
 const filteredDb = computed(() =>
-  foodLibrary.filter(f =>
+  mergedFoodLibrary.value.filter(f =>
     (activeCatFilter.value === 'Tout' || f.cat === activeCatFilter.value) &&
     f.name.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
