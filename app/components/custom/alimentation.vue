@@ -4,12 +4,11 @@
     <Transition name="slide" mode="out-in">
       
       <div v-if="currentScreen === 'main'" key="main" class="flex flex-col gap-6">
-        
         <div class="bg-black/80 backdrop-blur-xl sticky top-0 z-40 py-4 border-b border-white/5 space-y-4">
           <div class="flex justify-between items-center">
             <h1 class="text-4xl font-[1000] tracking-tighter text-white">Nutrition</h1>
             <div class="flex gap-4">
-              <button @click="currentScreen = 'scanner'" class="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center hover:bg-slate-800 transition-colors border border-white/5 group">
+              <button @click="openScanner" class="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center hover:bg-slate-800 transition-colors border border-white/5 group">
                 <UIcon name="i-heroicons-qr-code" class="text-2xl text-slate-400 group-hover:text-white" />
               </button>
               <button @click="currentScreen = 'cart'" class="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center hover:bg-slate-800 transition-colors border border-white/5 relative group">
@@ -88,7 +87,6 @@
                   <p class="text-white font-[1000] text-2xl">{{ activeBesoins.kcal }} <span class="text-sm font-bold text-slate-400">kcal</span></p>
                 </div>
               </div>
-              <p v-if="!isToday" class="text-center text-[10px] font-bold text-orange-500 mt-3 flex items-center justify-center gap-1"><UIcon name="i-heroicons-lock-closed" /> Cibles métaboliques figées pour cette date.</p>
             </div>
 
             <div class="bg-[#111111] rounded-[35px] p-6 border border-white/5">
@@ -151,7 +149,7 @@
                 <div v-if="consumed.length === 0" class="text-center text-slate-500 font-bold py-10">Journal vide pour ce jour.</div>
                 <div v-for="(item, index) in consumed" :key="index" class="flex justify-between items-center group p-4 rounded-2xl hover:bg-slate-900 border border-transparent hover:border-white/5 transition-all">
                   <div class="flex items-center gap-4 text-left">
-                    <img :src="item.img" class="w-14 h-14 rounded-xl object-cover bg-white shrink-0" @error="onImageError" referrerpolicy="no-referrer" />
+                    <img :src="item.img" class="w-14 h-14 rounded-xl object-cover bg-white shrink-0" @error="onImageError" />
                     <div>
                       <p class="text-white font-bold text-lg leading-tight">{{ item.name }}</p>
                       <p class="text-[#2F6BFF] font-black text-xs mt-1">{{ item.amount }} g • {{ item.kcal }} kcal</p>
@@ -189,14 +187,11 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-20">
               <div v-for="food in filteredDb" :key="food.id" @click="selectFood(food)" class="bg-[#111111] p-5 rounded-[30px] flex flex-col cursor-pointer border border-white/5 hover:border-[#2F6BFF]/30 transition-all group">
                 <div class="flex items-start gap-4 mb-4">
-                  <img :src="food.img" class="w-20 h-20 rounded-2xl object-cover bg-white shrink-0" @error="onImageError" referrerpolicy="no-referrer" />
+                  <img :src="food.img" class="w-20 h-20 rounded-2xl object-cover bg-white shrink-0" @error="onImageError" />
                   <div class="flex-1 min-w-0 text-left">
                     <h4 class="text-white font-black text-lg leading-tight group-hover:text-[#2F6BFF] transition-colors">{{ food.name }}</h4>
                     <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">{{ food.cat }}</p>
                   </div>
-                  <button @click.stop="addFoodToCartFromLibrary(food)" class="p-2 rounded-xl transition-colors bg-slate-800 text-slate-400 hover:bg-blue-500 hover:text-white shrink-0">
-                    <UIcon name="i-heroicons-shopping-cart-solid" class="text-lg" />
-                  </button>
                 </div>
                 <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
                   <div class="flex gap-3 text-xs font-black">
@@ -210,9 +205,9 @@
         </div>
       </div>
 
-      <div v-else-if="currentScreen === 'quantity' && selectedFood" key="quantity" class="fixed inset-0 z-[110] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-6">
+      <div v-else-if="currentScreen === 'quantity' && selectedFood" key="quantity" class="fixed inset-0 z-[120] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-6">
         <button @click="currentScreen = 'library'" class="absolute top-8 left-8 text-slate-400 hover:text-white transition"><UIcon name="i-heroicons-arrow-left" class="text-4xl" /></button>
-        <img :src="selectedFood.img" class="w-48 h-48 rounded-full object-cover border-4 border-[#2F6BFF] mb-8 shadow-2xl" @error="onImageError" referrerpolicy="no-referrer" />
+        <img :src="selectedFood.img" class="w-48 h-48 rounded-full object-cover border-4 border-[#2F6BFF] mb-8 shadow-2xl" @error="onImageError" />
         <h3 class="text-4xl font-[1000] text-white mb-8 text-center">{{ selectedFood.name }}</h3>
         <div class="bg-[#111111] border border-white/10 p-8 rounded-[40px] mb-8 w-full max-w-md text-center">
           <input v-model.number="amount" type="number" class="bg-transparent text-white font-[1000] text-7xl text-center w-full outline-none mb-4" placeholder="0" />
@@ -224,6 +219,23 @@
           </div>
         </div>
         <button @click="addFood" class="w-full max-w-md bg-[#2F6BFF] text-white font-black text-2xl py-6 rounded-[30px] shadow-lg hover:bg-blue-600 transition-all">Ajouter au journal</button>
+      </div>
+
+      <div v-else-if="currentScreen === 'scanner'" key="scanner" class="fixed inset-0 z-[110] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-6">
+        <button @click="closeScanner" class="absolute top-8 left-8 text-slate-400 bg-slate-900 p-4 rounded-full">
+          <UIcon name="i-heroicons-x-mark" class="text-2xl" />
+        </button>
+        <div class="w-full max-w-md flex flex-col items-center">
+          <div id="reader" class="w-full h-64 border-4 border-[#2F6BFF] rounded-[40px] relative overflow-hidden bg-slate-900/50 mb-10">
+          </div>
+          
+          <div v-if="scanResult" @click="addScannedFood" class="p-6 rounded-[30px] w-full border-2 cursor-pointer animate-in slide-in-from-bottom-10 bg-green-500/10 border-green-500 text-green-400">
+            <h4 class="font-[1000] text-2xl text-white">{{ scanResult.nom }}</h4>
+            <p class="text-sm font-bold">{{ scanResult.message }}</p>
+            <p class="mt-2 text-[10px] uppercase font-black text-white/50">Clique pour définir la quantité</p>
+          </div>
+          <p v-else class="text-slate-500 font-bold text-center">Place le code-barres devant la caméra</p>
+        </div>
       </div>
 
       <div v-else-if="currentScreen === 'cart'" key="cart" class="fixed inset-0 z-[110] bg-black/95 backdrop-blur-xl flex flex-col items-center p-6">
@@ -240,9 +252,9 @@
             <button @click="addCustomCartItem" class="bg-blue-600 text-white font-black px-8 rounded-2xl">Ajouter</button>
           </div>
           <div class="flex-1 overflow-y-auto p-8 space-y-3 custom-scrollbar">
-            <div v-for="(item, index) in shoppingList" :key="index" class="flex justify-between items-center p-5 bg-[#0a0a0a] rounded-3xl border border-white/5 transition-all" :class="item.checked ? 'opacity-40' : ''">
-              <div class="flex items-center gap-4 flex-1 text-left">
-                <button @click="toggleCheck(index)" class="w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors shrink-0" :class="item.checked ? 'bg-green-500 border-green-500 text-black' : 'border-slate-600'">
+            <div v-for="(item, index) in shoppingList" :key="index" class="flex justify-between items-center p-5 bg-[#0a0a0a] rounded-3xl border border-white/5" :class="item.checked ? 'opacity-40' : ''">
+              <div class="flex items-center gap-4 flex-1">
+                <button @click="toggleCheck(index)" class="w-8 h-8 rounded-full border-2 flex items-center justify-center" :class="item.checked ? 'bg-green-500 border-green-500 text-black' : 'border-slate-600'">
                   <UIcon v-if="item.checked" name="i-heroicons-check" class="font-black" />
                 </button>
                 <h4 class="font-black text-xl flex-1" :class="item.checked ? 'line-through' : ''">{{ item.name }}</h4>
@@ -253,27 +265,13 @@
         </div>
       </div>
 
-      <div v-else-if="currentScreen === 'scanner'" key="scanner" class="fixed inset-0 z-[110] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-6">
-        <button @click="currentScreen = 'main'" class="absolute top-8 left-8 text-slate-400 bg-slate-900 p-4 rounded-full"><UIcon name="i-heroicons-x-mark" class="text-2xl" /></button>
-        <div class="w-full max-w-md flex flex-col items-center">
-          <div class="w-72 h-72 border-4 border-[#2F6BFF] rounded-[40px] relative flex items-center justify-center mb-10 bg-slate-900/50">
-            <div class="absolute w-full h-1 bg-[#2F6BFF] animate-[scan_2s_ease-in-out_infinite]"></div>
-            <UIcon name="i-heroicons-qr-code" class="text-8xl text-slate-700" />
-          </div>
-          <button @click="simulateScan" class="w-full bg-white text-black font-[1000] py-5 rounded-[24px] shadow-xl mb-8">Simuler Scan</button>
-          <div v-if="scanResult" class="p-6 rounded-[30px] w-full border-2 animate-in slide-in-from-bottom-10" :class="scanResult.compatible ? 'bg-green-500/10 border-green-500 text-green-400' : 'bg-red-500/10 border-red-500 text-red-400'">
-            <h4 class="font-[1000] text-2xl text-white">{{ scanResult.nom }}</h4>
-            <p class="text-sm font-bold">{{ scanResult.message }}</p>
-          </div>
-        </div>
-      </div>
-
     </Transition>
   </div>
 </template>
 
 <script setup>
 import { foodLibrary } from '~/data/foodLibrary'
+import { Html5QrcodeScanner } from "html5-qrcode"
 const supabase = useSupabaseClient()
 
 // --- ÉTATS ---
@@ -291,8 +289,9 @@ const consumed = ref([])
 const frozenBesoins = ref(null) 
 const newCartItem = ref('')
 const scanResult = ref(null)
-
 const profil = reactive({ poids: 75, taille: 180, age: 25, genre: 'homme', activite: 1.55, objectif: 'masse' })
+
+let html5QrcodeScanner = null
 
 // --- DATES ---
 const selectedDateStr = computed(() => {
@@ -346,6 +345,49 @@ async function saveDaily() {
   frozenBesoins.value = liveBesoins.value
 }
 
+// --- SCANNER RÉEL ---
+function openScanner() {
+  currentScreen.value = 'scanner'
+  scanResult.value = null
+  nextTick(() => {
+    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 150 } }, false)
+    html5QrcodeScanner.render(onScanSuccess)
+  })
+}
+
+function closeScanner() {
+  if (html5QrcodeScanner) html5QrcodeScanner.clear()
+  currentScreen.value = 'main'
+}
+
+async function onScanSuccess(decodedText) {
+  if (html5QrcodeScanner) html5QrcodeScanner.clear()
+  try {
+    const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${decodedText}.json`)
+    const data = await res.json()
+    if (data.status === 1) {
+      const p = data.product
+      const food = {
+        name: p.product_name || "Produit inconnu",
+        img: p.image_url || 'https://placehold.co/600x600/1e293b/94a3b8?text=Aliment',
+        k: Math.round(p.nutriments['energy-kcal_100g'] || 0),
+        p: p.nutriments.proteins_100g || 0,
+        c: p.nutriments.carbohydrates_100g || 0,
+        f: p.nutriments.fat_100g || 0,
+      }
+      scanResult.value = { nom: food.name, message: "Produit trouvé ! Clique pour ajouter.", data: food }
+    } else { alert("Produit inconnu dans Open Food Facts.") }
+  } catch (e) { console.error(e) }
+}
+
+function addScannedFood() {
+  if (scanResult.value?.data) {
+    selectedFood.value = scanResult.value.data
+    amount.value = 100
+    currentScreen.value = 'quantity'
+  }
+}
+
 // --- CALCULS ---
 const imc = computed(() => profil.poids && profil.taille ? (profil.poids / Math.pow(profil.taille / 100, 2)).toFixed(1) : 0)
 const liveBesoins = computed(() => {
@@ -373,7 +415,6 @@ function removeItem(i) { consumed.value.splice(i, 1); saveDaily() }
 function toggleCheck(i) { shoppingList.value[i].checked = !shoppingList.value[i].checked; saveGlobals() }
 function removeCartItem(i) { shoppingList.value.splice(i, 1); saveGlobals() }
 function addCustomCartItem() { if (newCartItem.value) { shoppingList.value.push({ name: newCartItem.value, checked: false }); newCartItem.value = ''; saveGlobals() } }
-function addFoodToCartFromLibrary(f) { if (!shoppingList.value.some(x => x.name === f.name)) { shoppingList.value.push({ name: f.name, img: f.img, checked: false, cat: f.cat }); saveGlobals() } }
 function clearCart() { if (confirm("Tout vider ?")) { shoppingList.value = []; saveGlobals() } }
 
 const filteredDb = computed(() => foodLibrary.filter(f => (activeCatFilter.value === 'Tout' || f.cat === activeCatFilter.value) && f.name.toLowerCase().includes(searchQuery.value.toLowerCase())))
@@ -382,9 +423,7 @@ const calculatedMacros = computed(() => {
   const r = amount.value / 100; 
   return { kcal: Math.round(selectedFood.value.k * r), prot: +(selectedFood.value.p * r).toFixed(1), carbs: +(selectedFood.value.c * r).toFixed(1), fats: +(selectedFood.value.f * r).toFixed(1) } 
 })
-
 function onImageError(e) { e.target.src = 'https://placehold.co/600x600/1e293b/94a3b8?text=Aliment' }
-function simulateScan() { scanResult.value = null; setTimeout(() => { const r = foodLibrary[Math.floor(Math.random() * foodLibrary.length)]; const g = profil.objectif === 'masse' ? r.k > 150 : r.k < 150; scanResult.value = { nom: r.name, compatible: g, message: g ? "Idéal objectif !" : "Peu adapté objectif." } }, 800) }
 </script>
 
 <style scoped>
@@ -393,5 +432,4 @@ function simulateScan() { scanResult.value = null; setTimeout(() => { const r = 
 .slide-enter-active, .slide-leave-active { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 .slide-enter-from { opacity: 0; transform: translateX(30px) scale(0.98); }
 .slide-leave-to { opacity: 0; transform: translateX(-30px) scale(0.98); }
-@keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
 </style>
