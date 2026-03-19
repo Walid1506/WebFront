@@ -5,11 +5,6 @@
       <span class="text-[10px] font-bold">Agenda</span>
     </NuxtLink>
 
-    <NuxtLink to="/videos" active-class="text-green-600" class="flex flex-col items-center gap-1 p-2 text-gray-400 hover:text-green-500">
-      <UIcon name="i-heroicons-play-circle" class="text-2xl" />
-      <span class="text-[10px] font-bold">Vidéos</span>
-    </NuxtLink>
-
     <NuxtLink to="/login" active-class="text-green-600" class="flex flex-col items-center gap-1 p-2 text-gray-400 hover:text-green-500">
       <UIcon name="i-heroicons-user" class="text-2xl" />
       <span class="text-[10px] font-bold">Profil</span>
