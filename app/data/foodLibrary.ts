@@ -1,0 +1,135 @@
+export const foodLibrary = [
+  // =========================
+  // PROTÉINES
+  // =========================
+  { id: 1, name: 'Blanc de Poulet', k: 120, p: 23, c: 0, f: 1.5, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=400&auto=format&fit=crop' },
+  { id: 2, name: 'Boeuf haché 5%', k: 128, p: 26, c: 0, f: 5, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?q=80&w=400&auto=format&fit=crop' },
+  { id: 3, name: 'Saumon', k: 208, p: 20, c: 0, f: 13, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?q=80&w=400&auto=format&fit=crop' },
+  { id: 4, name: 'Oeuf entier', k: 155, p: 13, c: 1, f: 11, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1587486913049-53fc88980cfc?q=80&w=400&auto=format&fit=crop' },
+  { id: 5, name: 'Skyr / Fromage blanc', k: 57, p: 10, c: 4, f: 0.2, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1584346014497-1506bf181a41?q=80&w=400&auto=format&fit=crop' },
+  { id: 6, name: 'Whey Protein', k: 370, p: 80, c: 5, f: 4, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1579722820308-d74e571900a9?q=80&w=400&auto=format&fit=crop' },
+  { id: 7, name: 'Escalope de Dinde', k: 110, p: 24, c: 0, f: 1, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1604503468506-a8da13d82791?q=80&w=400&auto=format&fit=crop' },
+  { id: 8, name: 'Steak de Boeuf', k: 217, p: 26, c: 0, f: 12, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=400&auto=format&fit=crop' },
+  { id: 9, name: 'Thon nature', k: 132, p: 29, c: 0, f: 1, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?q=80&w=400&auto=format&fit=crop' },
+  { id: 10, name: 'Cabillaud', k: 82, p: 18, c: 0, f: 0.7, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1510130387422-82bed34b37e9?q=80&w=400&auto=format&fit=crop' },
+  { id: 11, name: 'Crevettes', k: 99, p: 24, c: 0.2, f: 0.3, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?q=80&w=400&auto=format&fit=crop' },
+  { id: 12, name: 'Tofu ferme', k: 144, p: 15, c: 3, f: 8, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1603046891744-761ca8ff69db?q=80&w=400&auto=format&fit=crop' },
+  { id: 13, name: 'Tempeh', k: 193, p: 20, c: 9, f: 11, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=400&auto=format&fit=crop' },
+  { id: 14, name: 'Seitan', k: 120, p: 24, c: 4, f: 1.5, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=400&auto=format&fit=crop' },
+  { id: 15, name: 'Jambon blanc découenné', k: 116, p: 20, c: 1, f: 4, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1528607929212-2636ec44253e?q=80&w=400&auto=format&fit=crop' },
+  { id: 16, name: 'Bresaola', k: 151, p: 32, c: 0, f: 2, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=400&auto=format&fit=crop' },
+  { id: 17, name: 'Mozzarella light', k: 180, p: 23, c: 2, f: 9, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1545239351-1141bd82e8a6?q=80&w=400&auto=format&fit=crop' },
+  { id: 18, name: 'Cottage cheese', k: 98, p: 11, c: 3, f: 4, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?q=80&w=400&auto=format&fit=crop' },
+  { id: 19, name: 'Yaourt grec 0%', k: 59, p: 10, c: 3.6, f: 0.4, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1571212515416-fef01fc43637?q=80&w=400&auto=format&fit=crop' },
+  { id: 20, name: 'Sardines', k: 208, p: 25, c: 0, f: 11, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1510130387422-82bed34b37e9?q=80&w=400&auto=format&fit=crop' },
+  { id: 21, name: 'Maquereau', k: 205, p: 19, c: 0, f: 14, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?q=80&w=400&auto=format&fit=crop' },
+  { id: 22, name: 'Truite', k: 190, p: 20, c: 0, f: 12, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1510130387422-82bed34b37e9?q=80&w=400&auto=format&fit=crop' },
+  { id: 23, name: 'Pavé de Thon', k: 144, p: 23, c: 0, f: 5, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?q=80&w=400&auto=format&fit=crop' },
+  { id: 24, name: 'Foie de volaille', k: 167, p: 24, c: 1, f: 6, cat: 'Protéines', img: 'https://images.unsplash.com/photo-1604503468506-a8da13d82791?q=80&w=400&auto=format&fit=crop' },
+
+  // =========================
+  // GLUCIDES
+  // =========================
+  { id: 25, name: 'Riz Basmati cuit', k: 145, p: 3, c: 32, f: 0.5, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1536304929831-ee1ca9d44906?q=80&w=400&auto=format&fit=crop' },
+  { id: 26, name: 'Pâtes cuites', k: 150, p: 5, c: 30, f: 1, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?q=80&w=400&auto=format&fit=crop' },
+  { id: 27, name: "Flocons d'avoine", k: 389, p: 17, c: 66, f: 7, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=400&auto=format&fit=crop' },
+  { id: 28, name: 'Pomme de terre', k: 85, p: 2, c: 20, f: 0.1, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?q=80&w=400&auto=format&fit=crop' },
+  { id: 29, name: 'Patate douce', k: 86, p: 1.6, c: 20, f: 0.1, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=400&auto=format&fit=crop' },
+  { id: 30, name: 'Pain complet', k: 247, p: 11, c: 41, f: 3.5, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=400&auto=format&fit=crop' },
+  { id: 31, name: 'Quinoa cuit', k: 120, p: 4.4, c: 21, f: 1.9, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=400&auto=format&fit=crop' },
+  { id: 32, name: 'Semoule cuite', k: 112, p: 3.8, c: 23, f: 0.2, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1515543904379-3d757afe72e6?q=80&w=400&auto=format&fit=crop' },
+  { id: 33, name: 'Boulgour cuit', k: 83, p: 3, c: 19, f: 0.2, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1515543904379-3d757afe72e6?q=80&w=400&auto=format&fit=crop' },
+  { id: 34, name: 'Lentilles cuites', k: 116, p: 9, c: 20, f: 0.4, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1515543904379-3d757afe72e6?q=80&w=400&auto=format&fit=crop' },
+  { id: 35, name: 'Pois chiches cuits', k: 164, p: 9, c: 27, f: 2.6, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1590080877777-95d2d6f4f6b6?q=80&w=400&auto=format&fit=crop' },
+  { id: 36, name: 'Haricots rouges cuits', k: 127, p: 8.7, c: 22.8, f: 0.5, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1515543904379-3d757afe72e6?q=80&w=400&auto=format&fit=crop' },
+  { id: 37, name: 'Haricots noirs cuits', k: 132, p: 8.9, c: 24, f: 0.5, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1515543904379-3d757afe72e6?q=80&w=400&auto=format&fit=crop' },
+  { id: 38, name: 'Tortilla blé', k: 310, p: 8, c: 52, f: 7, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1613514785940-daed07799d9b?q=80&w=400&auto=format&fit=crop' },
+  { id: 39, name: 'Wrap complet', k: 290, p: 9, c: 48, f: 6, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?q=80&w=400&auto=format&fit=crop' },
+  { id: 40, name: 'Pain de mie complet', k: 250, p: 12, c: 41, f: 4, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=400&auto=format&fit=crop' },
+  { id: 41, name: 'Bagel', k: 270, p: 10, c: 53, f: 1.5, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1542826438-bd32f43d626f?q=80&w=400&auto=format&fit=crop' },
+  { id: 42, name: 'Muesli', k: 370, p: 10, c: 64, f: 8, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=400&auto=format&fit=crop' },
+  { id: 43, name: 'Corn flakes', k: 357, p: 7, c: 84, f: 0.4, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1614961233913-a5113a4c1c86?q=80&w=400&auto=format&fit=crop' },
+  { id: 44, name: 'Galettes de riz', k: 387, p: 8, c: 81, f: 3, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1603048719537-9ecb6b3eec95?q=80&w=400&auto=format&fit=crop' },
+  { id: 45, name: 'Banane', k: 89, p: 1.1, c: 23, f: 0.3, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1528825871115-3581a5387919?q=80&w=400&auto=format&fit=crop' },
+  { id: 46, name: 'Datte', k: 282, p: 2.5, c: 75, f: 0.4, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1604335399105-a0c585fd81a1?q=80&w=400&auto=format&fit=crop' },
+  { id: 47, name: 'Figue sèche', k: 249, p: 3.3, c: 64, f: 0.9, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1577234286642-fc512a5f8f11?q=80&w=400&auto=format&fit=crop' },
+  { id: 48, name: 'Raisins secs', k: 299, p: 3.1, c: 79, f: 0.5, cat: 'Glucides', img: 'https://images.unsplash.com/photo-1528825871115-3581a5387919?q=80&w=400&auto=format&fit=crop' },
+
+  // =========================
+  // LIPIDES
+  // =========================
+  { id: 49, name: 'Avocat', k: 160, p: 2, c: 8.5, f: 15, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?q=80&w=400&auto=format&fit=crop' },
+  { id: 50, name: "Huile d'olive", k: 884, p: 0, c: 0, f: 100, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?q=80&w=400&auto=format&fit=crop' },
+  { id: 51, name: 'Beurre de cacahuète', k: 588, p: 25, c: 20, f: 50, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1583856275816-6ee1601eb946?q=80&w=400&auto=format&fit=crop' },
+  { id: 52, name: 'Amandes', k: 579, p: 21, c: 22, f: 50, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1508061253366-f7da158b6d46?q=80&w=400&auto=format&fit=crop' },
+  { id: 53, name: 'Noix de cajou', k: 581, p: 18, c: 30, f: 44, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1536591375315-bb0f59203923?q=80&w=400&auto=format&fit=crop' },
+  { id: 54, name: 'Noix', k: 654, p: 15, c: 14, f: 65, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1508747703725-719777637510?q=80&w=400&auto=format&fit=crop' },
+  { id: 55, name: 'Noisettes', k: 628, p: 15, c: 17, f: 61, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1514996937319-344454492b37?q=80&w=400&auto=format&fit=crop' },
+  { id: 56, name: 'Pistaches', k: 562, p: 20, c: 28, f: 45, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1615485291234-9f0f1dd6e8bf?q=80&w=400&auto=format&fit=crop' },
+  { id: 57, name: 'Cacahuètes', k: 567, p: 26, c: 16, f: 49, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1606857521015-7f9fcf423740?q=80&w=400&auto=format&fit=crop' },
+  { id: 58, name: 'Beurre', k: 717, p: 0.9, c: 0.1, f: 81, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1589985270958-b1601f3b4b8f?q=80&w=400&auto=format&fit=crop' },
+  { id: 59, name: 'Crème fraîche', k: 300, p: 2.5, c: 3, f: 30, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?q=80&w=400&auto=format&fit=crop' },
+  { id: 60, name: 'Lait de coco', k: 230, p: 2.3, c: 5.5, f: 24, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1600788886242-5c96aabe3757?q=80&w=400&auto=format&fit=crop' },
+  { id: 61, name: 'Olives vertes', k: 145, p: 1, c: 3.8, f: 15, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1615485925873-c96f6f7e28a1?q=80&w=400&auto=format&fit=crop' },
+  { id: 62, name: 'Olives noires', k: 116, p: 0.8, c: 6, f: 10.9, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1615485925873-c96f6f7e28a1?q=80&w=400&auto=format&fit=crop' },
+  { id: 63, name: 'Graines de chia', k: 486, p: 17, c: 42, f: 31, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1515543904379-3d757afe72e6?q=80&w=400&auto=format&fit=crop' },
+  { id: 64, name: 'Graines de lin', k: 534, p: 18, c: 29, f: 42, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1515543904379-3d757afe72e6?q=80&w=400&auto=format&fit=crop' },
+  { id: 65, name: 'Graines de courge', k: 559, p: 30, c: 11, f: 49, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=400&auto=format&fit=crop' },
+  { id: 66, name: 'Tahini', k: 595, p: 17, c: 21, f: 54, cat: 'Lipides', img: 'https://images.unsplash.com/photo-1571748982800-fa51082c2224?q=80&w=400&auto=format&fit=crop' },
+
+  // =========================
+  // FRUITS & LÉGUMES
+  // =========================
+  { id: 67, name: 'Brocoli', k: 34, p: 2.8, c: 7, f: 0.4, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?q=80&w=400&auto=format&fit=crop' },
+  { id: 68, name: 'Myrtilles', k: 57, p: 0.7, c: 14, f: 0.3, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1498557850523-fd3d118b962e?q=80&w=400&auto=format&fit=crop' },
+  { id: 69, name: 'Épinards', k: 23, p: 2.9, c: 3.6, f: 0.4, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?q=80&w=400&auto=format&fit=crop' },
+  { id: 70, name: 'Pomme', k: 52, p: 0.3, c: 14, f: 0.2, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6faa6?q=80&w=400&auto=format&fit=crop' },
+  { id: 71, name: 'Poire', k: 57, p: 0.4, c: 15, f: 0.1, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?q=80&w=400&auto=format&fit=crop' },
+  { id: 72, name: 'Orange', k: 47, p: 0.9, c: 12, f: 0.1, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?q=80&w=400&auto=format&fit=crop' },
+  { id: 73, name: 'Mandarine', k: 53, p: 0.8, c: 13, f: 0.3, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1577234286642-fc512a5f8f11?q=80&w=400&auto=format&fit=crop' },
+  { id: 74, name: 'Kiwi', k: 61, p: 1.1, c: 15, f: 0.5, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1585059895524-72359e06133a?q=80&w=400&auto=format&fit=crop' },
+  { id: 75, name: 'Fraise', k: 32, p: 0.7, c: 7.7, f: 0.3, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?q=80&w=400&auto=format&fit=crop' },
+  { id: 76, name: 'Framboise', k: 52, p: 1.2, c: 12, f: 0.7, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1577003833619-76bbd7f82948?q=80&w=400&auto=format&fit=crop' },
+  { id: 77, name: 'Ananas', k: 50, p: 0.5, c: 13, f: 0.1, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1550258987-190a2d41a8ba?q=80&w=400&auto=format&fit=crop' },
+  { id: 78, name: 'Mangue', k: 60, p: 0.8, c: 15, f: 0.4, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1553279768-865429fa0078?q=80&w=400&auto=format&fit=crop' },
+  { id: 79, name: 'Pastèque', k: 30, p: 0.6, c: 8, f: 0.2, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1563114773-84221bd62daa?q=80&w=400&auto=format&fit=crop' },
+  { id: 80, name: 'Melon', k: 34, p: 0.8, c: 8, f: 0.2, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1571575173700-afb9492e6a50?q=80&w=400&auto=format&fit=crop' },
+  { id: 81, name: 'Raisin', k: 69, p: 0.7, c: 18, f: 0.2, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1537640538966-79f369143f8f?q=80&w=400&auto=format&fit=crop' },
+  { id: 82, name: 'Cerise', k: 63, p: 1.1, c: 16, f: 0.2, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1528825871115-3581a5387919?q=80&w=400&auto=format&fit=crop' },
+  { id: 83, name: 'Tomate', k: 18, p: 0.9, c: 3.9, f: 0.2, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1546094096-0df4bcaaa337?q=80&w=400&auto=format&fit=crop' },
+  { id: 84, name: 'Concombre', k: 15, p: 0.7, c: 3.6, f: 0.1, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1604977046802-4f4d4ea1ce4f?q=80&w=400&auto=format&fit=crop' },
+  { id: 85, name: 'Carotte', k: 41, p: 0.9, c: 10, f: 0.2, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1447175008436-170170753d52?q=80&w=400&auto=format&fit=crop' },
+  { id: 86, name: 'Courgette', k: 17, p: 1.2, c: 3.1, f: 0.3, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1594282486552-05a8d80fbb9f?q=80&w=400&auto=format&fit=crop' },
+  { id: 87, name: 'Aubergine', k: 25, p: 1, c: 6, f: 0.2, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1603048719537-9ecb6b3eec95?q=80&w=400&auto=format&fit=crop' },
+  { id: 88, name: 'Poivron rouge', k: 31, p: 1, c: 6, f: 0.3, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?q=80&w=400&auto=format&fit=crop' },
+  { id: 89, name: 'Haricots verts', k: 31, p: 1.8, c: 7, f: 0.2, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1567375698348-5d9d5ae99de0?q=80&w=400&auto=format&fit=crop' },
+  { id: 90, name: 'Champignons', k: 22, p: 3.1, c: 3.3, f: 0.3, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?q=80&w=400&auto=format&fit=crop' },
+  { id: 91, name: 'Chou-fleur', k: 25, p: 1.9, c: 5, f: 0.3, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1510627498534-cf7e9002facc?q=80&w=400&auto=format&fit=crop' },
+  { id: 92, name: 'Asperges', k: 20, p: 2.2, c: 3.9, f: 0.1, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=400&auto=format&fit=crop' },
+  { id: 93, name: 'Salade verte', k: 15, p: 1.4, c: 2.9, f: 0.2, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=400&auto=format&fit=crop' },
+  { id: 94, name: 'Oignon', k: 40, p: 1.1, c: 9.3, f: 0.1, cat: 'Fruits & Légumes', img: 'https://images.unsplash.com/photo-1508747703725-719777637510?q=80&w=400&auto=format&fit=crop' },
+
+  // =========================
+  // SNACKS
+  // =========================
+  { id: 95, name: 'Chocolat Noir 85%', k: 598, p: 8, c: 34, f: 43, cat: 'Snacks', img: 'https://images.unsplash.com/photo-1548813358-00d07584ce80?q=80&w=400&auto=format&fit=crop' },
+  { id: 96, name: 'Barre protéinée', k: 360, p: 30, c: 35, f: 12, cat: 'Snacks', img: 'https://images.unsplash.com/photo-1585238342024-78d387f4a707?q=80&w=400&auto=format&fit=crop' },
+  { id: 97, name: 'Pop-corn nature', k: 387, p: 13, c: 78, f: 4.5, cat: 'Snacks', img: 'https://images.unsplash.com/photo-1578849278619-e73505e9610f?q=80&w=400&auto=format&fit=crop' },
+  { id: 98, name: 'Yaourt à boire protéiné', k: 70, p: 8, c: 5, f: 1.5, cat: 'Snacks', img: 'https://images.unsplash.com/photo-1571212515416-fef01fc43637?q=80&w=400&auto=format&fit=crop' },
+  { id: 99, name: 'Compote sans sucre', k: 68, p: 0.2, c: 17, f: 0.1, cat: 'Snacks', img: 'https://images.unsplash.com/photo-1577805947697-89e18249d767?q=80&w=400&auto=format&fit=crop' },
+  { id: 100, name: 'Galette maïs', k: 381, p: 8, c: 79, f: 3, cat: 'Snacks', img: 'https://images.unsplash.com/photo-1603048719537-9ecb6b3eec95?q=80&w=400&auto=format&fit=crop' },
+  { id: 101, name: 'Cookies protéinés', k: 420, p: 22, c: 45, f: 16, cat: 'Snacks', img: 'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?q=80&w=400&auto=format&fit=crop' },
+  { id: 102, name: 'Granola', k: 471, p: 10, c: 64, f: 20, cat: 'Snacks', img: 'https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=400&auto=format&fit=crop' },
+  { id: 103, name: 'Biscottes complètes', k: 386, p: 11, c: 74, f: 4, cat: 'Snacks', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=400&auto=format&fit=crop' },
+  { id: 104, name: 'Mix noix & fruits secs', k: 520, p: 14, c: 38, f: 34, cat: 'Snacks', img: 'https://images.unsplash.com/photo-1508061253366-f7da158b6d46?q=80&w=400&auto=format&fit=crop' },
+
+  // =========================
+  // BOISSONS
+  // =========================
+  { id: 105, name: 'Lait demi-écrémé', k: 47, p: 3.3, c: 4.8, f: 1.5, cat: 'Boissons', img: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?q=80&w=400&auto=format&fit=crop' },
+  { id: 106, name: 'Lait d’amande sans sucre', k: 13, p: 0.4, c: 0.2, f: 1.1, cat: 'Boissons', img: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?q=80&w=400&auto=format&fit=crop' },
+  { id: 107, name: 'Lait de soja', k: 45, p: 3.8, c: 2.5, f: 2, cat: 'Boissons', img: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?q=80&w=400&auto=format&fit=crop' },
+  { id: 108, name: 'Jus d’orange pressé', k: 45, p: 0.7, c: 10.4, f: 0.2, cat: 'Boissons', img: 'https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?q=80&w=400&auto=format&fit=crop' },
+  { id: 109, name: 'Smoothie fruits rouges', k: 60, p: 1, c: 13, f: 0.4, cat: 'Boissons', img: 'https://images.unsplash.com/photo-1502741338009-cac2772e18bc?q=80&w=400&auto=format&fit=crop' },
+  { id: 110, name: 'Kéfir', k: 64, p: 3.5, c: 4.8, f: 3.5, cat: 'Boissons', img: 'https://images.unsplash.com/photo-1571212515416-fef01fc43637?q=80&w=400&auto=format&fit=crop' }
+]
