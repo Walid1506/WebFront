@@ -25,14 +25,14 @@
     </div>
   </header>
 </template>
-<script setup>
-import { useSportStore } from "~/stores/sport"
 
-const store = useSportStore()
+<script setup>
 const route = useRoute()
 
 const isUserPage = computed(() => route.path.includes("/utilisateur"))
-const userName = computed(() => store.currentUser || "Invité")
-const userInitial = computed(() => store.currentUser ? store.currentUser.charAt(0).toUpperCase() : "?")
-const profilePath = computed(() => store.currentUser ? `/utilisateur/${store.currentUser}` : "/login")
+
+// Variables statiques par défaut (remplacent le store cassé)
+const userName = ref("Invité")
+const userInitial = ref("?")
+const profilePath = ref("/login")
 </script>

@@ -10,7 +10,7 @@
       <span class="text-[10px] font-bold">Vidéos</span>
     </NuxtLink>
 
-    <NuxtLink :to="store.currentUser ? `/utilisateur/${store.currentUser}` : '/login'" active-class="text-green-600" class="flex flex-col items-center gap-1 p-2 text-gray-400 hover:text-green-500">
+    <NuxtLink to="/login" active-class="text-green-600" class="flex flex-col items-center gap-1 p-2 text-gray-400 hover:text-green-500">
       <UIcon name="i-heroicons-user" class="text-2xl" />
       <span class="text-[10px] font-bold">Profil</span>
     </NuxtLink>
@@ -18,6 +18,5 @@
 </template>
 
 <script setup>
-import { useSportStore } from '~/stores/sport'
-const store = useSportStore()
+// Le store a été entièrement retiré pour éviter l'erreur 500
 </script>
