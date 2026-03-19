@@ -85,7 +85,7 @@ definePageMeta({ layout: false })
 import Calendrier from '~/components/custom/calendrier.vue'
 import ModalSeance from '~/components/custom/seance.vue'
 import Dashboard from '~/components/custom/dashboard.vue'
-import VideoSection from '~/components/custom/video.vue'
+
 import AlimentationSection from '~/components/custom/alimentation.vue'
 
 const router = useRouter()
