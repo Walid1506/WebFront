@@ -19,11 +19,17 @@
           </div>
 
           <div class="flex items-center justify-between bg-slate-900/50 p-2 rounded-2xl border border-white/5 w-full max-w-md mx-auto">
-            <button @click="changeDay(-1)" class="p-3 bg-slate-800 rounded-xl hover:bg-slate-700 transition"><UIcon name="i-heroicons-chevron-left" class="text-white" /></button>
+            <button @click="changeDay(-1)" class="p-3 bg-slate-800 rounded-xl hover:bg-slate-700 transition">
+              <UIcon name="i-heroicons-chevron-left" class="text-white" />
+            </button>
             <div class="text-center">
-              <p class="font-[1000] text-lg text-white" :class="isToday ? 'text-blue-500' : ''">{{ isToday ? "Aujourd'hui" : formattedSelectedDate }}</p>
+              <p class="font-[1000] text-lg text-white" :class="isToday ? 'text-blue-500' : ''">
+                {{ isToday ? "Aujourd'hui" : formattedSelectedDate }}
+              </p>
             </div>
-            <button @click="changeDay(1)" :disabled="isToday" class="p-3 bg-slate-800 rounded-xl transition" :class="isToday ? 'opacity-30 cursor-not-allowed' : 'hover:bg-slate-700'"><UIcon name="i-heroicons-chevron-right" class="text-white" /></button>
+            <button @click="changeDay(1)" :disabled="isToday" class="p-3 bg-slate-800 rounded-xl transition" :class="isToday ? 'opacity-30 cursor-not-allowed' : 'hover:bg-slate-700'">
+              <UIcon name="i-heroicons-chevron-right" class="text-white" />
+            </button>
           </div>
         </div>
 
@@ -35,7 +41,9 @@
                 <h2 class="text-xl font-[1000] text-white flex items-center gap-2">
                   <UIcon name="i-heroicons-adjustments-horizontal" class="text-blue-500" /> Profil & Métabolisme
                 </h2>
-                <button @click="isSettingsOpen = !isSettingsOpen" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-900 px-3 py-1 rounded-full border border-white/5">{{ isSettingsOpen ? 'Masquer' : 'Modifier' }}</button>
+                <button @click="isSettingsOpen = !isSettingsOpen" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-900 px-3 py-1 rounded-full border border-white/5">
+                  {{ isSettingsOpen ? 'Masquer' : 'Modifier' }}
+                </button>
               </div>
               
               <div v-if="isSettingsOpen" class="grid grid-cols-2 gap-4 mb-6 animate-in fade-in zoom-in-95">
@@ -155,7 +163,9 @@
                       <p class="text-[#2F6BFF] font-black text-xs mt-1">{{ item.amount }} g • {{ item.kcal }} kcal</p>
                     </div>
                   </div>
-                  <button @click="removeItem(index)" class="text-red-500/50 hover:text-red-500 p-3 bg-red-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-all"><UIcon name="i-heroicons-trash" class="text-xl" /></button>
+                  <button @click="removeItem(index)" class="text-red-500/50 hover:text-red-500 p-3 bg-red-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-all">
+                    <UIcon name="i-heroicons-trash" class="text-xl" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -206,7 +216,9 @@
       </div>
 
       <div v-else-if="currentScreen === 'quantity' && selectedFood" key="quantity" class="fixed inset-0 z-[120] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-6">
-        <button @click="currentScreen = 'library'" class="absolute top-8 left-8 text-slate-400 hover:text-white transition"><UIcon name="i-heroicons-arrow-left" class="text-4xl" /></button>
+        <button @click="currentScreen = 'library'" class="absolute top-8 left-8 text-slate-400 hover:text-white transition">
+          <UIcon name="i-heroicons-arrow-left" class="text-4xl" />
+        </button>
         <img :src="selectedFood.img" class="w-48 h-48 rounded-full object-cover border-4 border-[#2F6BFF] mb-8 shadow-2xl" @error="onImageError" />
         <h3 class="text-4xl font-[1000] text-white mb-8 text-center">{{ selectedFood.name }}</h3>
         <div class="bg-[#111111] border border-white/10 p-8 rounded-[40px] mb-8 w-full max-w-md text-center">
@@ -218,23 +230,36 @@
             <div><p class="text-orange-500 text-[10px] font-black uppercase">Gluc</p><p class="text-white font-bold text-xl">{{ calculatedMacros.carbs }}g</p></div>
           </div>
         </div>
-        <button @click="addFood" class="w-full max-w-md bg-[#2F6BFF] text-white font-black text-2xl py-6 rounded-[30px] shadow-lg hover:bg-blue-600 transition-all">Ajouter au journal</button>
+        <button @click="addFood" class="w-full max-w-md bg-[#2F6BFF] text-white font-black text-2xl py-6 rounded-[30px] shadow-lg hover:bg-blue-600 transition-all">
+          Ajouter au journal
+        </button>
       </div>
 
       <div v-else-if="currentScreen === 'scanner'" key="scanner" class="fixed inset-0 z-[110] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-6">
         <button @click="closeScanner" class="absolute top-8 left-8 text-slate-400 bg-slate-900 p-4 rounded-full">
           <UIcon name="i-heroicons-x-mark" class="text-2xl" />
         </button>
+
         <div class="w-full max-w-md flex flex-col items-center">
-          <div id="reader" class="w-full h-64 border-4 border-[#2F6BFF] rounded-[40px] relative overflow-hidden bg-slate-900/50 mb-10">
-          </div>
+          <div id="reader" class="w-full h-64 border-4 border-[#2F6BFF] rounded-[40px] relative overflow-hidden bg-slate-900/50 mb-10"></div>
           
-          <div v-if="scanResult" @click="addScannedFood" class="p-6 rounded-[30px] w-full border-2 cursor-pointer animate-in slide-in-from-bottom-10 bg-green-500/10 border-green-500 text-green-400">
+          <div
+            v-if="scanResult"
+            @click="addScannedFood"
+            class="p-6 rounded-[30px] w-full border-2 cursor-pointer animate-in slide-in-from-bottom-10 bg-green-500/10 border-green-500 text-green-400"
+          >
             <h4 class="font-[1000] text-2xl text-white">{{ scanResult.nom }}</h4>
             <p class="text-sm font-bold">{{ scanResult.message }}</p>
             <p class="mt-2 text-[10px] uppercase font-black text-white/50">Clique pour définir la quantité</p>
           </div>
-          <p v-else class="text-slate-500 font-bold text-center">Place le code-barres devant la caméra</p>
+
+          <p v-else-if="scanError" class="text-red-400 font-bold text-center max-w-md">
+            {{ scanError }}
+          </p>
+
+          <p v-else class="text-slate-500 font-bold text-center">
+            Place le code-barres devant la caméra
+          </p>
         </div>
       </div>
 
@@ -242,10 +267,14 @@
         <div class="w-full max-w-3xl bg-[#111111] rounded-[40px] border border-white/10 flex flex-col h-full overflow-hidden">
           <div class="p-8 flex justify-between items-center border-b border-white/5 bg-black/50">
             <div class="flex items-center gap-6">
-              <button @click="currentScreen = 'main'" class="text-slate-400 hover:text-white transition"><UIcon name="i-heroicons-arrow-left" class="text-3xl" /></button>
+              <button @click="currentScreen = 'main'" class="text-slate-400 hover:text-white transition">
+                <UIcon name="i-heroicons-arrow-left" class="text-3xl" />
+              </button>
               <h2 class="text-3xl font-[1000] text-white">Courses</h2>
             </div>
-            <button v-if="shoppingList.length > 0" @click="clearCart" class="text-red-500 font-bold bg-red-500/10 px-4 py-2 rounded-xl">Vider tout</button>
+            <button v-if="shoppingList.length > 0" @click="clearCart" class="text-red-500 font-bold bg-red-500/10 px-4 py-2 rounded-xl">
+              Vider tout
+            </button>
           </div>
           <div class="p-8 flex gap-4 border-b border-white/5">
             <input v-model="newCartItem" @keyup.enter="addCustomCartItem" type="text" placeholder="Ajouter produit..." class="flex-1 bg-slate-900 border border-white/10 text-white font-bold py-4 px-6 rounded-2xl outline-none focus:border-blue-500" />
@@ -259,7 +288,9 @@
                 </button>
                 <h4 class="font-black text-xl flex-1" :class="item.checked ? 'line-through' : ''">{{ item.name }}</h4>
               </div>
-              <button @click="removeCartItem(index)" class="text-red-500/50 hover:text-red-500 ml-4"><UIcon name="i-heroicons-trash" class="text-2xl" /></button>
+              <button @click="removeCartItem(index)" class="text-red-500/50 hover:text-red-500 ml-4">
+                <UIcon name="i-heroicons-trash" class="text-2xl" />
+              </button>
             </div>
           </div>
         </div>
@@ -271,10 +302,10 @@
 
 <script setup>
 import { foodLibrary } from '~/data/foodLibrary'
-import { Html5QrcodeScanner } from "html5-qrcode"
+import { Html5Qrcode } from 'html5-qrcode'
+
 const supabase = useSupabaseClient()
 
-// --- ÉTATS ---
 const currentScreen = ref('main')
 const isSettingsOpen = ref(false)
 const selectedDateObj = ref(new Date())
@@ -285,39 +316,70 @@ const selectedFood = ref(null)
 const amount = ref(100)
 const eau = ref(0)
 const shoppingList = ref([])
-const consumed = ref([]) 
-const frozenBesoins = ref(null) 
+const consumed = ref([])
+const frozenBesoins = ref(null)
 const newCartItem = ref('')
 const scanResult = ref(null)
-const profil = reactive({ poids: 75, taille: 180, age: 25, genre: 'homme', activite: 1.55, objectif: 'masse' })
+const scanError = ref('')
+const profil = reactive({
+  poids: 75,
+  taille: 180,
+  age: 25,
+  genre: 'homme',
+  activite: 1.55,
+  objectif: 'masse'
+})
 
 let html5QrcodeScanner = null
 
-// --- DATES ---
 const selectedDateStr = computed(() => {
   const d = selectedDateObj.value
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 })
-const isToday = computed(() => selectedDateStr.value === new Date().toISOString().split('T')[0])
-const formattedSelectedDate = computed(() => selectedDateObj.value.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long' }))
 
-// --- LOGIQUE SUPABASE ---
+const isToday = computed(() => selectedDateStr.value === new Date().toISOString().split('T')[0])
+
+const formattedSelectedDate = computed(() =>
+  selectedDateObj.value.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long' })
+)
+
 onMounted(async () => {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
-  const { data: globals } = await supabase.from('nutrition_globals').select('*').eq('user_id', user.id).maybeSingle()
+
+  const { data: globals } = await supabase
+    .from('nutrition_globals')
+    .select('*')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
   if (globals) {
     if (globals.profil) Object.assign(profil, globals.profil)
     if (globals.shopping_list) shoppingList.value = globals.shopping_list
   }
+
   await fetchDaily()
+})
+
+onBeforeUnmount(async () => {
+  await stopScanner()
 })
 
 async function fetchDaily() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
-  consumed.value = []; eau.value = 0; frozenBesoins.value = null
-  const { data: dailyList } = await supabase.from('nutrition_daily').select('*').eq('user_id', user.id).eq('date', selectedDateStr.value).limit(1)
+
+  consumed.value = []
+  eau.value = 0
+  frozenBesoins.value = null
+
+  const { data: dailyList } = await supabase
+    .from('nutrition_daily')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('date', selectedDateStr.value)
+    .limit(1)
+
   if (dailyList?.length > 0) {
     const d = dailyList[0]
     eau.value = Number(d.eau) || 0
@@ -329,8 +391,19 @@ async function fetchDaily() {
 async function saveGlobals() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
-  const payload = { user_id: user.id, profil: JSON.parse(JSON.stringify(profil)), shopping_list: JSON.parse(JSON.stringify(shoppingList.value)) }
-  const { data: exists } = await supabase.from('nutrition_globals').select('id').eq('user_id', user.id).maybeSingle()
+
+  const payload = {
+    user_id: user.id,
+    profil: JSON.parse(JSON.stringify(profil)),
+    shopping_list: JSON.parse(JSON.stringify(shoppingList.value))
+  }
+
+  const { data: exists } = await supabase
+    .from('nutrition_globals')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
   if (exists) await supabase.from('nutrition_globals').update(payload).eq('id', exists.id)
   else await supabase.from('nutrition_globals').insert(payload)
 }
@@ -338,46 +411,133 @@ async function saveGlobals() {
 async function saveDaily() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
-  const payload = { eau: Number(eau.value), repas: JSON.parse(JSON.stringify(consumed.value)), cibles: JSON.parse(JSON.stringify(liveBesoins.value)) }
-  const { data: exists } = await supabase.from('nutrition_daily').select('id').eq('user_id', user.id).eq('date', selectedDateStr.value).limit(1)
-  if (exists?.length > 0) await supabase.from('nutrition_daily').update(payload).eq('id', exists[0].id)
-  else await supabase.from('nutrition_daily').insert({ user_id: user.id, date: selectedDateStr.value, ...payload })
+
+  const payload = {
+    eau: Number(eau.value),
+    repas: JSON.parse(JSON.stringify(consumed.value)),
+    cibles: JSON.parse(JSON.stringify(liveBesoins.value))
+  }
+
+  const { data: exists } = await supabase
+    .from('nutrition_daily')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('date', selectedDateStr.value)
+    .limit(1)
+
+  if (exists?.length > 0) {
+    await supabase.from('nutrition_daily').update(payload).eq('id', exists[0].id)
+  } else {
+    await supabase.from('nutrition_daily').insert({
+      user_id: user.id,
+      date: selectedDateStr.value,
+      ...payload
+    })
+  }
+
   frozenBesoins.value = liveBesoins.value
 }
 
-// --- SCANNER RÉEL ---
-function openScanner() {
+async function openScanner() {
   currentScreen.value = 'scanner'
   scanResult.value = null
-  nextTick(() => {
-    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 150 } }, false)
-    html5QrcodeScanner.render(onScanSuccess)
-  })
+  scanError.value = ''
+
+  await nextTick()
+
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      scanError.value = "La caméra n'est pas supportée sur cet appareil ou navigateur."
+      return
+    }
+
+    try {
+      const tempStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      })
+      tempStream.getTracks().forEach(track => track.stop())
+    } catch (permissionErr) {
+      console.error('Permission caméra refusée :', permissionErr)
+      scanError.value = "Permission caméra refusée. Autorise l’accès à la caméra dans ton navigateur."
+      return
+    }
+
+    html5QrcodeScanner = new Html5Qrcode('reader')
+
+    const cameras = await Html5Qrcode.getCameras()
+    if (!cameras || cameras.length === 0) {
+      scanError.value = "Aucune caméra détectée."
+      return
+    }
+
+    await html5QrcodeScanner.start(
+      { facingMode: 'environment' },
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 140 },
+        aspectRatio: 1.6
+      },
+      onScanSuccess,
+      () => {}
+    )
+  } catch (err) {
+    console.error('Erreur ouverture caméra :', err)
+    scanError.value = "Impossible d’accéder à la caméra. Vérifie les permissions ou utilise HTTPS."
+  }
 }
 
-function closeScanner() {
-  if (html5QrcodeScanner) html5QrcodeScanner.clear()
+async function stopScanner() {
+  if (!html5QrcodeScanner) return
+
+  try {
+    const state = html5QrcodeScanner.getState?.()
+    if (state === 2 || state === 3) {
+      await html5QrcodeScanner.stop()
+    }
+    await html5QrcodeScanner.clear()
+  } catch (err) {
+    console.error('Erreur fermeture scanner :', err)
+  } finally {
+    html5QrcodeScanner = null
+  }
+}
+
+async function closeScanner() {
+  await stopScanner()
   currentScreen.value = 'main'
 }
 
 async function onScanSuccess(decodedText) {
-  if (html5QrcodeScanner) html5QrcodeScanner.clear()
   try {
+    await stopScanner()
+
     const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${decodedText}.json`)
     const data = await res.json()
+
     if (data.status === 1) {
       const p = data.product
       const food = {
-        name: p.product_name || "Produit inconnu",
+        name: p.product_name || 'Produit inconnu',
         img: p.image_url || 'https://placehold.co/600x600/1e293b/94a3b8?text=Aliment',
-        k: Math.round(p.nutriments['energy-kcal_100g'] || 0),
-        p: p.nutriments.proteins_100g || 0,
-        c: p.nutriments.carbohydrates_100g || 0,
-        f: p.nutriments.fat_100g || 0,
+        k: Math.round(p.nutriments?.['energy-kcal_100g'] || 0),
+        p: Number(p.nutriments?.proteins_100g || 0),
+        c: Number(p.nutriments?.carbohydrates_100g || 0),
+        f: Number(p.nutriments?.fat_100g || 0),
       }
-      scanResult.value = { nom: food.name, message: "Produit trouvé ! Clique pour ajouter.", data: food }
-    } else { alert("Produit inconnu dans Open Food Facts.") }
-  } catch (e) { console.error(e) }
+
+      scanResult.value = {
+        nom: food.name,
+        message: 'Produit trouvé ! Clique pour ajouter.',
+        data: food
+      }
+      scanError.value = ''
+    } else {
+      scanError.value = 'Produit inconnu dans Open Food Facts.'
+    }
+  } catch (e) {
+    console.error(e)
+    scanError.value = 'Erreur pendant le scan ou la recherche du produit.'
+  }
 }
 
 function addScannedFood() {
@@ -388,42 +548,119 @@ function addScannedFood() {
   }
 }
 
-// --- CALCULS ---
 const imc = computed(() => profil.poids && profil.taille ? (profil.poids / Math.pow(profil.taille / 100, 2)).toFixed(1) : 0)
+
 const liveBesoins = computed(() => {
   let bmr = (10 * profil.poids) + (6.25 * profil.taille) - (5 * profil.age) + (profil.genre === 'homme' ? 5 : -161)
   let k = Math.round(bmr * profil.activite)
   if (profil.objectif === 'seche') k -= 400
   else if (profil.objectif === 'masse') k += 300
-  const prot = Math.round(profil.poids * 2), fats = Math.round(profil.poids * 1)
-  return { kcal: k, prot, fats, carbs: Math.round((k - (prot*4) - (fats*9)) / 4) }
+  const prot = Math.round(profil.poids * 2)
+  const fats = Math.round(profil.poids * 1)
+  return { kcal: k, prot, fats, carbs: Math.round((k - (prot * 4) - (fats * 9)) / 4) }
 })
+
 const activeBesoins = computed(() => (!isToday.value && frozenBesoins.value) ? frozenBesoins.value : liveBesoins.value)
-const total = computed(() => consumed.value.reduce((a, c) => ({ kcal: a.kcal + c.kcal, prot: a.prot + c.prot, carbs: a.carbs + c.carbs, fats: a.fats + c.fats }), { kcal: 0, prot: 0, carbs: 0, fats: 0 }))
+
+const total = computed(() =>
+  consumed.value.reduce(
+    (a, c) => ({
+      kcal: a.kcal + c.kcal,
+      prot: a.prot + c.prot,
+      carbs: a.carbs + c.carbs,
+      fats: a.fats + c.fats
+    }),
+    { kcal: 0, prot: 0, carbs: 0, fats: 0 }
+  )
+)
+
 const progressKcal = computed(() => Math.min(100, (total.value.kcal / activeBesoins.value.kcal) * 100) || 0)
 const progressCarbs = computed(() => Math.min(100, (total.value.carbs / activeBesoins.value.carbs) * 100) || 0)
 const progressProt = computed(() => Math.min(100, (total.value.prot / activeBesoins.value.prot) * 100) || 0)
 const progressFats = computed(() => Math.min(100, (total.value.fats / activeBesoins.value.fats) * 100) || 0)
 const progressEau = computed(() => Math.min(100, (eau.value / 3.0) * 100) || 0)
 
-// --- ACTIONS ---
-function changeDay(d) { const date = new Date(selectedDateObj.value); date.setDate(date.getDate() + d); selectedDateObj.value = date; fetchDaily() }
-function adjustWater(v) { eau.value = Math.max(0, Math.min(3.0, Number((eau.value + v).toFixed(1)))); saveDaily() }
-function selectFood(f) { selectedFood.value = f; amount.value = 100; currentScreen.value = 'quantity' }
-function addFood() { consumed.value.push({ name: selectedFood.value.name, img: selectedFood.value.img, amount: amount.value, ...calculatedMacros.value }); selectedFood.value = null; currentScreen.value = 'main'; saveDaily() }
-function removeItem(i) { consumed.value.splice(i, 1); saveDaily() }
-function toggleCheck(i) { shoppingList.value[i].checked = !shoppingList.value[i].checked; saveGlobals() }
-function removeCartItem(i) { shoppingList.value.splice(i, 1); saveGlobals() }
-function addCustomCartItem() { if (newCartItem.value) { shoppingList.value.push({ name: newCartItem.value, checked: false }); newCartItem.value = ''; saveGlobals() } }
-function clearCart() { if (confirm("Tout vider ?")) { shoppingList.value = []; saveGlobals() } }
+function changeDay(d) {
+  const date = new Date(selectedDateObj.value)
+  date.setDate(date.getDate() + d)
+  selectedDateObj.value = date
+  fetchDaily()
+}
 
-const filteredDb = computed(() => foodLibrary.filter(f => (activeCatFilter.value === 'Tout' || f.cat === activeCatFilter.value) && f.name.toLowerCase().includes(searchQuery.value.toLowerCase())))
-const calculatedMacros = computed(() => { 
-  if (!selectedFood.value) return {}; 
-  const r = amount.value / 100; 
-  return { kcal: Math.round(selectedFood.value.k * r), prot: +(selectedFood.value.p * r).toFixed(1), carbs: +(selectedFood.value.c * r).toFixed(1), fats: +(selectedFood.value.f * r).toFixed(1) } 
+function adjustWater(v) {
+  eau.value = Math.max(0, Math.min(3.0, Number((eau.value + v).toFixed(1))))
+  saveDaily()
+}
+
+function selectFood(f) {
+  selectedFood.value = f
+  amount.value = 100
+  currentScreen.value = 'quantity'
+}
+
+function addFood() {
+  consumed.value.push({
+    name: selectedFood.value.name,
+    img: selectedFood.value.img,
+    amount: amount.value,
+    ...calculatedMacros.value
+  })
+  selectedFood.value = null
+  currentScreen.value = 'main'
+  saveDaily()
+}
+
+function removeItem(i) {
+  consumed.value.splice(i, 1)
+  saveDaily()
+}
+
+function toggleCheck(i) {
+  shoppingList.value[i].checked = !shoppingList.value[i].checked
+  saveGlobals()
+}
+
+function removeCartItem(i) {
+  shoppingList.value.splice(i, 1)
+  saveGlobals()
+}
+
+function addCustomCartItem() {
+  if (newCartItem.value) {
+    shoppingList.value.push({ name: newCartItem.value, checked: false })
+    newCartItem.value = ''
+    saveGlobals()
+  }
+}
+
+function clearCart() {
+  if (confirm('Tout vider ?')) {
+    shoppingList.value = []
+    saveGlobals()
+  }
+}
+
+const filteredDb = computed(() =>
+  foodLibrary.filter(f =>
+    (activeCatFilter.value === 'Tout' || f.cat === activeCatFilter.value) &&
+    f.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+)
+
+const calculatedMacros = computed(() => {
+  if (!selectedFood.value) return {}
+  const r = amount.value / 100
+  return {
+    kcal: Math.round(selectedFood.value.k * r),
+    prot: +(selectedFood.value.p * r).toFixed(1),
+    carbs: +(selectedFood.value.c * r).toFixed(1),
+    fats: +(selectedFood.value.f * r).toFixed(1)
+  }
 })
-function onImageError(e) { e.target.src = 'https://placehold.co/600x600/1e293b/94a3b8?text=Aliment' }
+
+function onImageError(e) {
+  e.target.src = 'https://placehold.co/600x600/1e293b/94a3b8?text=Aliment'
+}
 </script>
 
 <style scoped>
