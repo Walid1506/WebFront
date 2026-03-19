@@ -42,6 +42,4 @@
 </template>
 
 <script setup>
-import { useSportStore } from '~/stores/sport'
-const store = useSportStore()
 </script>
