@@ -17,11 +17,12 @@
         <p class="text-slate-400 text-sm font-medium mt-1">Prêt à changer de vie ?</p>
       </div>
 
-      <form @submit.prevent="handleLogin" class="space-y-6">
+      <!-- Formulaire connexion -->
+      <form v-if="!forgotMode" @submit.prevent="handleLogin" class="space-y-6">
         <div>
           <div class="relative group">
             <UIcon name="i-heroicons-envelope" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-500 transition-colors" />
-            <input v-model="email" type="email" placeholder="Email" 
+            <input v-model="email" type="email" placeholder="Email"
               class="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-green-500 transition-all font-semibold text-slate-900" required />
           </div>
         </div>
@@ -29,7 +30,7 @@
         <div>
           <div class="relative group">
             <UIcon name="i-heroicons-lock-closed" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-500 transition-colors" />
-            <input v-model="password" type="password" placeholder="Mot de passe" 
+            <input v-model="password" type="password" placeholder="Mot de passe"
               class="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-green-500 transition-all font-semibold text-slate-900" required />
           </div>
         </div>
@@ -40,12 +41,44 @@
           {{ loading ? 'Connexion...' : 'Se connecter' }}
         </button>
 
-        <div class="text-center">
+        <div class="flex justify-between items-center">
+          <button type="button" @click="forgotMode = true" class="text-sm font-bold text-slate-400 hover:text-slate-600 transition">
+            Mot de passe oublié ?
+          </button>
           <NuxtLink to="/register" class="text-sm font-bold text-green-600 hover:text-green-700 transition">
             Créer un compte
           </NuxtLink>
         </div>
       </form>
+
+      <!-- Formulaire mot de passe oublié -->
+      <div v-else class="space-y-6">
+        <div class="text-center mb-2">
+          <p class="text-slate-600 text-sm">Entre ton email pour recevoir un lien de réinitialisation.</p>
+        </div>
+
+        <div class="relative group">
+          <UIcon name="i-heroicons-envelope" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-500 transition-colors" />
+          <input v-model="email" type="email" placeholder="Email"
+            class="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-green-500 transition-all font-semibold text-slate-900" />
+        </div>
+
+        <div v-if="resetSent" class="bg-green-50 border border-green-200 rounded-2xl p-4 text-center">
+          <p class="text-green-700 font-bold text-sm">Email envoyé ! Vérifie ta boîte mail.</p>
+        </div>
+
+        <button @click="handleForgot" :disabled="loading || resetSent"
+          class="w-full bg-slate-900 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50">
+          <UIcon v-if="loading" name="i-heroicons-arrow-path" class="animate-spin" />
+          {{ loading ? 'Envoi...' : 'Envoyer le lien' }}
+        </button>
+
+        <div class="text-center">
+          <button @click="forgotMode = false; resetSent = false" class="text-sm font-bold text-slate-400 hover:text-slate-600 transition">
+            ← Retour à la connexion
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -57,9 +90,12 @@ definePageMeta({
 
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
+const config = useRuntimeConfig()
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
+const forgotMode = ref(false)
+const resetSent = ref(false)
 
 // 1. SI L'UTILISATEUR EST DÉJÀ CONNECTÉ, ON LE REDIRIGE AUTO
 // Ça évite de rester bloqué si la session s'active en retard
@@ -68,6 +104,17 @@ watch(user, (newUser) => {
     navigateTo('/')
   }
 }, { immediate: true })
+
+async function handleForgot() {
+  if (!email.value || loading.value) return
+  loading.value = true
+  const { error } = await supabase.auth.resetPasswordForEmail(email.value, {
+    redirectTo: `${config.public.siteUrl}/reset-password`
+  })
+  loading.value = false
+  if (error) alert('Erreur : ' + error.message)
+  else resetSent.value = true
+}
 
 async function handleLogin() {
   if (loading.value) return

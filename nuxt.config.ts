@@ -2,7 +2,10 @@ export default defineNuxtConfig({
   future: { compatibilityVersion: 4 },
 
   runtimeConfig: {
-    groqApiKey: process.env.GROQ_API_KEY || ''
+    groqApiKey: process.env.GROQ_API_KEY || '',
+    public: {
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    }
   },
   compatibilityDate: '2025-01-15',
   devtools: { enabled: true },
