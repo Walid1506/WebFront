@@ -11,30 +11,40 @@
         </h1>
       </div>
 
-      <div class="flex items-center gap-2 md:gap-4">
+      <div class="flex items-center gap-2">
         <button
           @click="router.push('/profile')"
-          class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-tr from-green-400 to-green-600 p-[2px]"
+          class="w-9 h-9 rounded-full bg-gradient-to-tr from-green-400 to-green-600 p-[2px]"
         >
           <div class="w-full h-full bg-black rounded-full flex items-center justify-center">
             <span class="text-white font-black text-sm">{{ userName.charAt(0).toUpperCase() }}</span>
           </div>
         </button>
-        <button
-          @click="handleLogout"
-          class="hidden md:block bg-slate-900 border border-white/10 px-4 py-2 rounded-2xl text-red-400 font-bold text-xs uppercase tracking-widest"
-        >
-          Quitter
-        </button>
       </div>
     </nav>
 
+    <!-- Tab bar desktop (md+) -->
+    <div class="hidden md:flex sticky top-[60px] z-40 bg-black/80 backdrop-blur-xl border-b border-white/5 px-6">
+      <button
+        v-for="tab in tabs"
+        :key="tab.id"
+        @click="activeTab = tab.id"
+        class="flex items-center gap-2 px-5 py-4 text-sm font-bold uppercase tracking-widest transition-all duration-200 border-b-2 -mb-px"
+        :class="activeTab === tab.id
+          ? 'text-green-400 border-green-400'
+          : 'text-slate-500 border-transparent hover:text-slate-300'"
+      >
+        <UIcon :name="tab.icon" class="text-base" />
+        {{ tab.label }}
+      </button>
+    </div>
+
     <!-- Contenu principal -->
-    <main class="max-w-5xl mx-auto pb-28 md:pb-10">
+    <main class="max-w-5xl mx-auto pb-28 md:pb-12 md:px-4">
       <!-- Section Accueil -->
       <section
         :class="{ 'hidden': activeTab !== 'accueil' }"
-        class="md:block p-4 space-y-5 mt-4 md:mt-6"
+        class="p-4 space-y-5 mt-4 md:mt-8"
       >
         <div class="relative p-6 md:p-10 rounded-[30px] md:rounded-[45px] bg-gradient-to-br from-slate-900 via-black to-black border border-white/10 overflow-hidden shadow-2xl">
           <h1 class="text-3xl md:text-5xl font-[1000] tracking-tighter leading-none mb-2 md:mb-4 text-white">
@@ -48,7 +58,7 @@
       <!-- Section Agenda -->
       <section
         :class="{ 'hidden': activeTab !== 'agenda' }"
-        class="md:block p-4 space-y-4 mt-4 md:mt-12"
+        class="p-4 space-y-4 mt-4 md:mt-8"
       >
         <div class="flex items-center gap-3 px-1">
           <div class="w-2 h-6 md:h-8 bg-green-500 rounded-full"></div>
@@ -66,7 +76,7 @@
       <!-- Section Nutrition -->
       <section
         :class="{ 'hidden': activeTab !== 'nutrition' }"
-        class="md:block p-4 space-y-4 mt-4 md:mt-12"
+        class="p-4 space-y-4 mt-4 md:mt-8"
       >
         <div class="flex items-center gap-3 px-1">
           <div class="w-2 h-6 md:h-8 bg-orange-500 rounded-full"></div>
@@ -75,26 +85,26 @@
         <AlimentationSection />
       </section>
 
-      <!-- Section Profil (mobile uniquement) -->
+      <!-- Section Profil -->
       <section
         :class="{ 'hidden': activeTab !== 'profil' }"
-        class="md:hidden p-4 space-y-5 mt-4"
+        class="p-4 space-y-5 mt-4 md:mt-8"
       >
-        <div class="relative p-6 rounded-[30px] bg-gradient-to-br from-slate-900 via-black to-black border border-white/10 shadow-2xl">
-          <div class="flex items-center gap-4 mb-6">
-            <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-green-400 to-green-600 p-[2px] shrink-0">
+        <div class="relative p-6 md:p-10 rounded-[30px] md:rounded-[45px] bg-gradient-to-br from-slate-900 via-black to-black border border-white/10 shadow-2xl">
+          <div class="flex items-center gap-4 mb-8">
+            <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-tr from-green-400 to-green-600 p-[2px] shrink-0">
               <div class="w-full h-full bg-black rounded-full flex items-center justify-center">
-                <span class="text-white font-black text-2xl">{{ userName.charAt(0).toUpperCase() }}</span>
+                <span class="text-white font-black text-2xl md:text-3xl">{{ userName.charAt(0).toUpperCase() }}</span>
               </div>
             </div>
             <div>
-              <h2 class="text-2xl font-black">{{ userName }}</h2>
+              <h2 class="text-2xl md:text-3xl font-black">{{ userName }}</h2>
               <p class="text-slate-400 text-sm font-medium">Membre FitTrack</p>
             </div>
           </div>
           <button
             @click="handleLogout"
-            class="w-full bg-black border border-red-500/40 px-4 py-3 rounded-2xl text-red-400 font-bold text-sm uppercase tracking-widest active:scale-95 transition-all duration-150"
+            class="w-full md:max-w-xs bg-black border border-red-500/40 px-4 py-3 rounded-2xl text-red-400 font-bold text-sm uppercase tracking-widest active:scale-95 transition-all duration-150"
           >
             Se déconnecter
           </button>
