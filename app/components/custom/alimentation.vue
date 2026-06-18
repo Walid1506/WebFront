@@ -1187,7 +1187,7 @@ async function analyzeImage() {
     })
     aiResult.value = result
   } catch (e) {
-    aiError.value = "Impossible d'analyser l'image. Vérifie ta clé Gemini ou réessaie."
+    aiError.value = e?.data?.message || e?.message || "Impossible d'analyser l'image. Réessaie."
     console.error('Erreur analyse IA:', e)
   } finally {
     aiLoading.value = false
