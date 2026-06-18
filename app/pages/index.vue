@@ -13,7 +13,7 @@
 
       <div class="flex items-center gap-2">
         <button
-          @click="router.push('/profile')"
+          @click="activeTab = 'profil'"
           class="w-9 h-9 rounded-full bg-gradient-to-tr from-green-400 to-green-600 p-[2px]"
         >
           <div class="w-full h-full bg-black rounded-full flex items-center justify-center">
