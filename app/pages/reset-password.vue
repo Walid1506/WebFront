@@ -14,7 +14,14 @@
         <p class="text-slate-400 text-sm font-medium mt-1">Choisis un nouveau mot de passe</p>
       </div>
 
-      <div v-if="done" class="text-center space-y-4">
+      <!-- En attente du token -->
+      <div v-if="!ready && !done" class="text-center py-6">
+        <div class="w-10 h-10 rounded-full border-4 border-green-500/30 border-t-green-500 animate-spin mx-auto mb-4"></div>
+        <p class="text-slate-400 text-sm">Vérification du lien...</p>
+      </div>
+
+      <!-- Succès -->
+      <div v-else-if="done" class="text-center space-y-4">
         <div class="bg-green-50 border border-green-200 rounded-2xl p-5">
           <p class="text-green-700 font-bold">Mot de passe mis à jour !</p>
         </div>
@@ -23,6 +30,7 @@
         </NuxtLink>
       </div>
 
+      <!-- Formulaire -->
       <form v-else @submit.prevent="handleReset" class="space-y-5">
         <div class="relative group">
           <UIcon name="i-heroicons-lock-closed" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-500 transition-colors" />
@@ -57,6 +65,23 @@ const confirm = ref('')
 const loading = ref(false)
 const error = ref('')
 const done = ref(false)
+const ready = ref(false)
+
+onMounted(() => {
+  // Écoute l'event PASSWORD_RECOVERY envoyé par Supabase via le hash de l'URL
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      ready.value = true
+    }
+  })
+
+  // Si déjà une session active (refresh), on peut aussi afficher le form
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session) ready.value = true
+  })
+
+  onUnmounted(() => subscription.unsubscribe())
+})
 
 async function handleReset() {
   error.value = ''
@@ -72,6 +97,9 @@ async function handleReset() {
   const { error: err } = await supabase.auth.updateUser({ password: password.value })
   loading.value = false
   if (err) error.value = err.message
-  else done.value = true
+  else {
+    done.value = true
+    await supabase.auth.signOut()
+  }
 }
 </script>
