@@ -406,7 +406,7 @@
           </div>
           <div class="ml-auto flex items-center gap-2 bg-purple-500/10 border border-purple-500/30 px-3 py-1.5 rounded-full">
             <div class="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-            <span class="text-purple-400 text-xs font-black uppercase tracking-widest">Gemini</span>
+            <span class="text-purple-400 text-xs font-black uppercase tracking-widest">IA</span>
           </div>
         </div>
 
@@ -455,7 +455,7 @@
           <!-- Loading -->
           <div v-if="aiLoading" class="flex flex-col items-center gap-4 py-8">
             <div class="w-16 h-16 rounded-full border-4 border-purple-500/30 border-t-purple-500 animate-spin"></div>
-            <p class="text-white font-bold">Gemini analyse ton plat...</p>
+            <p class="text-white font-bold">Analyse de ton plat en cours...</p>
             <p class="text-slate-500 text-sm">estimation des macros en cours</p>
           </div>
 
