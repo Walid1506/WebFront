@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     groqApiKey: process.env.GROQ_API_KEY || '',
     public: {
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://fittrack-kappa.vercel.app'
     }
   },
   compatibilityDate: '2025-01-15',
