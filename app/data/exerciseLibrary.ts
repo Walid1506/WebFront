@@ -1,4 +1,8 @@
+const CDN = 'https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises'
+const FP = 'https://fitnessprogramer.com/wp-content/uploads/2021/02'
+
 export const exerciseLibrary = [
+  // ─── PEC ─────────────────────────────────────────────────────────────────
   {
     id: 1,
     name: 'Développé couché barre',
@@ -7,7 +11,7 @@ export const exerciseLibrary = [
     equipment: 'Barre',
     description: 'Mouvement de base lourd sur banc horizontal, prise moyenne.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bench-Press.gif'
+    mediaUrl: `${FP}/Barbell-Bench-Press.gif`
   },
   {
     id: 2,
@@ -17,7 +21,7 @@ export const exerciseLibrary = [
     equipment: 'Haltères',
     description: "Variante haltères pour plus d'amplitude et de stabilité.",
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Press.gif'
+    mediaUrl: `${FP}/Dumbbell-Press.gif`
   },
   {
     id: 3,
@@ -27,7 +31,7 @@ export const exerciseLibrary = [
     equipment: 'Barre',
     description: 'Accent sur le haut des pectoraux avec banc incliné.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Incline-Barbell-Bench-Press.gif'
+    mediaUrl: `${FP}/Incline-Barbell-Bench-Press.gif`
   },
   {
     id: 4,
@@ -37,7 +41,7 @@ export const exerciseLibrary = [
     equipment: 'Haltères',
     description: 'Travail du haut des pectoraux avec plus de liberté articulaire.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Incline-Dumbbell-Press.gif'
+    mediaUrl: `${FP}/Incline-Dumbbell-Press.gif`
   },
   {
     id: 5,
@@ -46,8 +50,8 @@ export const exerciseLibrary = [
     category: 'Pec',
     equipment: 'Barre',
     description: 'Accent sur la portion basse, trajectoire légèrement oblique.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Decline-Barbell-Bench-Press.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Decline_Barbell_Bench_Press/0.jpg`
   },
   {
     id: 6,
@@ -56,8 +60,8 @@ export const exerciseLibrary = [
     category: 'Pec',
     equipment: 'Poids du corps',
     description: 'Excellent exercice polyarticulaire pour pectoraux et triceps.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Dips.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Dips_-_Chest_Version/0.jpg`
   },
   {
     id: 7,
@@ -67,7 +71,7 @@ export const exerciseLibrary = [
     equipment: 'Poids du corps',
     description: 'Classique simple et efficace, adaptable à tous les niveaux.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Push-Up.gif'
+    mediaUrl: `${FP}/Push-Up.gif`
   },
   {
     id: 8,
@@ -75,9 +79,9 @@ export const exerciseLibrary = [
     muscle: 'Pectoraux',
     category: 'Pec',
     equipment: 'Haltères',
-    description: 'Étirement contrôlé et travail d’isolation des pectoraux.',
+    description: "Étirement contrôlé et travail d'isolation des pectoraux.",
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Fly.gif'
+    mediaUrl: `${FP}/Dumbbell-Fly.gif`
   },
   {
     id: 9,
@@ -87,7 +91,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Très bon exercice pour isoler les pectoraux en fin de séance.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Cable-Crossover.gif'
+    mediaUrl: `${FP}/Cable-Crossover.gif`
   },
   {
     id: 10,
@@ -96,8 +100,8 @@ export const exerciseLibrary = [
     category: 'Pec',
     equipment: 'Câbles',
     description: 'Un côté à la fois pour corriger les asymétries.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/11/Single-Arm-Cable-Crossover.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Single-Arm_Cable_Crossover/0.jpg`
   },
   {
     id: 11,
@@ -106,8 +110,8 @@ export const exerciseLibrary = [
     category: 'Pec',
     equipment: 'Machine',
     description: 'Idéal pour isoler les pectoraux en réduisant la stabilisation.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Machine-Bench-Press.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Leverage_Chest_Press/0.jpg`
   },
   {
     id: 12,
@@ -115,10 +119,12 @@ export const exerciseLibrary = [
     muscle: 'Pectoraux',
     category: 'Pec',
     equipment: 'Machine',
-    description: 'Mouvement d’isolation guidé pour bien contracter la poitrine.',
+    description: "Mouvement d'isolation guidé pour bien contracter la poitrine.",
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Pec-Deck-Fly.gif'
+    mediaUrl: `${FP}/Pec-Deck-Fly.gif`
   },
+
+  // ─── DOS ─────────────────────────────────────────────────────────────────
   {
     id: 13,
     name: 'Tractions pronation',
@@ -127,7 +133,7 @@ export const exerciseLibrary = [
     equipment: 'Poids du corps',
     description: 'Un classique pour développer largeur et force du dos.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Pull-up.gif'
+    mediaUrl: `${FP}/Pull-up.gif`
   },
   {
     id: 14,
@@ -136,8 +142,8 @@ export const exerciseLibrary = [
     category: 'Dos',
     equipment: 'Poids du corps',
     description: 'Variante qui recrute davantage les biceps.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Chin-up.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Chin-Up/0.jpg`
   },
   {
     id: 15,
@@ -147,7 +153,7 @@ export const exerciseLibrary = [
     equipment: 'Poulie',
     description: 'Travail large du dos avec focus sur les dorsaux.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lat-Pulldown.gif'
+    mediaUrl: `${FP}/Lat-Pulldown.gif`
   },
   {
     id: 16,
@@ -155,9 +161,9 @@ export const exerciseLibrary = [
     muscle: 'Dos',
     category: 'Dos',
     equipment: 'Poulie',
-    description: 'Bon exercice pour l’épaisseur du dos et la posture.',
+    description: "Bon exercice pour l'épaisseur du dos et la posture.",
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Seated-Cable-Row.gif'
+    mediaUrl: `${FP}/Seated-Cable-Row.gif`
   },
   {
     id: 17,
@@ -166,8 +172,8 @@ export const exerciseLibrary = [
     category: 'Dos',
     equipment: 'Barre',
     description: 'Épais du dos, gainage fort, tirage contrôlé.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Row.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Bent_Over_Barbell_Row/0.jpg`
   },
   {
     id: 18,
@@ -177,7 +183,7 @@ export const exerciseLibrary = [
     equipment: 'Haltères',
     description: 'Très bon pour corriger les déséquilibres gauche/droite.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Row.gif'
+    mediaUrl: `${FP}/Dumbbell-Row.gif`
   },
   {
     id: 19,
@@ -186,8 +192,8 @@ export const exerciseLibrary = [
     category: 'Dos',
     equipment: 'Machine',
     description: 'Mouvement guidé pour charger proprement le dos.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leverage-Machine-Iso-Row.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Seated_Cable_Rows/0.jpg`
   },
   {
     id: 20,
@@ -195,9 +201,9 @@ export const exerciseLibrary = [
     muscle: 'Dos',
     category: 'Dos',
     equipment: 'Câbles',
-    description: 'Bon exercice d’isolation pour sentir les dorsaux.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Straight-Arm-Lat-Pulldown.gif'
+    description: "Bon exercice d'isolation pour sentir les dorsaux.",
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Elevated_Cable_Rows/0.jpg`
   },
   {
     id: 21,
@@ -205,9 +211,9 @@ export const exerciseLibrary = [
     muscle: 'Dos',
     category: 'Dos',
     equipment: 'Câbles',
-    description: 'Excellent pour l’arrière d’épaule et la santé des épaules.',
+    description: "Excellent pour l'arrière d'épaule et la santé des épaules.",
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Face-Pull.gif'
+    mediaUrl: `${FP}/Face-Pull.gif`
   },
   {
     id: 22,
@@ -217,8 +223,10 @@ export const exerciseLibrary = [
     equipment: 'Barre',
     description: 'Exercice global lourd pour chaîne postérieure et force générale.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Deadlift.gif'
+    mediaUrl: `${FP}/Barbell-Deadlift.gif`
   },
+
+  // ─── ÉPAULES ─────────────────────────────────────────────────────────────
   {
     id: 23,
     name: 'Développé militaire',
@@ -227,7 +235,7 @@ export const exerciseLibrary = [
     equipment: 'Barre',
     description: 'Exercice roi pour la poussée verticale et les épaules.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Shoulder-Press.gif'
+    mediaUrl: `${FP}/Barbell-Shoulder-Press.gif`
   },
   {
     id: 24,
@@ -237,7 +245,7 @@ export const exerciseLibrary = [
     equipment: 'Haltères',
     description: 'Version plus libre et souvent plus confortable pour les épaules.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Shoulder-Press.gif'
+    mediaUrl: `${FP}/Dumbbell-Shoulder-Press.gif`
   },
   {
     id: 25,
@@ -247,7 +255,7 @@ export const exerciseLibrary = [
     equipment: 'Haltères',
     description: 'Travail complet avec rotation, bon ressenti musculaire.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Arnold-Press.gif'
+    mediaUrl: `${FP}/Arnold-Press.gif`
   },
   {
     id: 26,
@@ -257,7 +265,7 @@ export const exerciseLibrary = [
     equipment: 'Haltères',
     description: "Isolation du deltoïde moyen pour gagner de la largeur d'épaule.",
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lateral-Raise.gif'
+    mediaUrl: `${FP}/Dumbbell-Lateral-Raise.gif`
   },
   {
     id: 27,
@@ -267,7 +275,7 @@ export const exerciseLibrary = [
     equipment: 'Haltères',
     description: 'Travail ciblé du deltoïde antérieur.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Front-Raise.gif'
+    mediaUrl: `${FP}/Dumbbell-Front-Raise.gif`
   },
   {
     id: 28,
@@ -275,9 +283,9 @@ export const exerciseLibrary = [
     muscle: 'Épaules',
     category: 'Epaules',
     equipment: 'Haltères',
-    description: 'Excellent pour l’arrière d’épaule et l’équilibre postural.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Rear-Lateral-Raise.gif'
+    description: "Excellent pour l'arrière d'épaule et l'équilibre postural.",
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Dumbbell_Lying_One-Arm_Rear_Lateral_Raise/0.jpg`
   },
   {
     id: 29,
@@ -285,10 +293,12 @@ export const exerciseLibrary = [
     muscle: 'Épaules',
     category: 'Epaules',
     equipment: 'Machine',
-    description: 'Arrière d’épaule guidé, très pratique pour isoler proprement.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Reverse-Pec-Deck-Fly.gif'
+    description: "Arrière d'épaule guidé, très pratique pour isoler proprement.",
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Reverse_Flyes/0.jpg`
   },
+
+  // ─── BRAS ─────────────────────────────────────────────────────────────────
   {
     id: 30,
     name: 'Curl barre',
@@ -297,7 +307,7 @@ export const exerciseLibrary = [
     equipment: 'Barre',
     description: 'Base efficace pour le volume global des biceps.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Curl.gif'
+    mediaUrl: `${FP}/Barbell-Curl.gif`
   },
   {
     id: 31,
@@ -307,7 +317,7 @@ export const exerciseLibrary = [
     equipment: 'Haltères',
     description: 'Classique simple pour biceps avec bonne amplitude.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Curl.gif'
+    mediaUrl: `${FP}/Dumbbell-Curl.gif`
   },
   {
     id: 32,
@@ -316,8 +326,8 @@ export const exerciseLibrary = [
     category: 'Bras',
     equipment: 'Haltères',
     description: 'Très bon étirement pour la longue portion du biceps.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Incline-Dumbbell-Curl.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Alternate_Incline_Dumbbell_Curl/0.jpg`
   },
   {
     id: 33,
@@ -325,9 +335,9 @@ export const exerciseLibrary = [
     muscle: 'Biceps',
     category: 'Bras',
     equipment: 'Haltères',
-    description: 'Travail du brachial et de l’avant-bras.',
+    description: "Travail du brachial et de l'avant-bras.",
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Hammer-Curl.gif'
+    mediaUrl: `${FP}/Hammer-Curl.gif`
   },
   {
     id: 34,
@@ -336,8 +346,8 @@ export const exerciseLibrary = [
     category: 'Bras',
     equipment: 'Machine',
     description: 'Isolation stricte du biceps avec peu de triche possible.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Preacher-Curl.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Preacher_Curl/0.jpg`
   },
   {
     id: 35,
@@ -346,8 +356,8 @@ export const exerciseLibrary = [
     category: 'Bras',
     equipment: 'Câbles',
     description: 'Très bon mouvement pour congestion et isolation du triceps.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Triceps-Pushdown.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Triceps_Pushdown/0.jpg`
   },
   {
     id: 36,
@@ -356,8 +366,8 @@ export const exerciseLibrary = [
     category: 'Bras',
     equipment: 'Barre EZ',
     description: 'Exercice lourd et efficace pour les triceps.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/EZ-Bar-Skullcrusher.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/EZ-Bar_Skullcrusher/0.jpg`
   },
   {
     id: 37,
@@ -366,8 +376,8 @@ export const exerciseLibrary = [
     category: 'Bras',
     equipment: 'Haltères',
     description: 'Bon étirement du triceps au-dessus de la tête.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Seated-Dumbbell-Triceps-Extension.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Rope_Overhead_Triceps_Extension/0.jpg`
   },
   {
     id: 38,
@@ -376,9 +386,11 @@ export const exerciseLibrary = [
     category: 'Bras',
     equipment: 'Poids du corps',
     description: 'Très bon exercice poids du corps pour les triceps.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Close-Grip-Push-Up.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Close-Grip_Push-Up_off_of_a_Dumbbell/0.jpg`
   },
+
+  // ─── JAMBES ──────────────────────────────────────────────────────────────
   {
     id: 39,
     name: 'Squat',
@@ -386,8 +398,8 @@ export const exerciseLibrary = [
     category: 'Jambes',
     equipment: 'Barre',
     description: 'Exercice fondamental pour quadriceps, fessiers et gainage.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Barbell_Squat/0.jpg`
   },
   {
     id: 40,
@@ -396,8 +408,8 @@ export const exerciseLibrary = [
     category: 'Jambes',
     equipment: 'Barre',
     description: 'Version plus dominante quadriceps avec buste plus droit.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Front-Squat.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Front_Barbell_Squat/0.jpg`
   },
   {
     id: 41,
@@ -406,8 +418,8 @@ export const exerciseLibrary = [
     category: 'Jambes',
     equipment: 'Machine',
     description: 'Machine très efficace pour charger les quadriceps.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Hack-Squat.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Barbell_Hack_Squat/0.jpg`
   },
   {
     id: 42,
@@ -416,8 +428,8 @@ export const exerciseLibrary = [
     category: 'Jambes',
     equipment: 'Machine',
     description: 'Permet de pousser lourd avec bon contrôle.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Press.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Leg_Press/0.jpg`
   },
   {
     id: 43,
@@ -426,8 +438,8 @@ export const exerciseLibrary = [
     category: 'Jambes',
     equipment: 'Machine',
     description: 'Isolation du quadriceps, parfait en fin de séance.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Extension.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Leg_Extensions/0.jpg`
   },
   {
     id: 44,
@@ -436,8 +448,8 @@ export const exerciseLibrary = [
     category: 'Jambes',
     equipment: 'Machine',
     description: 'Travail ciblé des ischios avec amplitude contrôlée.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Seated-Leg-Curl.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Seated_Leg_Curl/0.jpg`
   },
   {
     id: 45,
@@ -445,9 +457,9 @@ export const exerciseLibrary = [
     muscle: 'Ischios',
     category: 'Jambes',
     equipment: 'Machine',
-    description: 'Bonne variante pour l’isolation de l’arrière de cuisse.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lying-Leg-Curl.gif'
+    description: "Bonne variante pour l'isolation de l'arrière de cuisse.",
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Lying_Leg_Curls/0.jpg`
   },
   {
     id: 46,
@@ -456,8 +468,8 @@ export const exerciseLibrary = [
     category: 'Jambes',
     equipment: 'Barre',
     description: 'Travail charnière hanche, ischios et fessiers.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Romanian-Deadlift.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Romanian_Deadlift/0.jpg`
   },
   {
     id: 47,
@@ -467,7 +479,7 @@ export const exerciseLibrary = [
     equipment: 'Barre',
     description: 'Excellent pour développer la force et le volume des fessiers.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Hip-Thrust.gif'
+    mediaUrl: `${FP}/Barbell-Hip-Thrust.gif`
   },
   {
     id: 48,
@@ -477,7 +489,7 @@ export const exerciseLibrary = [
     equipment: 'Haltères',
     description: 'Travail unilatéral, équilibre et coordination.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lunge.gif'
+    mediaUrl: `${FP}/Dumbbell-Lunge.gif`
   },
   {
     id: 49,
@@ -486,8 +498,8 @@ export const exerciseLibrary = [
     category: 'Jambes',
     equipment: 'Haltères',
     description: 'Exercice unilatéral très complet et très efficace.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Bulgarian-Split-Squat.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Split_Squat_with_Dumbbells/0.jpg`
   },
   {
     id: 50,
@@ -496,8 +508,8 @@ export const exerciseLibrary = [
     category: 'Jambes',
     equipment: 'Haltères',
     description: 'Bon exercice fonctionnel pour quadriceps et fessiers.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Step-Up.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Step-up_with_Knee_Raise/0.jpg`
   },
   {
     id: 51,
@@ -506,9 +518,11 @@ export const exerciseLibrary = [
     category: 'Jambes',
     equipment: 'Machine',
     description: 'Version debout pour cibler efficacement les mollets.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Bodyweight-Standing-Calf-Raise.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Standing_Calf_Raises/0.jpg`
   },
+
+  // ─── ABDOS ───────────────────────────────────────────────────────────────
   {
     id: 52,
     name: 'Crunch',
@@ -516,8 +530,8 @@ export const exerciseLibrary = [
     category: 'Abdos',
     equipment: 'Poids du corps',
     description: 'Exercice simple pour cibler la sangle abdominale.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Crunch.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Crunches/0.jpg`
   },
   {
     id: 53,
@@ -526,8 +540,8 @@ export const exerciseLibrary = [
     category: 'Abdos',
     equipment: 'Câbles',
     description: 'Version lestée pour charger les abdos plus lourdement.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Cable-Crunch.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Crunch/0.jpg`
   },
   {
     id: 54,
@@ -537,7 +551,7 @@ export const exerciseLibrary = [
     equipment: 'Poids du corps',
     description: 'Cible le bas de la sangle abdominale et le gainage.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lying-Leg-Raise.gif'
+    mediaUrl: `${FP}/Lying-Leg-Raise.gif`
   },
   {
     id: 55,
@@ -546,8 +560,8 @@ export const exerciseLibrary = [
     category: 'Abdos',
     equipment: 'Poids du corps',
     description: 'Renforcement global du tronc et de la stabilité.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Plank.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Plank/0.jpg`
   },
   {
     id: 56,
@@ -556,8 +570,8 @@ export const exerciseLibrary = [
     category: 'Abdos',
     equipment: 'Poids du corps',
     description: 'Excellent pour les obliques et la stabilité latérale.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Side-Plank.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Push_Up_to_Side_Plank/0.jpg`
   },
   {
     id: 57,
@@ -567,17 +581,19 @@ export const exerciseLibrary = [
     equipment: 'Poids du corps',
     description: 'Travail dynamique des obliques.',
     mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Russian-Twist.gif'
+    mediaUrl: `${FP}/Russian-Twist.gif`
   },
+
+  // ─── CARDIO ───────────────────────────────────────────────────────────────
   {
     id: 58,
     name: 'Course tapis',
     muscle: 'Cardio',
     category: 'Cardio',
     equipment: 'Tapis',
-    description: 'Idéal pour le cardio, l’endurance et le travail fractionné.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/05/Running-on-Treadmill.gif'
+    description: "Idéal pour le cardio, l'endurance et le travail fractionné.",
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Jogging_Treadmill/0.jpg`
   },
   {
     id: 59,
@@ -585,9 +601,9 @@ export const exerciseLibrary = [
     muscle: 'Cardio',
     category: 'Cardio',
     equipment: 'Bike',
-    description: 'Cardio régulier ou interval training selon l’intensité.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Stationary-Bike.gif'
+    description: "Cardio régulier ou interval training selon l'intensité.",
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Recumbent_Bike/0.jpg`
   },
   {
     id: 60,
@@ -596,8 +612,8 @@ export const exerciseLibrary = [
     category: 'Cardio',
     equipment: 'Rameur',
     description: 'Travail complet haut + bas du corps avec gros coût énergétique.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Rowing-Machine.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Rowing_Stationary/0.jpg`
   },
   {
     id: 61,
@@ -606,8 +622,8 @@ export const exerciseLibrary = [
     category: 'Cardio',
     equipment: 'Machine',
     description: 'Cardio plus doux pour les articulations.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Elliptical-Machine.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Elliptical_Trainer/0.jpg`
   },
   {
     id: 62,
@@ -616,8 +632,8 @@ export const exerciseLibrary = [
     category: 'Cardio',
     equipment: 'Corde',
     description: 'Excellent pour le cardio, la coordination et les mollets.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Jumping-Rope.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Rope_Jumping/0.jpg`
   },
   {
     id: 63,
@@ -626,9 +642,11 @@ export const exerciseLibrary = [
     category: 'Cardio',
     equipment: 'Poids du corps',
     description: 'Exercice très intense pour le conditionnement global.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Burpee.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Mountain_Climbers/0.jpg`
   },
+
+  // ─── MOBILITÉ ────────────────────────────────────────────────────────────
   {
     id: 64,
     name: 'Mobility épaules',
@@ -636,8 +654,8 @@ export const exerciseLibrary = [
     category: 'Mobilite',
     equipment: 'Tapis',
     description: "Routine utile pour améliorer l'amplitude et prévenir les douleurs.",
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Arm-Circles.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Arm_Circles/0.jpg`
   },
   {
     id: 65,
@@ -645,9 +663,9 @@ export const exerciseLibrary = [
     muscle: 'Mobilité',
     category: 'Mobilite',
     equipment: 'Tapis',
-    description: 'Travail d’ouverture de hanches et de mobilité fonctionnelle.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Hip-Circles.gif'
+    description: "Travail d'ouverture de hanches et de mobilité fonctionnelle.",
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Standing_Hip_Circles/0.jpg`
   },
   {
     id: 66,
@@ -655,9 +673,9 @@ export const exerciseLibrary = [
     muscle: 'Mobilité',
     category: 'Mobilite',
     equipment: 'Tapis',
-    description: 'Améliore la souplesse de l’arrière de cuisse.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lying-Hamstring-Stretch.gif'
+    description: "Améliore la souplesse de l'arrière de cuisse.",
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Hamstring_Stretch/0.jpg`
   },
   {
     id: 67,
@@ -666,8 +684,8 @@ export const exerciseLibrary = [
     category: 'Mobilite',
     equipment: 'Tapis',
     description: 'Décompression et mobilité du rachis et du haut du dos.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Cat-Cow.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cat_Stretch/0.jpg`
   },
   {
     id: 68,
@@ -676,7 +694,7 @@ export const exerciseLibrary = [
     category: 'Mobilite',
     equipment: 'Tapis',
     description: 'Très utile pour améliorer squat et mouvements jambes.',
-    mediaType: 'gif',
-    mediaUrl: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Ankle-Circles.gif'
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Ankle_Circles/0.jpg`
   }
 ]

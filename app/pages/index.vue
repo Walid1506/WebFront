@@ -71,6 +71,7 @@
             @delete-session="handleDeleteSession"
           />
         </div>
+        <Records />
       </section>
 
       <!-- Section Nutrition -->
@@ -132,6 +133,8 @@
       </div>
     </nav>
 
+    <TimerRepos />
+
     <ModalSeance
       v-if="isModalOpen"
       :date="selectedDate"
@@ -149,6 +152,8 @@ import Calendrier from '~/components/custom/calendrier.vue'
 import ModalSeance from '~/components/custom/seance.vue'
 import Dashboard from '~/components/custom/dashboard.vue'
 import AlimentationSection from '~/components/custom/alimentation.vue'
+import Records from '~/components/custom/records.vue'
+import TimerRepos from '~/components/custom/timer.vue'
 
 const router = useRouter()
 const supabase = useSupabaseClient()
