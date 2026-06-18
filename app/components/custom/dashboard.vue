@@ -1,6 +1,6 @@
 <template>
   <div class="relative group">
-    <div class="bg-slate-900/50 backdrop-blur-xl rounded-[40px] p-8 border border-white/5 shadow-2xl overflow-hidden relative">
+    <div class="bg-slate-900/50 backdrop-blur-xl rounded-[28px] md:rounded-[40px] p-5 md:p-8 border border-white/5 shadow-2xl overflow-hidden relative">
       
       <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-green-500/5 blur-[100px] pointer-events-none"></div>
 
