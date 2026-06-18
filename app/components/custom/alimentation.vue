@@ -7,6 +7,14 @@
             <h1 class="text-4xl font-[1000] tracking-tighter text-white">Nutrition</h1>
             <div class="flex gap-4">
               <button
+                @click="openCamera"
+                class="w-12 h-12 bg-gradient-to-br from-purple-900/60 to-blue-900/60 rounded-2xl flex items-center justify-center hover:opacity-90 transition-colors border border-purple-500/30 group"
+                title="Analyser un plat avec l'IA"
+              >
+                <UIcon name="i-heroicons-sparkles" class="text-2xl text-purple-400 group-hover:text-white" />
+              </button>
+
+              <button
                 @click="openScanner"
                 class="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center hover:bg-slate-800 transition-colors border border-white/5 group"
               >
@@ -386,6 +394,130 @@
         </div>
       </div>
 
+      <!-- ── ÉCRAN ANALYSE IA ── -->
+      <div v-else-if="currentScreen === 'camera'" key="camera" class="fixed inset-0 z-[110] bg-black flex flex-col">
+        <div class="flex items-center gap-4 px-6 py-5 border-b border-white/10 bg-black/80 backdrop-blur-xl">
+          <button @click="currentScreen = 'main'" class="text-slate-400 hover:text-white transition">
+            <UIcon name="i-heroicons-arrow-left" class="text-3xl" />
+          </button>
+          <div>
+            <h2 class="text-2xl font-black leading-none">Analyse IA</h2>
+            <p class="text-slate-500 text-xs font-bold mt-0.5">Photo → macros estimés</p>
+          </div>
+          <div class="ml-auto flex items-center gap-2 bg-purple-500/10 border border-purple-500/30 px-3 py-1.5 rounded-full">
+            <div class="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+            <span class="text-purple-400 text-xs font-black uppercase tracking-widest">Gemini</span>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto flex flex-col items-center p-6 gap-6 max-w-xl w-full mx-auto">
+          <!-- Zone d'upload -->
+          <div
+            v-if="!aiImage"
+            @click="triggerFileInput"
+            class="w-full aspect-square max-h-80 rounded-[40px] border-2 border-dashed border-white/15 flex flex-col items-center justify-center gap-5 cursor-pointer hover:border-purple-500/50 hover:bg-purple-500/5 transition-all"
+          >
+            <UIcon name="i-heroicons-camera" class="text-6xl text-slate-700" />
+            <div class="text-center">
+              <p class="text-white font-bold">Prends une photo de ton plat</p>
+              <p class="text-slate-600 text-sm mt-1">ou sélectionne depuis ta galerie</p>
+            </div>
+            <span class="bg-purple-600 hover:bg-purple-500 text-white font-black px-8 py-3 rounded-2xl transition-colors">
+              Choisir une photo
+            </span>
+          </div>
+
+          <input ref="fileInputRef" type="file" accept="image/*" class="hidden" @change="handleImageSelect" />
+
+          <!-- Aperçu image -->
+          <div v-if="aiImage" class="w-full">
+            <div class="relative rounded-[30px] overflow-hidden bg-slate-900">
+              <img :src="aiImage" class="w-full max-h-72 object-cover" />
+              <button
+                @click="clearAiState"
+                class="absolute top-3 right-3 bg-black/70 backdrop-blur-sm p-2 rounded-full text-white hover:bg-black transition"
+              >
+                <UIcon name="i-heroicons-x-mark" class="text-lg" />
+              </button>
+            </div>
+
+            <!-- Bouton analyser -->
+            <button
+              v-if="!aiResult && !aiLoading"
+              @click="analyzeImage"
+              class="w-full mt-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-black text-xl py-5 rounded-[25px] shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-3"
+            >
+              <UIcon name="i-heroicons-sparkles" class="text-2xl" />
+              Analyser avec l'IA
+            </button>
+          </div>
+
+          <!-- Loading -->
+          <div v-if="aiLoading" class="flex flex-col items-center gap-4 py-8">
+            <div class="w-16 h-16 rounded-full border-4 border-purple-500/30 border-t-purple-500 animate-spin"></div>
+            <p class="text-white font-bold">Gemini analyse ton plat...</p>
+            <p class="text-slate-500 text-sm">estimation des macros en cours</p>
+          </div>
+
+          <!-- Résultats IA -->
+          <div v-if="aiResult && !aiLoading" class="w-full space-y-4">
+            <div class="flex justify-between items-start gap-3">
+              <h3 class="text-2xl font-black text-white leading-tight flex-1">{{ aiResult.name }}</h3>
+              <span
+                class="shrink-0 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest"
+                :class="{
+                  'bg-green-500/20 text-green-400 border border-green-500/30': aiResult.confidence === 'haute',
+                  'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30': aiResult.confidence === 'moyenne',
+                  'bg-red-500/20 text-red-400 border border-red-500/30': aiResult.confidence === 'basse'
+                }"
+              >
+                {{ aiResult.confidence === 'haute' ? 'Fiable' : aiResult.confidence === 'moyenne' ? 'Approximatif' : 'Incertain' }}
+              </span>
+            </div>
+
+            <!-- Macros -->
+            <div class="bg-[#111] rounded-[28px] p-6 border border-white/10 grid grid-cols-4 gap-3 text-center">
+              <div>
+                <p class="text-[#FF2A5F] font-[1000] text-2xl leading-none">{{ aiResult.calories }}</p>
+                <p class="text-slate-500 text-[10px] font-black uppercase mt-1">kcal</p>
+              </div>
+              <div>
+                <p class="text-[#2F6BFF] font-[1000] text-2xl leading-none">{{ aiResult.proteins }}g</p>
+                <p class="text-slate-500 text-[10px] font-black uppercase mt-1">prot</p>
+              </div>
+              <div>
+                <p class="text-orange-400 font-[1000] text-2xl leading-none">{{ aiResult.carbs }}g</p>
+                <p class="text-slate-500 text-[10px] font-black uppercase mt-1">gluc</p>
+              </div>
+              <div>
+                <p class="text-[#9DFF00] font-[1000] text-2xl leading-none">{{ aiResult.fats }}g</p>
+                <p class="text-slate-500 text-[10px] font-black uppercase mt-1">lip</p>
+              </div>
+            </div>
+
+            <p class="text-slate-500 text-sm text-center">Portion estimée : ~{{ aiResult.portion }}g • tu peux ajuster</p>
+
+            <button
+              @click="addAiResult"
+              class="w-full bg-[#2F6BFF] text-white font-black text-xl py-5 rounded-[25px] shadow-lg hover:bg-blue-600 active:scale-95 transition-all"
+            >
+              Ajouter au journal
+            </button>
+
+            <button @click="clearAiState" class="w-full text-slate-500 font-bold py-2 hover:text-slate-300 transition">
+              Analyser une autre photo
+            </button>
+          </div>
+
+          <!-- Erreur -->
+          <div v-if="aiError" class="w-full bg-red-500/10 border border-red-500/30 rounded-[25px] p-6 text-center">
+            <UIcon name="i-heroicons-exclamation-triangle" class="text-3xl text-red-400 mb-3" />
+            <p class="text-red-400 font-bold">{{ aiError }}</p>
+            <button @click="aiError = null" class="text-slate-400 text-sm mt-3 hover:text-white transition">Réessayer</button>
+          </div>
+        </div>
+      </div>
+
       <div v-else-if="currentScreen === 'cart'" key="cart" class="fixed inset-0 z-[110] bg-black/95 backdrop-blur-xl flex flex-col items-center p-6">
         <div class="w-full max-w-3xl bg-[#111111] rounded-[40px] border border-white/10 flex flex-col h-full overflow-hidden">
           <div class="p-8 flex justify-between items-center border-b border-white/5 bg-black/50">
@@ -469,6 +601,15 @@ const manualInputOpen = ref(false)
 const manualBarcode = ref('')
 const lastScreenBeforeQuantity = ref('main')
 const sharedFoods = ref([])
+
+// IA analyse photo
+const fileInputRef = ref(null)
+const aiImage = ref(null)
+const aiImageBase64 = ref(null)
+const aiImageMime = ref('image/jpeg')
+const aiResult = ref(null)
+const aiLoading = ref(false)
+const aiError = ref(null)
 
 const profil = reactive({
   poids: 75,
@@ -995,6 +1136,79 @@ const calculatedMacros = computed(() => {
 
 function onImageError(e) {
   e.target.src = 'https://placehold.co/600x600/1e293b/94a3b8?text=Aliment'
+}
+
+// ── Analyse IA ──
+
+function openCamera() {
+  clearAiState()
+  currentScreen.value = 'camera'
+}
+
+function triggerFileInput() {
+  fileInputRef.value?.click()
+}
+
+function handleImageSelect(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+
+  aiImageMime.value = file.type || 'image/jpeg'
+  aiResult.value = null
+  aiError.value = null
+
+  const reader = new FileReader()
+  reader.onload = (ev) => {
+    aiImage.value = ev.target.result
+    aiImageBase64.value = ev.target.result.split(',')[1]
+  }
+  reader.readAsDataURL(file)
+}
+
+function clearAiState() {
+  aiImage.value = null
+  aiImageBase64.value = null
+  aiResult.value = null
+  aiError.value = null
+  if (fileInputRef.value) fileInputRef.value.value = ''
+}
+
+async function analyzeImage() {
+  if (!aiImageBase64.value) return
+
+  aiLoading.value = true
+  aiError.value = null
+  aiResult.value = null
+
+  try {
+    const result = await $fetch('/api/analyze-food', {
+      method: 'POST',
+      body: { imageBase64: aiImageBase64.value, mimeType: aiImageMime.value }
+    })
+    aiResult.value = result
+  } catch (e) {
+    aiError.value = "Impossible d'analyser l'image. Vérifie ta clé Gemini ou réessaie."
+    console.error('Erreur analyse IA:', e)
+  } finally {
+    aiLoading.value = false
+  }
+}
+
+function addAiResult() {
+  if (!aiResult.value) return
+
+  const per100 = aiResult.value.portion / 100
+  lastScreenBeforeQuantity.value = 'camera'
+  selectedFood.value = {
+    name: aiResult.value.name,
+    img: 'https://placehold.co/600x600/1e1b4b/818cf8?text=IA',
+    k: Math.round(aiResult.value.calories / per100),
+    p: parseFloat((aiResult.value.proteins / per100).toFixed(1)),
+    c: parseFloat((aiResult.value.carbs / per100).toFixed(1)),
+    f: parseFloat((aiResult.value.fats / per100).toFixed(1))
+  }
+  amount.value = aiResult.value.portion
+  currentScreen.value = 'quantity'
 }
 </script>
 

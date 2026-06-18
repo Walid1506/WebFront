@@ -159,7 +159,6 @@ const tabs = [
   { id: 'accueil', label: 'Accueil', icon: 'i-heroicons-home' },
   { id: 'agenda', label: 'Agenda', icon: 'i-heroicons-calendar' },
   { id: 'nutrition', label: 'Nutrition', icon: 'i-heroicons-fire' },
-  { id: 'profil', label: 'Profil', icon: 'i-heroicons-user' },
 ]
 
 const isModalOpen = ref(false)

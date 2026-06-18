@@ -1,5 +1,9 @@
 export default defineNuxtConfig({
   future: { compatibilityVersion: 4 },
+
+  runtimeConfig: {
+    geminiApiKey: process.env.GEMINI_API_KEY || ''
+  },
   compatibilityDate: '2025-01-15',
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
