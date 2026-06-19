@@ -17,7 +17,7 @@
           <img src="/images/logo.jpg" alt="Logo" class="h-7 w-7 md:h-8 md:w-8 rounded-lg" />
         </div>
         <h1 class="text-lg md:text-xl font-[1000] tracking-tighter uppercase italic">
-          Fit<span class="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">Track</span>
+          Fit<span class="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent">Track</span>
         </h1>
       </div>
 
@@ -31,7 +31,7 @@
           </span>
         </button>
 
-        <button @click="activeTab = 'profil'" class="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-400 to-emerald-400 p-[2px] shrink-0">
+        <button @click="activeTab = 'profil'" class="w-9 h-9 rounded-full bg-gradient-to-tr from-[var(--accent-from)] to-[var(--accent-to)] p-[2px] shrink-0">
           <div class="w-full h-full rounded-full overflow-hidden flex items-center justify-center transition-colors duration-700" :style="{ backgroundColor: theme.bg }">
             <img v-if="avatarUrl" :src="avatarUrl" class="w-full h-full object-cover" alt="Avatar" />
             <span v-else class="text-white font-black text-sm">{{ userName.charAt(0).toUpperCase() }}</span>
@@ -47,9 +47,8 @@
         :key="tab.id"
         @click="activeTab = tab.id"
         class="flex items-center gap-2 px-5 py-4 text-sm font-bold uppercase tracking-widest transition-all duration-200 border-b-2 -mb-px"
-        :class="activeTab === tab.id
-          ? 'text-cyan-400 border-cyan-400'
-          : 'text-slate-500 border-transparent hover:text-slate-300'"
+        :class="activeTab === tab.id ? 'border-[var(--accent-solid)]' : 'text-slate-500 border-transparent hover:text-slate-300'"
+        :style="activeTab === tab.id ? { color: 'var(--accent-solid)' } : {}"
       >
         <UIcon :name="tab.icon" class="text-base" />
         {{ tab.label }}
@@ -62,12 +61,12 @@
       <!-- Accueil -->
       <section :class="{ 'hidden': activeTab !== 'accueil' }" class="p-4 space-y-5 mt-4 md:mt-8">
         <div class="relative p-6 md:p-10 rounded-[30px] md:rounded-[45px] bg-white/[0.04] backdrop-blur-2xl border border-white/[0.08] overflow-hidden shadow-2xl">
-          <div class="absolute -top-10 -right-10 w-40 h-40 bg-cyan-500/20 rounded-full blur-[60px] pointer-events-none"></div>
-          <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-emerald-500/15 rounded-full blur-[60px] pointer-events-none"></div>
+          <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none opacity-40" :style="{ backgroundColor: theme.blobs[0] }"></div>
+          <div class="absolute -bottom-10 -left-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none opacity-30" :style="{ backgroundColor: theme.blobs[2] }"></div>
           <div class="relative flex items-start justify-between gap-4">
             <div>
               <h1 class="text-3xl md:text-5xl font-[1000] tracking-tighter leading-none mb-2 md:mb-4 text-white">
-                Salut, <span class="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">{{ userName }}</span> !
+                Salut, <span class="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent">{{ userName }}</span> !
               </h1>
               <p class="text-slate-400 font-medium italic text-sm md:text-base">Ta rigueur est ta seule limite.</p>
             </div>
@@ -88,7 +87,7 @@
       <!-- Agenda -->
       <section :class="{ 'hidden': activeTab !== 'agenda' }" class="p-4 space-y-4 mt-4 md:mt-8">
         <div class="flex items-center gap-3 px-1">
-          <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-cyan-400 to-emerald-400 rounded-full"></div>
+          <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-[var(--accent-from)] to-[var(--accent-to)] rounded-full"></div>
           <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Ton Planning</h2>
         </div>
         <div class="bg-white/[0.04] backdrop-blur-2xl p-2 rounded-[30px] md:rounded-[40px] border border-white/[0.08] shadow-inner">
@@ -118,7 +117,7 @@
       <!-- Amis -->
       <section :class="{ 'hidden': activeTab !== 'amis' }" class="p-4 space-y-4 mt-4 md:mt-8">
         <div class="flex items-center gap-3 px-1">
-          <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-cyan-400 to-emerald-400 rounded-full"></div>
+          <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-[var(--accent-from)] to-[var(--accent-to)] rounded-full"></div>
           <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Amis</h2>
         </div>
         <Amis @pending-change="pendingCount = $event" />
@@ -127,12 +126,12 @@
       <!-- Profil -->
       <section :class="{ 'hidden': activeTab !== 'profil' }" class="p-4 space-y-5 mt-4 md:mt-8">
         <div class="relative p-6 md:p-10 rounded-[30px] md:rounded-[45px] bg-white/[0.04] backdrop-blur-2xl border border-white/[0.08] shadow-2xl overflow-hidden">
-          <div class="absolute -top-16 -right-16 w-56 h-56 bg-cyan-500/15 rounded-full blur-[80px] pointer-events-none"></div>
-          <div class="absolute -bottom-16 -left-16 w-56 h-56 bg-violet-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+          <div class="absolute -top-16 -right-16 w-56 h-56 rounded-full blur-[80px] pointer-events-none opacity-50" :style="{ backgroundColor: theme.blobs[0] }"></div>
+          <div class="absolute -bottom-16 -left-16 w-56 h-56 rounded-full blur-[80px] pointer-events-none opacity-40" :style="{ backgroundColor: theme.blobs[1] }"></div>
 
           <div class="relative flex items-center gap-5 mb-8">
             <div class="relative shrink-0 group cursor-pointer" @click="triggerAvatarUpload">
-              <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-tr from-cyan-400 to-emerald-400 p-[2px]">
+              <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-tr from-[var(--accent-from)] to-[var(--accent-to)] p-[2px]">
                 <div class="w-full h-full rounded-full overflow-hidden flex items-center justify-center transition-colors duration-700" :style="{ backgroundColor: theme.bg }">
                   <img v-if="avatarUrl" :src="avatarUrl" class="w-full h-full object-cover" alt="Avatar" />
                   <span v-else class="text-white font-black text-2xl md:text-3xl">{{ userName.charAt(0).toUpperCase() }}</span>
@@ -147,7 +146,7 @@
             <div>
               <h2 class="text-2xl md:text-3xl font-black">{{ userName }}</h2>
               <p class="text-slate-400 text-sm font-medium">Membre FitTrack</p>
-              <button @click="triggerAvatarUpload" class="mt-2 text-xs font-bold text-cyan-400 hover:text-cyan-300 transition flex items-center gap-1">
+              <button @click="triggerAvatarUpload" class="mt-2 text-xs font-bold hover:opacity-80 transition flex items-center gap-1" :style="{ color: 'var(--accent-solid)' }">
                 <UIcon name="i-heroicons-arrow-up-tray" class="text-sm" />
                 {{ avatarUrl ? 'Changer la photo' : 'Ajouter une photo' }}
               </button>
@@ -201,11 +200,12 @@
           :key="tab.id"
           @click="activeTab = tab.id"
           class="flex flex-col items-center gap-1 px-4 py-1.5 rounded-xl transition-all duration-200 min-w-[60px]"
-          :class="activeTab === tab.id ? 'text-cyan-400' : 'text-slate-500'"
+          :class="activeTab === tab.id ? '' : 'text-slate-500'"
+          :style="activeTab === tab.id ? { color: 'var(--accent-solid)' } : {}"
         >
           <UIcon :name="tab.icon" class="text-2xl transition-transform duration-200" :class="activeTab === tab.id ? 'scale-110' : 'scale-100'" />
           <span class="text-[10px] font-bold uppercase tracking-wider leading-none">{{ tab.label }}</span>
-          <div class="h-0.5 rounded-full mt-0.5 transition-all duration-300" :class="activeTab === tab.id ? 'bg-cyan-400 w-5' : 'bg-transparent w-3'" />
+          <div class="h-0.5 rounded-full mt-0.5 transition-all duration-300" :class="activeTab === tab.id ? 'w-5' : 'bg-transparent w-3'" :style="activeTab === tab.id ? { backgroundColor: 'var(--accent-solid)' } : {}" />
         </button>
       </div>
     </nav>
@@ -236,7 +236,7 @@
             <!-- Nouvelle séance from scratch -->
             <button @click="openNewSession"
               class="w-full flex items-center gap-4 bg-white/[0.06] border border-white/[0.10] rounded-[20px] p-4 mb-4 active:scale-95 transition-all">
-              <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500 to-emerald-500 flex items-center justify-center shrink-0">
+              <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--accent-from)] to-[var(--accent-to)] flex items-center justify-center shrink-0">
                 <UIcon name="i-heroicons-plus" class="text-white text-lg" />
               </div>
               <div class="text-left">

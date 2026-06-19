@@ -5,8 +5,13 @@
 @tailwind utilities;
 
 /* ── Thème ── */
-:root { --theme-bg: #060d1a; }
-body { background-color: var(--theme-bg); }
+:root {
+  --theme-bg: #060d1a;
+  --accent-from: #22d3ee;
+  --accent-to: #34d399;
+  --accent-solid: #22d3ee;
+}
+html, body { background-color: var(--theme-bg); }
 
 /* ── iPhone / PWA ── */
 html, body {

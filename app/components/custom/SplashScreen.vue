@@ -17,23 +17,23 @@
           <div class="logo-glow"></div>
           <div class="w-28 h-28 rounded-[32px] overflow-hidden border-2 border-white/10 shadow-2xl relative">
             <img src="/images/logo.jpg" alt="FitTrack" class="w-full h-full object-cover" />
-            <div class="absolute inset-0 bg-gradient-to-br from-cyan-400/10 to-emerald-400/10"></div>
+            <div class="absolute inset-0 bg-gradient-to-br from-[var(--accent-from)]/10 to-[var(--accent-to)]/10"></div>
           </div>
         </div>
 
         <!-- Texte -->
         <div class="text-container flex flex-col items-center gap-2" :class="{ 'text-ready': step >= 2 }">
           <h1 class="text-5xl font-[1000] tracking-tighter uppercase italic text-white leading-none">
-            Fit<span class="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">Track</span>
+            Fit<span class="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent">Track</span>
           </h1>
           <p class="text-slate-500 font-bold text-sm tracking-widest uppercase">Ta progression, ton histoire</p>
         </div>
 
         <!-- Loader -->
         <div class="dots-container flex items-center gap-2" :class="{ 'dots-ready': step >= 3 }">
-          <div class="dot dot-1 w-2 h-2 rounded-full bg-cyan-400"></div>
-          <div class="dot dot-2 w-2 h-2 rounded-full bg-cyan-400/70"></div>
-          <div class="dot dot-3 w-2 h-2 rounded-full bg-cyan-400/40"></div>
+          <div class="dot dot-1 w-2 h-2 rounded-full" :style="{ backgroundColor: 'var(--accent-solid)' }"></div>
+          <div class="dot dot-2 w-2 h-2 rounded-full opacity-70" :style="{ backgroundColor: 'var(--accent-solid)' }"></div>
+          <div class="dot dot-3 w-2 h-2 rounded-full opacity-40" :style="{ backgroundColor: 'var(--accent-solid)' }"></div>
         </div>
 
       </div>
@@ -74,7 +74,7 @@ onMounted(() => {
 
 .logo-glow {
   position: absolute; inset: -20px;
-  background: radial-gradient(circle, rgba(34, 211, 238, 0.3) 0%, transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent-solid) 40%, transparent) 0%, transparent 70%);
   border-radius: 50%; opacity: 0;
   animation: none;
 }
