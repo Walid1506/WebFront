@@ -81,26 +81,35 @@
       </div>
 
       <div v-else class="space-y-3">
-        <div v-for="f in friends" :key="f.id" @click="openFriendProfile(f)"
-          class="bg-white/[0.04] backdrop-blur-2xl rounded-[24px] border border-white/[0.08] p-4 flex items-center gap-4 active:scale-[0.98] transition-all cursor-pointer hover:bg-white/[0.07]">
-          <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-cyan-400 to-emerald-400 p-[2px] shrink-0">
+        <div v-for="f in friends" :key="f.friendId"
+          class="bg-white/[0.04] backdrop-blur-2xl rounded-[24px] border border-white/[0.08] p-4 flex items-center gap-3">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-cyan-400 to-emerald-400 p-[2px] shrink-0 cursor-pointer active:scale-90 transition-all"
+            @click="openFriendProfile(f)">
             <div class="w-full h-full bg-[#060d1a] rounded-full overflow-hidden flex items-center justify-center">
               <img v-if="f.profile?.avatar_url" :src="f.profile.avatar_url" class="w-full h-full object-cover" />
               <span v-else class="text-white font-black">{{ f.profile?.username?.charAt(0).toUpperCase() }}</span>
             </div>
           </div>
-          <div class="flex-1">
-            <p class="text-white font-black">{{ f.profile?.username }}</p>
-            <p class="text-slate-500 text-xs mt-0.5">{{ f.sessionCount }} séance{{ f.sessionCount > 1 ? 's' : '' }} ce mois · {{ f.xp }} XP</p>
+          <div class="flex-1 min-w-0 cursor-pointer" @click="openFriendProfile(f)">
+            <p class="text-white font-black truncate">{{ f.profile?.username }}</p>
+            <p class="text-slate-500 text-xs mt-0.5">{{ f.xp }} XP · Niv. {{ f.level?.level }}</p>
           </div>
           <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 font-black text-sm text-white"
             :class="`bg-gradient-to-br ${f.level?.color}`">
             {{ f.level?.level }}
           </div>
-          <UIcon name="i-heroicons-chevron-right" class="text-slate-700" />
+          <button @click="chatFriend = f"
+            class="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-emerald-500/20 border border-cyan-500/20 flex items-center justify-center shrink-0 active:scale-90 transition-all">
+            <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="text-cyan-400 text-lg" />
+          </button>
         </div>
       </div>
     </div>
+
+    <!-- Chat -->
+    <Transition name="slide-up">
+      <Chat v-if="chatFriend" :friend="chatFriend.profile" :friend-id="chatFriend.friendId" @close="chatFriend = null" />
+    </Transition>
 
     <!-- Overlay profil ami -->
     <Transition name="slide-up">
@@ -155,6 +164,13 @@
             <p v-else class="text-slate-600 text-sm font-black text-center py-4">Aucune séance récente</p>
           </div>
 
+          <!-- Envoyer un message -->
+          <button @click="chatFriend = friendProfile; friendProfile = null"
+            class="w-full bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-black py-3.5 rounded-2xl text-sm active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20">
+            <UIcon name="i-heroicons-chat-bubble-left-ellipsis" />
+            Envoyer un message
+          </button>
+
           <!-- Supprimer ami -->
           <button @click="removeFriend(friendProfile)" class="w-full border border-red-500/20 text-red-400 font-black py-3 rounded-2xl text-sm active:scale-95 transition-all hover:bg-red-500/5">
             Retirer de mes amis
@@ -167,7 +183,9 @@
 </template>
 
 <script setup>
-const emit = defineEmits(['pending-change'])
+const emit = defineEmits(['pending-change', 'unread-change'])
+
+import Chat from '~/components/custom/chat.vue'
 
 const supabase = useSupabaseClient()
 
@@ -178,6 +196,7 @@ const searchDone = ref(false)
 const friends = ref([])
 const pendingReceived = ref([])
 const friendProfile = ref(null)
+const chatFriend = ref(null)
 
 let currentUserId = null
 
@@ -218,10 +237,26 @@ const searchResultStatus = computed(() => {
 
 async function sendRequest() {
   if (!searchResult.value || !currentUserId) return
-  await supabase.from('friendships').insert({ requester_id: currentUserId, addressee_id: searchResult.value.id })
+
+  // Si l'autre a déjà envoyé une demande → l'accepter directement
+  const { data: incoming } = await supabase.from('friendships')
+    .select('id').eq('requester_id', searchResult.value.id).eq('addressee_id', currentUserId).maybeSingle()
+
+  if (incoming) {
+    await supabase.from('friendships').update({ status: 'accepted' }).eq('id', incoming.id)
+  } else {
+    // Vérifier qu'une demande n'existe pas déjà dans l'autre sens
+    const { data: existing } = await supabase.from('friendships')
+      .select('id').eq('requester_id', currentUserId).eq('addressee_id', searchResult.value.id).maybeSingle()
+    if (!existing) {
+      await supabase.from('friendships').insert({ requester_id: currentUserId, addressee_id: searchResult.value.id })
+    }
+  }
+
   searchResult.value = null
   searchQuery.value = ''
   searchDone.value = false
+  await Promise.all([fetchFriends(), fetchPending()])
 }
 
 async function fetchPending() {
@@ -261,10 +296,11 @@ async function fetchFriends() {
     supabase.from('friendships').select('id, requester_id').eq('addressee_id', currentUserId).eq('status', 'accepted'),
   ])
 
-  const allFriendIds = [
+  // Déduplication : si les deux se sont ajoutés mutuellement, un ami peut apparaître 2x
+  const allFriendIds = [...new Set([
     ...(sent || []).map(f => f.addressee_id),
     ...(received || []).map(f => f.requester_id),
-  ]
+  ])]
 
   if (!allFriendIds.length) { friends.value = []; return }
 
