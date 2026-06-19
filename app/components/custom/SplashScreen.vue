@@ -1,12 +1,12 @@
 <template>
   <Transition name="splash-out">
-    <div v-if="visible" class="fixed inset-0 z-[9999] bg-[#060d1a] flex flex-col items-center justify-center overflow-hidden">
+    <div v-if="visible" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden" style="background-color: var(--theme-bg, #060d1a)">
 
-      <!-- Aurora blobs animés -->
+      <!-- Blobs animés (couleurs du thème) -->
       <div class="absolute inset-0 pointer-events-none">
-        <div class="blob blob-1 absolute w-[500px] h-[500px] bg-cyan-500/25 rounded-full blur-[120px]"></div>
-        <div class="blob blob-2 absolute w-[400px] h-[400px] bg-violet-600/20 rounded-full blur-[100px]"></div>
-        <div class="blob blob-3 absolute w-[350px] h-[350px] bg-emerald-500/15 rounded-full blur-[110px]"></div>
+        <div class="blob blob-1 absolute w-[500px] h-[500px] rounded-full blur-[120px]" :style="{ backgroundColor: theme.blobs[0] }"></div>
+        <div class="blob blob-2 absolute w-[400px] h-[400px] rounded-full blur-[100px]" :style="{ backgroundColor: theme.blobs[1] }"></div>
+        <div class="blob blob-3 absolute w-[350px] h-[350px] rounded-full blur-[110px]" :style="{ backgroundColor: theme.blobs[2] }"></div>
       </div>
 
       <!-- Contenu centré -->
@@ -46,6 +46,7 @@
 const emit = defineEmits(['done'])
 const visible = ref(true)
 const step = ref(0)
+const { theme } = useTheme()
 
 onMounted(() => {
   // Animation séquentielle

@@ -1,17 +1,17 @@
 <template>
-  <div class="min-h-screen bg-[#060d1a] text-white font-sans">
+  <div class="min-h-screen text-white font-sans" :style="{ backgroundColor: theme.bg }">
 
-    <!-- Aurore boréale (fond fixe) -->
+    <!-- Blobs de fond (thème dynamique) -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-      <div class="absolute -top-32 -left-32 w-[500px] h-[500px] bg-cyan-500/20 rounded-full blur-[130px]"></div>
-      <div class="absolute top-10 right-0 w-[400px] h-[400px] bg-violet-600/15 rounded-full blur-[110px]"></div>
-      <div class="absolute top-1/3 left-1/4 w-[300px] h-[300px] bg-emerald-500/10 rounded-full blur-[100px]"></div>
-      <div class="absolute bottom-1/3 right-1/4 w-[350px] h-[350px] bg-sky-500/10 rounded-full blur-[120px]"></div>
-      <div class="absolute bottom-0 left-0 w-[400px] h-[300px] bg-teal-500/10 rounded-full blur-[100px]"></div>
+      <div class="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full blur-[130px] transition-colors duration-700" :style="{ backgroundColor: theme.blobs[0] }"></div>
+      <div class="absolute top-10 right-0 w-[400px] h-[400px] rounded-full blur-[110px] transition-colors duration-700" :style="{ backgroundColor: theme.blobs[1] }"></div>
+      <div class="absolute top-1/3 left-1/4 w-[300px] h-[300px] rounded-full blur-[100px] transition-colors duration-700" :style="{ backgroundColor: theme.blobs[2] }"></div>
+      <div class="absolute bottom-1/3 right-1/4 w-[350px] h-[350px] rounded-full blur-[120px] transition-colors duration-700" :style="{ backgroundColor: theme.blobs[3] }"></div>
+      <div class="absolute bottom-0 left-0 w-[400px] h-[300px] rounded-full blur-[100px] transition-colors duration-700" :style="{ backgroundColor: theme.blobs[4] }"></div>
     </div>
 
     <!-- Header -->
-    <nav class="px-4 py-3 md:px-6 md:py-4 flex justify-between items-center bg-[#060d1a]/60 backdrop-blur-2xl sticky top-0 z-50 border-b border-white/[0.06]">
+    <nav class="px-4 py-3 md:px-6 md:py-4 flex justify-between items-center backdrop-blur-2xl sticky top-0 z-50 border-b border-white/[0.06] transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.75) }">
       <div class="flex items-center gap-3">
         <div class="bg-white/10 backdrop-blur p-1.5 rounded-xl border border-white/10">
           <img src="/images/logo.jpg" alt="Logo" class="h-7 w-7 md:h-8 md:w-8 rounded-lg" />
@@ -32,7 +32,7 @@
         </button>
 
         <button @click="activeTab = 'profil'" class="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-400 to-emerald-400 p-[2px] shrink-0">
-          <div class="w-full h-full bg-[#060d1a] rounded-full overflow-hidden flex items-center justify-center">
+          <div class="w-full h-full rounded-full overflow-hidden flex items-center justify-center transition-colors duration-700" :style="{ backgroundColor: theme.bg }">
             <img v-if="avatarUrl" :src="avatarUrl" class="w-full h-full object-cover" alt="Avatar" />
             <span v-else class="text-white font-black text-sm">{{ userName.charAt(0).toUpperCase() }}</span>
           </div>
@@ -41,7 +41,7 @@
     </nav>
 
     <!-- Tab bar desktop -->
-    <div class="hidden md:flex sticky top-[60px] z-40 bg-[#060d1a]/80 backdrop-blur-2xl border-b border-white/[0.06] px-6">
+    <div class="hidden md:flex sticky top-[60px] z-40 backdrop-blur-2xl border-b border-white/[0.06] px-6 transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.85) }">
       <button
         v-for="tab in tabs"
         :key="tab.id"
@@ -133,7 +133,7 @@
           <div class="relative flex items-center gap-5 mb-8">
             <div class="relative shrink-0 group cursor-pointer" @click="triggerAvatarUpload">
               <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-tr from-cyan-400 to-emerald-400 p-[2px]">
-                <div class="w-full h-full bg-[#060d1a] rounded-full overflow-hidden flex items-center justify-center">
+                <div class="w-full h-full rounded-full overflow-hidden flex items-center justify-center transition-colors duration-700" :style="{ backgroundColor: theme.bg }">
                   <img v-if="avatarUrl" :src="avatarUrl" class="w-full h-full object-cover" alt="Avatar" />
                   <span v-else class="text-white font-black text-2xl md:text-3xl">{{ userName.charAt(0).toUpperCase() }}</span>
                 </div>
@@ -156,6 +156,33 @@
 
           <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="handleAvatarUpload" />
 
+          <!-- Sélecteur de thème -->
+          <div class="mt-6 mb-6">
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Thème</p>
+            <div class="grid grid-cols-3 gap-2">
+              <button
+                v-for="t in Object.values(THEMES)"
+                :key="t.id"
+                @click="setTheme(t.id)"
+                class="relative flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-200 active:scale-95"
+                :class="themeId === t.id
+                  ? 'bg-white/10 border-white/30 shadow-lg'
+                  : 'bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.07]'"
+              >
+                <div v-if="themeId === t.id" class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-white/25 flex items-center justify-center">
+                  <UIcon name="i-heroicons-check" class="text-white text-[10px]" />
+                </div>
+                <div class="flex gap-1.5">
+                  <div v-for="(c, ci) in t.preview" :key="ci" class="w-4 h-4 rounded-full shadow-sm" :style="{ backgroundColor: c }"></div>
+                </div>
+                <div class="text-center leading-none">
+                  <div class="text-xl mb-0.5">{{ t.emoji }}</div>
+                  <div class="text-[9px] font-black text-slate-400 uppercase tracking-wider">{{ t.name }}</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
           <button
             @click="handleLogout"
             class="relative w-full md:max-w-xs border border-red-500/30 bg-red-500/5 px-4 py-3 rounded-2xl text-red-400 font-bold text-sm uppercase tracking-widest active:scale-95 transition-all duration-150 hover:bg-red-500/10"
@@ -167,7 +194,7 @@
     </main>
 
     <!-- Bottom nav mobile -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#060d1a]/90 backdrop-blur-2xl border-t border-white/[0.08]">
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 backdrop-blur-2xl border-t border-white/[0.08] transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.92) }">
       <div class="flex justify-around px-2 pt-2 pb-safe">
         <button
           v-for="tab in tabs"
@@ -196,7 +223,7 @@
     <!-- ── Picker de séance (calendrier) ── -->
     <Transition name="slide-up">
       <div v-if="pickerOpen" class="fixed inset-0 z-[250] flex items-end justify-center bg-black/60 backdrop-blur-sm" @click.self="pickerOpen = false">
-        <div class="w-full max-w-lg bg-[#0a1525] rounded-t-[36px] border-t border-white/[0.08] overflow-hidden">
+        <div class="w-full max-w-lg rounded-t-[36px] border-t border-white/[0.08] overflow-hidden transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.97) }">
           <!-- Handle -->
           <div class="flex justify-center pt-3 pb-1">
             <div class="w-10 h-1 bg-white/20 rounded-full"></div>
@@ -253,7 +280,7 @@
 
     <!-- ── Gérer mes séances sauvegardées ── -->
     <Transition name="slide-up">
-      <div v-if="manageSessionsOpen" class="fixed inset-0 z-[260] bg-[#060d1a]/98 backdrop-blur-2xl flex flex-col">
+      <div v-if="manageSessionsOpen" class="fixed inset-0 z-[260] backdrop-blur-2xl flex flex-col transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.98) }">
         <div class="flex items-center gap-4 px-5 py-5 border-b border-white/[0.08]">
           <button @click="manageSessionsOpen = false" class="p-2 rounded-xl bg-white/[0.06] text-slate-400 hover:text-white transition">
             <UIcon name="i-heroicons-arrow-left" class="text-xl" />
@@ -284,6 +311,15 @@ import Niveau from '~/components/custom/niveau.vue'
 
 const router = useRouter()
 const supabase = useSupabaseClient()
+
+const { theme, themeId, setTheme, initTheme, THEMES } = useTheme()
+
+function bgAlpha(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r},${g},${b},${alpha})`
+}
 
 const activeTab = ref('accueil')
 const tabs = [
@@ -359,6 +395,7 @@ onMounted(async () => {
   }
 
   avatarUrl.value = profile?.avatar_url || ''
+  initTheme()
   await fetchSessions()
   fetchHomeXP()
   fetchPendingCount(user.id)

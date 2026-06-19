@@ -4,6 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Thème ── */
+:root { --theme-bg: #060d1a; }
+body { background-color: var(--theme-bg); }
+
 /* ── iPhone / PWA ── */
 html, body {
   /* Évite le scroll rebond iOS hors app */

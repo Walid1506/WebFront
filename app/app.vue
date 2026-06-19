@@ -18,6 +18,10 @@ import SplashScreen from '~/components/custom/SplashScreen.vue'
 import InstallBanner from '~/components/custom/InstallBanner.vue'
 
 const showSplash = ref(true)
+
+// Apply saved theme immediately so the splash screen uses the right background
+const { initTheme } = useTheme()
+if (typeof window !== 'undefined') initTheme()
 </script>
 
 <style>
