@@ -78,39 +78,41 @@ const linkError = ref('')
 const done = ref(false)
 const ready = ref(false)
 
+// Enregistré SYNCHRONEMENT (hors onMounted) pour capter PASSWORD_RECOVERY
+// même si l'event fire avant que le composant soit monté
+const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    ready.value = true
+  } else if (event === 'INITIAL_SESSION' && session) {
+    ready.value = true
+  }
+})
+
+onUnmounted(() => subscription.unsubscribe())
+
 onMounted(async () => {
-  // Cas 1 : token dans le hash (flow implicite — le plus courant avec Supabase)
-  const hash = window.location.hash.substring(1)
-  const hashParams = new URLSearchParams(hash)
-  const accessToken = hashParams.get('access_token')
-  const refreshToken = hashParams.get('refresh_token')
-  const type = hashParams.get('type')
+  if (ready.value) return
 
-  if (accessToken && type === 'recovery') {
-    const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken || '' })
-    if (error) linkError.value = 'Lien invalide ou expiré. Recommence depuis la connexion.'
-    else ready.value = true
+  // Détecter les erreurs dans le hash (ex: #error=access_denied)
+  const hashParams = new URLSearchParams(window.location.hash.substring(1))
+  if (hashParams.get('error')) {
+    linkError.value = 'Lien invalide ou expiré. Recommence depuis la connexion.'
     return
   }
 
-  // Cas 2 : code dans l'URL (flow PKCE)
-  const urlParams = new URLSearchParams(window.location.search)
-  const code = urlParams.get('code')
-  if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (error) linkError.value = 'Lien invalide ou expiré. Recommence depuis la connexion.'
-    else ready.value = true
-    return
-  }
-
-  // Cas 3 : session déjà établie par le module Supabase
+  // Vérif session existante (si le module Supabase a déjà traité le token)
   const { data: { session } } = await supabase.auth.getSession()
   if (session) {
     ready.value = true
     return
   }
 
-  linkError.value = 'Lien invalide ou expiré. Recommence depuis la connexion.'
+  // Timeout : si après 10s aucun event valide, lien expiré
+  setTimeout(() => {
+    if (!ready.value && !done.value) {
+      linkError.value = 'Lien invalide ou expiré. Recommence depuis la connexion.'
+    }
+  }, 10000)
 })
 
 async function handleReset() {
