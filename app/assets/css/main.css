@@ -4,6 +4,27 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── iPhone / PWA ── */
+html, body {
+  /* Évite le scroll rebond iOS hors app */
+  overscroll-behavior: none;
+  /* Safe area : contenu ne passe pas sous l'encoche */
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Empêche le zoom auto d'iOS sur les inputs (font >= 16px) */
+input, textarea, select {
+  font-size: max(16px, 1em);
+}
+
+/* Barre de navigation du bas : dépasse bien sous la home indicator iPhone */
+.pb-safe { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+
+/* Tap sans délai 300ms sur iOS */
+* { touch-action: manipulation; }
+
 @theme static {
   --font-sans: 'Public Sans', sans-serif;
 
