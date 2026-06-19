@@ -1,30 +1,31 @@
 <template>
   <div class="relative group">
-    <div class="bg-slate-900/50 backdrop-blur-xl rounded-[28px] md:rounded-[40px] p-5 md:p-8 border border-white/5 shadow-2xl overflow-hidden relative">
-      
-      <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-green-500/5 blur-[100px] pointer-events-none"></div>
+    <div class="bg-white/[0.04] backdrop-blur-2xl rounded-[28px] md:rounded-[40px] p-5 md:p-8 border border-white/[0.08] shadow-2xl overflow-hidden relative">
+
+      <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-cyan-500/10 blur-[100px] pointer-events-none"></div>
+      <div class="absolute -top-10 -right-10 w-48 h-48 bg-emerald-500/10 blur-[80px] pointer-events-none"></div>
 
       <div class="flex justify-between items-start mb-8 relative z-10">
         <div>
           <div class="flex items-center gap-2 mb-1">
-            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.8)]"></div>
+            <div class="w-2 h-2 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,211,238,0.8)]"></div>
             <h2 class="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Suivi du Poids</h2>
           </div>
           <div class="flex items-baseline gap-2">
             <span class="text-5xl font-[1000] tracking-tighter text-white">{{ currentWeight || '--' }}</span>
-            <span class="text-xl font-black text-green-500 italic">kg</span>
+            <span class="text-xl font-black bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent italic">kg</span>
           </div>
         </div>
 
-        <button @click="openModal" class="p-4 bg-white rounded-3xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-white/5 group/btn">
-          <UIcon name="i-heroicons-plus-16-solid" class="text-black text-xl group-hover/btn:rotate-90 transition-transform duration-300" />
+        <button @click="openModal" class="p-4 bg-gradient-to-br from-cyan-500 to-emerald-500 rounded-3xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-cyan-500/20 group/btn">
+          <UIcon name="i-heroicons-plus-16-solid" class="text-white text-xl group-hover/btn:rotate-90 transition-transform duration-300" />
         </button>
       </div>
 
-      <div class="relative h-44 w-full bg-black/40 rounded-[30px] border border-white/5 flex items-center justify-center overflow-hidden mb-2 p-4">
+      <div class="relative h-44 w-full bg-white/[0.03] rounded-[30px] border border-white/[0.06] flex items-center justify-center overflow-hidden mb-2 p-4">
         
         <div v-if="history.length === 0" class="text-center p-6 space-y-2 z-10">
-          <UIcon name="i-heroicons-presentation-chart-line" class="text-3xl text-slate-700" />
+          <UIcon name="i-heroicons-presentation-chart-line" class="text-3xl text-slate-600" />
           <p class="text-slate-500 text-[10px] font-black uppercase tracking-widest leading-tight">Aucune pesée</p>
         </div>
 
@@ -153,13 +154,13 @@ const chartData = computed(() => {
       {
         label: 'Poids (kg)',
         data: dataPoints,
-        borderColor: '#22c55e', // Vert FitTrack
-        backgroundColor: '#000000', // Intérieur des points noir
+        borderColor: '#22d3ee',
+        backgroundColor: '#060d1a',
         borderWidth: 3,
         pointRadius: 4,
         pointBorderWidth: 2,
         pointHoverRadius: 7,
-        pointHoverBackgroundColor: '#22c55e',
+        pointHoverBackgroundColor: '#22d3ee',
         tension: 0.4 // Arrondit légèrement la courbe
       }
     ]
@@ -179,7 +180,7 @@ const chartOptions = computed(() => {
       legend: { display: false }, // Cache la légende inutile
       tooltip: {
         backgroundColor: '#0f172a', // Tooltip Dark
-        titleColor: '#22c55e',
+        titleColor: '#22d3ee',
         bodyColor: '#ffffff',
         bodyFont: { weight: 'bold', size: 14 },
         padding: 12,

@@ -4,7 +4,7 @@
     <button
       v-if="!isOpen"
       @click="isOpen = true"
-      class="fixed bottom-24 right-4 md:bottom-8 z-50 w-14 h-14 rounded-full bg-green-500 shadow-2xl shadow-green-500/40 flex items-center justify-center active:scale-95 transition-all duration-200"
+      class="fixed bottom-24 right-4 md:bottom-8 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-cyan-500 to-emerald-500 shadow-2xl shadow-cyan-500/40 flex items-center justify-center active:scale-95 transition-all duration-200"
       :class="isRunning ? 'animate-pulse' : ''"
     >
       <UIcon name="i-heroicons-clock" class="text-black text-2xl" />
@@ -15,7 +15,9 @@
 
     <!-- Overlay timer -->
     <Transition name="slide-up">
-      <div v-if="isOpen" class="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl">
+      <div v-if="isOpen" class="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#060d1a]/95 backdrop-blur-2xl">
+        <div class="absolute -top-20 left-1/4 w-72 h-72 bg-cyan-500/20 rounded-full blur-[100px] pointer-events-none"></div>
+        <div class="absolute bottom-0 right-1/4 w-72 h-72 bg-violet-500/15 rounded-full blur-[100px] pointer-events-none"></div>
         <!-- Header -->
         <div class="absolute top-0 left-0 right-0 flex justify-between items-center p-6">
           <p class="text-xs font-black uppercase tracking-widest text-slate-500">Timer de repos</p>
@@ -30,7 +32,7 @@
             <circle cx="50" cy="50" r="45" fill="none" stroke="#1e293b" stroke-width="6" />
             <circle
               cx="50" cy="50" r="45" fill="none"
-              :stroke="isFinished ? '#ef4444' : '#22c55e'"
+              :stroke="isFinished ? '#ef4444' : '#22d3ee'"
               stroke-width="6"
               stroke-linecap="round"
               :stroke-dasharray="283"
@@ -54,7 +56,7 @@
             :key="p"
             @click="setPreset(p)"
             class="px-4 py-2 rounded-2xl text-sm font-black uppercase tracking-wider transition-all duration-200"
-            :class="duration === p && !isRunning ? 'bg-green-500 text-black' : 'bg-slate-900 text-slate-400 hover:bg-slate-800'"
+            :class="duration === p && !isRunning ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white shadow-lg shadow-cyan-500/30' : 'bg-white/[0.06] text-slate-400 hover:bg-white/[0.10] border border-white/[0.08]'"
           >
             {{ formatTime(p) }}
           </button>
@@ -62,17 +64,17 @@
 
         <!-- Controls -->
         <div class="flex items-center gap-5">
-          <button @click="reset" class="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center text-slate-400 hover:text-white transition active:scale-95">
+          <button @click="reset" class="w-14 h-14 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-slate-400 hover:text-white transition active:scale-95">
             <UIcon name="i-heroicons-arrow-path" class="text-2xl" />
           </button>
           <button
             @click="toggleTimer"
-            class="w-20 h-20 rounded-full flex items-center justify-center text-black font-black text-2xl shadow-2xl active:scale-95 transition-all duration-200"
-            :class="isRunning ? 'bg-red-500 shadow-red-500/30' : 'bg-green-500 shadow-green-500/30'"
+            class="w-20 h-20 rounded-full flex items-center justify-center font-black text-2xl shadow-2xl active:scale-95 transition-all duration-200"
+            :class="isRunning ? 'bg-red-500 text-white shadow-red-500/30' : 'bg-gradient-to-br from-cyan-500 to-emerald-500 text-white shadow-cyan-500/30'"
           >
             <UIcon :name="isRunning ? 'i-heroicons-pause' : 'i-heroicons-play'" class="text-3xl" />
           </button>
-          <button @click="addTime(30)" class="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center text-slate-400 hover:text-white transition active:scale-95">
+          <button @click="addTime(30)" class="w-14 h-14 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-slate-400 hover:text-white transition active:scale-95">
             <span class="text-xs font-black">+30s</span>
           </button>
         </div>

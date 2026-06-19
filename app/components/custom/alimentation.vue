@@ -69,33 +69,40 @@
                   Profil & Métabolisme
                 </h2>
 
-                <button
-                  @click="isSettingsOpen = !isSettingsOpen"
-                  class="text-slate-400 hover:text-white text-sm font-bold bg-slate-900 px-3 py-1 rounded-full border border-white/5"
-                >
-                  {{ isSettingsOpen ? 'Masquer' : 'Modifier' }}
-                </button>
+                <div class="flex items-center gap-2">
+                  <Transition name="fade-quick">
+                    <span v-if="savedIndicator" class="text-emerald-400 text-xs font-black flex items-center gap-1">
+                      <UIcon name="i-heroicons-check-circle" class="text-sm" /> Sauvegardé
+                    </span>
+                  </Transition>
+                  <button
+                    @click="isSettingsOpen = !isSettingsOpen"
+                    class="text-slate-400 hover:text-white text-sm font-bold bg-slate-900 px-3 py-1 rounded-full border border-white/5"
+                  >
+                    {{ isSettingsOpen ? 'Masquer' : 'Modifier' }}
+                  </button>
+                </div>
               </div>
 
               <div v-if="isSettingsOpen" class="grid grid-cols-2 gap-4 mb-6 animate-in fade-in zoom-in-95">
                 <div class="bg-slate-900 rounded-2xl p-3 border border-white/5">
                   <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Poids (kg)</label>
-                  <input v-model.number="profil.poids" @change="saveGlobals" type="number" class="w-full bg-transparent text-white font-bold text-lg outline-none" />
+                  <input v-model.number="profil.poids"  type="number" class="w-full bg-transparent text-white font-bold text-lg outline-none" />
                 </div>
 
                 <div class="bg-slate-900 rounded-2xl p-3 border border-white/5">
                   <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Taille (cm)</label>
-                  <input v-model.number="profil.taille" @change="saveGlobals" type="number" class="w-full bg-transparent text-white font-bold text-lg outline-none" />
+                  <input v-model.number="profil.taille"  type="number" class="w-full bg-transparent text-white font-bold text-lg outline-none" />
                 </div>
 
                 <div class="bg-slate-900 rounded-2xl p-3 border border-white/5">
                   <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Âge</label>
-                  <input v-model.number="profil.age" @change="saveGlobals" type="number" class="w-full bg-transparent text-white font-bold text-lg outline-none" />
+                  <input v-model.number="profil.age"  type="number" class="w-full bg-transparent text-white font-bold text-lg outline-none" />
                 </div>
 
                 <div class="bg-slate-900 rounded-2xl p-3 border border-white/5">
                   <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Genre</label>
-                  <select v-model="profil.genre" @change="saveGlobals" class="w-full bg-transparent text-white font-bold outline-none text-sm appearance-none">
+                  <select v-model="profil.genre"  class="w-full bg-transparent text-white font-bold outline-none text-sm appearance-none">
                     <option value="homme" class="bg-slate-900">Homme</option>
                     <option value="femme" class="bg-slate-900">Femme</option>
                   </select>
@@ -103,7 +110,7 @@
 
                 <div class="bg-slate-900 rounded-2xl p-3 border border-white/5">
                   <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Activité</label>
-                  <select v-model.number="profil.activite" @change="saveGlobals" class="w-full bg-transparent text-white font-bold outline-none text-[13px] appearance-none">
+                  <select v-model.number="profil.activite"  class="w-full bg-transparent text-white font-bold outline-none text-[13px] appearance-none">
                     <option :value="1.2">Sédentaire</option>
                     <option :value="1.375">Léger (1-3x)</option>
                     <option :value="1.55">Modéré (3-5x)</option>
@@ -113,7 +120,7 @@
 
                 <div class="bg-slate-900 rounded-2xl p-3 border border-white/5">
                   <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Objectif</label>
-                  <select v-model="profil.objectif" @change="saveGlobals" class="w-full bg-transparent text-white font-bold outline-none text-sm appearance-none">
+                  <select v-model="profil.objectif"  class="w-full bg-transparent text-white font-bold outline-none text-sm appearance-none">
                     <option value="seche">Sèche</option>
                     <option value="maintien">Maintien</option>
                     <option value="masse">Prise de masse</option>
@@ -124,7 +131,8 @@
               <div class="flex items-center justify-between bg-blue-500/10 border border-blue-500/20 p-4 rounded-2xl">
                 <div>
                   <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest">Ton IMC</p>
-                  <p class="text-white font-[1000] text-2xl">{{ imc }}</p>
+                  <p class="font-[1000] text-2xl" :class="imcColor">{{ imc }}</p>
+                  <p class="text-[10px] font-black uppercase tracking-widest mt-0.5" :class="imcColor">{{ imcLabel }}</p>
                 </div>
 
                 <div class="text-right">
@@ -583,7 +591,8 @@ import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'
 const supabase = useSupabaseClient()
 
 const currentScreen = ref('main')
-const isSettingsOpen = ref(false)
+const isSettingsOpen = ref(true)
+const savedIndicator = ref(false)
 const selectedDateObj = ref(new Date())
 const searchQuery = ref('')
 const activeCatFilter = ref('Tout')
@@ -621,6 +630,17 @@ const profil = reactive({
 })
 
 let html5QrcodeScanner = null
+let saveTimer = null
+
+// Auto-save avec debounce 800ms quand le profil change
+watch(profil, () => {
+  clearTimeout(saveTimer)
+  saveTimer = setTimeout(async () => {
+    await saveGlobals()
+    savedIndicator.value = true
+    setTimeout(() => { savedIndicator.value = false }, 2000)
+  }, 800)
+}, { deep: true })
 
 const selectedDateStr = computed(() => {
   const d = selectedDateObj.value
@@ -1012,6 +1032,24 @@ function addScannedFood() {
 
 const imc = computed(() => profil.poids && profil.taille ? (profil.poids / Math.pow(profil.taille / 100, 2)).toFixed(1) : 0)
 
+const imcColor = computed(() => {
+  const v = parseFloat(imc.value)
+  if (!v) return 'text-white'
+  if (v < 18.5) return 'text-orange-400'
+  if (v < 25) return 'text-emerald-400'
+  if (v < 30) return 'text-orange-400'
+  return 'text-red-400'
+})
+
+const imcLabel = computed(() => {
+  const v = parseFloat(imc.value)
+  if (!v) return ''
+  if (v < 18.5) return 'Sous-poids'
+  if (v < 25) return 'Normal'
+  if (v < 30) return 'Surpoids'
+  return 'Obésité'
+})
+
 const liveBesoins = computed(() => {
   let bmr = (10 * profil.poids) + (6.25 * profil.taille) - (5 * profil.age) + (profil.genre === 'homme' ? 5 : -161)
   let k = Math.round(bmr * profil.activite)
@@ -1218,4 +1256,6 @@ function addAiResult() {
 .slide-enter-active, .slide-leave-active { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 .slide-enter-from { opacity: 0; transform: translateX(30px) scale(0.98); }
 .slide-leave-to { opacity: 0; transform: translateX(-30px) scale(0.98); }
+.fade-quick-enter-active, .fade-quick-leave-active { transition: opacity 0.3s; }
+.fade-quick-enter-from, .fade-quick-leave-to { opacity: 0; }
 </style>

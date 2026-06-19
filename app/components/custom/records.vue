@@ -1,5 +1,8 @@
 <template>
-  <div class="bg-slate-900/50 backdrop-blur-xl rounded-[28px] md:rounded-[40px] p-5 md:p-8 border border-white/5 shadow-2xl">
+  <div class="bg-white/[0.04] backdrop-blur-2xl rounded-[28px] md:rounded-[40px] p-5 md:p-8 border border-white/[0.08] shadow-2xl relative overflow-hidden">
+    <div class="absolute -top-10 -right-10 w-40 h-40 bg-violet-500/10 rounded-full blur-[70px] pointer-events-none"></div>
+    <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-amber-500/10 rounded-full blur-[70px] pointer-events-none"></div>
+    <div>
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <div>
@@ -9,8 +12,8 @@
         </div>
         <p class="text-2xl font-[1000] tracking-tighter text-white">{{ records.length }} PR{{ records.length !== 1 ? 's' : '' }}</p>
       </div>
-      <button @click="openAdd" class="p-4 bg-white rounded-3xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-white/5">
-        <UIcon name="i-heroicons-plus-16-solid" class="text-black text-xl" />
+      <button @click="openAdd" class="p-4 bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-amber-500/20">
+        <UIcon name="i-heroicons-plus-16-solid" class="text-white text-xl" />
       </button>
     </div>
 
@@ -25,7 +28,7 @@
       <div
         v-for="r in sortedRecords"
         :key="r.id"
-        class="flex items-center justify-between bg-black/40 rounded-2xl px-4 py-3 border border-white/5 group"
+        class="flex items-center justify-between bg-white/[0.04] rounded-2xl px-4 py-3 border border-white/[0.07] group hover:bg-white/[0.07] transition-colors"
       >
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center shrink-0">
@@ -122,6 +125,7 @@
         </div>
       </div>
     </Transition>
+    </div>
   </div>
 </template>
 
