@@ -322,6 +322,9 @@ const todaySession = computed(() => {
 const { totalXP: homeXP, levelInfo: homeLevelInfo, fetchXP: fetchHomeXP } = useXP()
 const homeLevelColor = computed(() => homeLevelInfo.value?.color || '')
 
+const { join: joinPresence, leave: leavePresence } = usePresence()
+const { requestAndSubscribe } = usePush()
+
 const LEVEL_COLORS_HOME = [
   '', 'from-slate-400 to-slate-500', 'from-slate-300 to-slate-400',
   'from-emerald-400 to-green-500', 'from-emerald-400 to-teal-500',
@@ -359,6 +362,9 @@ onMounted(async () => {
   await fetchSessions()
   fetchHomeXP()
   fetchPendingCount(user.id)
+  joinPresence(user.id)
+  // Demander permission push après 3s (laisse l'app charger)
+  setTimeout(() => requestAndSubscribe(user.id), 3000)
 })
 
 function triggerAvatarUpload() {
@@ -504,6 +510,7 @@ function openToday() {
 }
 
 async function handleLogout() {
+  leavePresence()
   await supabase.auth.signOut()
   window.location.href = '/login'
 }

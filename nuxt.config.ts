@@ -44,26 +44,20 @@ export default defineNuxtConfig({
       name: 'FitTrack',
       short_name: 'FitTrack',
       description: 'Application de suivi sportif FitTrack',
-      theme_color: '#0f172a',
-      background_color: '#0f172a',
+      theme_color: '#060d1a',
+      background_color: '#060d1a',
       display: 'standalone',
       orientation: 'portrait',
       icons: [
-        {
-          src: '/pwa-192x192.png',
-          sizes: '192x192',
-          type: 'image/png'
-        },
-        {
-          src: '/pwa-512x512.png',
-          sizes: '512x512',
-          type: 'image/png'
-        }
+        { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png' }
       ]
     },
-    devOptions: {
-      enabled: false
-    }
+    workbox: {
+      additionalManifestEntries: [],
+      importScripts: ['/sw-push.js'],
+    },
+    devOptions: { enabled: false }
   },
 
   // 👇 Configuration des langues 👇

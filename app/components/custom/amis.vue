@@ -83,16 +83,23 @@
       <div v-else class="space-y-3">
         <div v-for="f in friends" :key="f.friendId"
           class="bg-white/[0.04] backdrop-blur-2xl rounded-[24px] border border-white/[0.08] p-4 flex items-center gap-3">
-          <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-cyan-400 to-emerald-400 p-[2px] shrink-0 cursor-pointer active:scale-90 transition-all"
-            @click="openFriendProfile(f)">
-            <div class="w-full h-full bg-[#060d1a] rounded-full overflow-hidden flex items-center justify-center">
-              <img v-if="f.profile?.avatar_url" :src="f.profile.avatar_url" class="w-full h-full object-cover" />
-              <span v-else class="text-white font-black">{{ f.profile?.username?.charAt(0).toUpperCase() }}</span>
+          <div class="relative shrink-0 cursor-pointer active:scale-90 transition-all" @click="openFriendProfile(f)">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-cyan-400 to-emerald-400 p-[2px]">
+              <div class="w-full h-full bg-[#060d1a] rounded-full overflow-hidden flex items-center justify-center">
+                <img v-if="f.profile?.avatar_url" :src="f.profile.avatar_url" class="w-full h-full object-cover" />
+                <span v-else class="text-white font-black">{{ f.profile?.username?.charAt(0).toUpperCase() }}</span>
+              </div>
+            </div>
+            <!-- Point de présence -->
+            <div class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-[#060d1a]"
+              :class="isOnline(f.friendId) ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]' : 'bg-slate-600'">
             </div>
           </div>
           <div class="flex-1 min-w-0 cursor-pointer" @click="openFriendProfile(f)">
             <p class="text-white font-black truncate">{{ f.profile?.username }}</p>
-            <p class="text-slate-500 text-xs mt-0.5">{{ f.xp }} XP · Niv. {{ f.level?.level }}</p>
+            <p class="text-xs mt-0.5" :class="isOnline(f.friendId) ? 'text-emerald-400 font-black' : 'text-slate-500'">
+              {{ isOnline(f.friendId) ? 'En ligne' : `${f.xp} XP · Niv. ${f.level?.level}` }}
+            </p>
           </div>
           <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 font-black text-sm text-white"
             :class="`bg-gradient-to-br ${f.level?.color}`">
@@ -188,6 +195,7 @@ const emit = defineEmits(['pending-change', 'unread-change'])
 import Chat from '~/components/custom/chat.vue'
 
 const supabase = useSupabaseClient()
+const { isOnline } = usePresence()
 
 const searchQuery = ref('')
 const searching = ref(false)

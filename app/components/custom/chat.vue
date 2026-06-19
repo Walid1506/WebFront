@@ -14,7 +14,9 @@
       </div>
       <div class="flex-1 min-w-0">
         <p class="text-white font-black truncate">{{ friend.username }}</p>
-        <p class="text-slate-500 text-xs">{{ online ? 'En ligne' : 'Ami' }}</p>
+        <p class="text-xs font-bold" :class="isOnline(props.friendId) ? 'text-emerald-400' : 'text-slate-500'">
+          {{ isOnline(props.friendId) ? 'En ligne' : (lastSeen ? `Vu ${lastSeen}` : 'Hors ligne') }}
+        </p>
       </div>
     </div>
 
@@ -128,23 +130,34 @@ const props = defineProps({
 defineEmits(['close'])
 
 const supabase = useSupabaseClient()
+const { isOnline } = usePresence()
+const config = useRuntimeConfig()
+
 const messages = ref([])
 const newMessage = ref('')
 const loading = ref(true)
 const sending = ref(false)
 const sendingPhoto = ref(false)
-const online = ref(false)
+const lastSeen = ref('')
 const viewImage = ref(null)
 const messagesEl = ref(null)
 const fileInput = ref(null)
 const textareaEl = ref(null)
 let currentUserId = null
+let currentUsername = ''
 let channel = null
 
 onMounted(async () => {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
   currentUserId = user.id
+
+  const { data: profile } = await supabase.from('profiles').select('username, last_seen').eq('id', props.friendId).maybeSingle()
+  if (profile?.last_seen) lastSeen.value = formatLastSeen(profile.last_seen)
+
+  const { data: myProfile } = await supabase.from('profiles').select('username').eq('id', user.id).maybeSingle()
+  currentUsername = myProfile?.username || user.email?.split('@')[0] || 'Quelqu\'un'
+
   await fetchMessages()
   await markRead()
   subscribeRealtime()
@@ -196,7 +209,11 @@ async function sendMessage() {
     content
   }).select().single()
 
-  if (data) { messages.value.push(data); scrollToBottom() }
+  if (data) {
+    messages.value.push(data)
+    scrollToBottom()
+    triggerPush({ receiver_id: props.friendId, content, media_url: null })
+  }
   sending.value = false
 }
 
@@ -220,7 +237,11 @@ async function sendPhoto(event) {
     media_url: publicUrl
   }).select().single()
 
-  if (data) { messages.value.push(data); scrollToBottom() }
+  if (data) {
+    messages.value.push(data)
+    scrollToBottom()
+    triggerPush({ receiver_id: props.friendId, content: null, media_url: publicUrl })
+  }
   sendingPhoto.value = false
 }
 
@@ -235,6 +256,26 @@ function isMine(msg) { return msg.sender_id === currentUserId }
 function autoResize(e) {
   e.target.style.height = 'auto'
   e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px'
+}
+
+async function triggerPush({ receiver_id, content, media_url }) {
+  try {
+    const supabaseUrl = useSupabaseClient().supabaseUrl
+    await fetch(`${supabaseUrl}/functions/v1/send-push`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}` },
+      body: JSON.stringify({ receiver_id, sender_username: currentUsername, content, media_url })
+    })
+  } catch {}
+}
+
+function formatLastSeen(ts) {
+  const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 60000)
+  if (diff < 1) return 'à l\'instant'
+  if (diff < 60) return `il y a ${diff} min`
+  const h = Math.floor(diff / 60)
+  if (h < 24) return `il y a ${h}h`
+  return `il y a ${Math.floor(h / 24)}j`
 }
 
 function formatTime(ts) {
