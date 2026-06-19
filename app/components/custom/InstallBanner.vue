@@ -38,7 +38,7 @@ const show = ref(false)
 onMounted(() => {
   // Afficher seulement sur iOS Safari hors standalone
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || /** @type {any} */ (navigator).standalone
   const dismissed = localStorage.getItem('install-banner-dismissed')
 
   if (isIOS && !isStandalone && !dismissed) {
