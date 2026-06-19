@@ -1,0 +1,307 @@
+<template>
+  <div class="space-y-5">
+
+    <!-- Recherche -->
+    <div class="bg-white/[0.04] backdrop-blur-2xl rounded-[28px] border border-white/[0.08] p-5">
+      <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-3">Ajouter un ami par pseudo</label>
+      <div class="flex gap-2">
+        <div class="relative flex-1">
+          <UIcon name="i-heroicons-at-symbol" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+          <input v-model="searchQuery" @keyup.enter="searchUser" type="text" placeholder="pseudo exact..."
+            class="w-full h-12 bg-white/[0.06] border border-white/[0.10] rounded-2xl pl-10 pr-4 text-white font-bold outline-none focus:border-cyan-500/50 placeholder:text-slate-700" />
+        </div>
+        <button @click="searchUser" :disabled="searching || !searchQuery.trim()"
+          class="h-12 px-5 bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-black rounded-2xl text-sm active:scale-95 transition-all disabled:opacity-40 shrink-0">
+          {{ searching ? '...' : 'Chercher' }}
+        </button>
+      </div>
+
+      <!-- Résultat de recherche -->
+      <div v-if="searchResult" class="mt-3 flex items-center gap-3 bg-white/[0.04] rounded-2xl p-3 border border-white/[0.08]">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-400 to-emerald-400 p-[2px] shrink-0">
+          <div class="w-full h-full bg-[#060d1a] rounded-full overflow-hidden flex items-center justify-center">
+            <img v-if="searchResult.avatar_url" :src="searchResult.avatar_url" class="w-full h-full object-cover" />
+            <span v-else class="text-white font-black text-sm">{{ searchResult.username?.charAt(0).toUpperCase() }}</span>
+          </div>
+        </div>
+        <div class="flex-1">
+          <p class="text-white font-black text-sm">{{ searchResult.username }}</p>
+          <p class="text-slate-500 text-xs">{{ searchResultStatus }}</p>
+        </div>
+        <button v-if="searchResultStatus === 'Ajouter'" @click="sendRequest"
+          class="bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-black text-xs px-4 py-2 rounded-xl active:scale-95 transition-all">
+          + Ajouter
+        </button>
+      </div>
+      <p v-else-if="searchDone && !searchResult" class="mt-3 text-slate-600 text-xs font-black text-center">Aucun utilisateur trouvé avec ce pseudo</p>
+    </div>
+
+    <!-- Demandes reçues -->
+    <div v-if="pendingReceived.length > 0" class="bg-white/[0.04] backdrop-blur-2xl rounded-[28px] border border-violet-500/20 p-5">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-2 h-2 bg-violet-400 rounded-full animate-pulse"></div>
+        <p class="text-[10px] font-black text-violet-400 uppercase tracking-widest">Demandes reçues</p>
+        <span class="bg-violet-500/20 text-violet-300 text-xs font-black px-2 py-0.5 rounded-full">{{ pendingReceived.length }}</span>
+      </div>
+      <div class="space-y-2">
+        <div v-for="r in pendingReceived" :key="r.id" class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-violet-400 to-purple-500 p-[2px] shrink-0">
+            <div class="w-full h-full bg-[#060d1a] rounded-full overflow-hidden flex items-center justify-center">
+              <img v-if="r.profile?.avatar_url" :src="r.profile.avatar_url" class="w-full h-full object-cover" />
+              <span v-else class="text-white font-black text-sm">{{ r.profile?.username?.charAt(0).toUpperCase() }}</span>
+            </div>
+          </div>
+          <p class="text-white font-black text-sm flex-1">{{ r.profile?.username }}</p>
+          <div class="flex gap-2">
+            <button @click="acceptRequest(r.id)" class="bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-black text-xs px-3 py-1.5 rounded-xl active:scale-95 transition-all">
+              Accepter
+            </button>
+            <button @click="declineRequest(r.id)" class="bg-red-500/10 border border-red-500/20 text-red-400 font-black text-xs px-3 py-1.5 rounded-xl active:scale-95 transition-all">
+              Refuser
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste amis -->
+    <div>
+      <div class="flex items-center gap-3 mb-3 px-1">
+        <div class="w-2 h-6 bg-gradient-to-b from-cyan-400 to-emerald-400 rounded-full"></div>
+        <h2 class="text-xl font-black uppercase tracking-tighter">Mes amis</h2>
+        <span class="text-slate-600 font-black text-sm">{{ friends.length }}</span>
+      </div>
+
+      <div v-if="friends.length === 0" class="bg-white/[0.04] backdrop-blur-2xl rounded-[28px] border border-white/[0.08] p-8 text-center">
+        <div class="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-3">
+          <UIcon name="i-heroicons-user-group" class="text-2xl text-cyan-400" />
+        </div>
+        <p class="text-white font-black">Aucun ami pour l'instant</p>
+        <p class="text-slate-500 text-sm mt-1">Cherche un ami par son pseudo ci-dessus</p>
+      </div>
+
+      <div v-else class="space-y-3">
+        <div v-for="f in friends" :key="f.id" @click="openFriendProfile(f)"
+          class="bg-white/[0.04] backdrop-blur-2xl rounded-[24px] border border-white/[0.08] p-4 flex items-center gap-4 active:scale-[0.98] transition-all cursor-pointer hover:bg-white/[0.07]">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-cyan-400 to-emerald-400 p-[2px] shrink-0">
+            <div class="w-full h-full bg-[#060d1a] rounded-full overflow-hidden flex items-center justify-center">
+              <img v-if="f.profile?.avatar_url" :src="f.profile.avatar_url" class="w-full h-full object-cover" />
+              <span v-else class="text-white font-black">{{ f.profile?.username?.charAt(0).toUpperCase() }}</span>
+            </div>
+          </div>
+          <div class="flex-1">
+            <p class="text-white font-black">{{ f.profile?.username }}</p>
+            <p class="text-slate-500 text-xs mt-0.5">{{ f.sessionCount }} séance{{ f.sessionCount > 1 ? 's' : '' }} ce mois · {{ f.xp }} XP</p>
+          </div>
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 font-black text-sm text-white"
+            :class="`bg-gradient-to-br ${f.level?.color}`">
+            {{ f.level?.level }}
+          </div>
+          <UIcon name="i-heroicons-chevron-right" class="text-slate-700" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay profil ami -->
+    <Transition name="slide-up">
+      <div v-if="friendProfile" class="fixed inset-0 z-[300] bg-[#060d1a]/98 backdrop-blur-2xl flex flex-col">
+        <div class="flex items-center gap-4 px-5 py-5 border-b border-white/[0.08]">
+          <button @click="friendProfile = null" class="p-2 rounded-xl bg-white/[0.06] text-slate-400 hover:text-white transition">
+            <UIcon name="i-heroicons-arrow-left" class="text-xl" />
+          </button>
+          <p class="text-xl font-black">{{ friendProfile.profile?.username }}</p>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-5 space-y-4">
+          <!-- Avatar + stats globales -->
+          <div class="relative bg-white/[0.04] rounded-[28px] border border-white/[0.08] p-6 text-center overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-40 h-40 bg-cyan-500/10 rounded-full blur-[60px]"></div>
+            <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-cyan-400 to-emerald-400 p-[2px] mx-auto mb-3">
+              <div class="w-full h-full bg-[#060d1a] rounded-full overflow-hidden flex items-center justify-center">
+                <img v-if="friendProfile.profile?.avatar_url" :src="friendProfile.profile.avatar_url" class="w-full h-full object-cover" />
+                <span v-else class="text-white font-black text-2xl">{{ friendProfile.profile?.username?.charAt(0).toUpperCase() }}</span>
+              </div>
+            </div>
+            <p class="text-white font-black text-xl">{{ friendProfile.profile?.username }}</p>
+            <div class="flex justify-center gap-6 mt-4">
+              <div>
+                <p class="text-cyan-400 font-black text-2xl">{{ friendProfile.sessionCount }}</p>
+                <p class="text-slate-500 text-xs font-black uppercase">séances/mois</p>
+              </div>
+              <div class="w-px bg-white/[0.08]"></div>
+              <div>
+                <p class="text-emerald-400 font-black text-2xl">{{ friendProfile.totalSessions }}</p>
+                <p class="text-slate-500 text-xs font-black uppercase">total</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dernières séances -->
+          <div class="bg-white/[0.04] rounded-[28px] border border-white/[0.08] p-5">
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Dernières séances</p>
+            <div v-if="friendProfile.recentSessions?.length > 0" class="space-y-2">
+              <div v-for="s in friendProfile.recentSessions" :key="s.id"
+                class="flex items-center gap-3 bg-white/[0.04] rounded-2xl p-3 border border-white/[0.06]">
+                <div class="w-2 h-2 bg-emerald-400 rounded-full shrink-0"></div>
+                <div class="flex-1">
+                  <p class="text-white font-black text-sm">{{ s.data?.title || 'Séance' }}</p>
+                  <p class="text-slate-500 text-xs">{{ formatDate(s.date) }}</p>
+                </div>
+                <span v-if="s.data?.category" class="text-[10px] font-black px-2 py-0.5 rounded-full border" :class="catClass(s.data.category)">
+                  {{ s.data.category }}
+                </span>
+              </div>
+            </div>
+            <p v-else class="text-slate-600 text-sm font-black text-center py-4">Aucune séance récente</p>
+          </div>
+
+          <!-- Supprimer ami -->
+          <button @click="removeFriend(friendProfile)" class="w-full border border-red-500/20 text-red-400 font-black py-3 rounded-2xl text-sm active:scale-95 transition-all hover:bg-red-500/5">
+            Retirer de mes amis
+          </button>
+        </div>
+      </div>
+    </Transition>
+
+  </div>
+</template>
+
+<script setup>
+const emit = defineEmits(['pending-change'])
+
+const supabase = useSupabaseClient()
+
+const searchQuery = ref('')
+const searching = ref(false)
+const searchResult = ref(null)
+const searchDone = ref(false)
+const friends = ref([])
+const pendingReceived = ref([])
+const friendProfile = ref(null)
+
+let currentUserId = null
+
+onMounted(async () => {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+  currentUserId = user.id
+  await Promise.all([fetchFriends(), fetchPending()])
+})
+
+async function searchUser() {
+  if (!searchQuery.value.trim()) return
+  searching.value = true
+  searchResult.value = null
+  searchDone.value = false
+
+  const { data } = await supabase.from('profiles').select('id, username, avatar_url').ilike('username', searchQuery.value.trim()).single()
+
+  searchDone.value = true
+  searching.value = false
+
+  if (!data || data.id === currentUserId) { searchResult.value = null; return }
+  searchResult.value = data
+}
+
+const searchResultStatus = computed(() => {
+  if (!searchResult.value) return ''
+  const id = searchResult.value.id
+  if (friends.value.some(f => f.profile?.id === id)) return 'Déjà ami'
+  if (pendingReceived.value.some(r => r.requester_id === id)) return 'Demande reçue'
+  return 'Ajouter'
+})
+
+async function sendRequest() {
+  if (!searchResult.value || !currentUserId) return
+  await supabase.from('friendships').insert({ requester_id: currentUserId, addressee_id: searchResult.value.id })
+  searchResult.value = null
+  searchQuery.value = ''
+  searchDone.value = false
+}
+
+async function fetchPending() {
+  const { data } = await supabase.from('friendships').select('*, profile:profiles!requester_id(id, username, avatar_url)')
+    .eq('addressee_id', currentUserId).eq('status', 'pending')
+  pendingReceived.value = data || []
+}
+
+async function acceptRequest(id) {
+  await supabase.from('friendships').update({ status: 'accepted' }).eq('id', id)
+  await Promise.all([fetchFriends(), fetchPending()])
+  emit('pending-change', pendingReceived.value.length)
+}
+
+async function declineRequest(id) {
+  await supabase.from('friendships').delete().eq('id', id)
+  await fetchPending()
+  emit('pending-change', pendingReceived.value.length)
+}
+
+const { xpToLevel } = useXP()
+
+async function fetchFriends() {
+  const now = new Date()
+  const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+
+  const { data: sent } = await supabase.from('friendships').select('addressee_id, profile:profiles!addressee_id(id, username, avatar_url)')
+    .eq('requester_id', currentUserId).eq('status', 'accepted')
+
+  const { data: received } = await supabase.from('friendships').select('requester_id, profile:profiles!requester_id(id, username, avatar_url)')
+    .eq('addressee_id', currentUserId).eq('status', 'accepted')
+
+  const allFriends = [
+    ...(sent || []).map(f => ({ ...f, friendId: f.addressee_id, profile: f.profile })),
+    ...(received || []).map(f => ({ ...f, friendId: f.requester_id, profile: f.profile }))
+  ]
+
+  const enriched = await Promise.all(allFriends.map(async f => {
+    const [{ data: sessions }, { data: allSess }, { data: templates }] = await Promise.all([
+      supabase.from('sport_sessions').select('id').eq('user_id', f.friendId).gte('date', firstOfMonth),
+      supabase.from('sport_sessions').select('date').eq('user_id', f.friendId),
+      supabase.from('workout_templates').select('id').eq('user_id', f.friendId),
+    ])
+    const xp = (allSess?.length || 0) * 100 + (templates?.length || 0) * 30
+    return { ...f, sessionCount: sessions?.length || 0, xp, level: xpToLevel(xp) }
+  }))
+
+  friends.value = enriched
+}
+
+async function openFriendProfile(f) {
+  const { data: recentSessions } = await supabase.from('sport_sessions').select('*').eq('user_id', f.friendId)
+    .order('date', { ascending: false }).limit(5)
+
+  const { data: allSessions } = await supabase.from('sport_sessions').select('id').eq('user_id', f.friendId)
+
+  friendProfile.value = { ...f, recentSessions: recentSessions || [], totalSessions: allSessions?.length || 0 }
+}
+
+async function removeFriend(f) {
+  await supabase.from('friendships').delete()
+    .or(`and(requester_id.eq.${currentUserId},addressee_id.eq.${f.friendId}),and(requester_id.eq.${f.friendId},addressee_id.eq.${currentUserId})`)
+  friendProfile.value = null
+  await fetchFriends()
+}
+
+function formatDate(d) {
+  return new Date(d).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })
+}
+
+function catClass(cat) {
+  const map = {
+    push: 'bg-orange-500/10 border-orange-500/20 text-orange-300',
+    pull: 'bg-blue-500/10 border-blue-500/20 text-blue-300',
+    jambes: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300',
+    'full-body': 'bg-purple-500/10 border-purple-500/20 text-purple-300',
+    cardio: 'bg-red-500/10 border-red-500/20 text-red-300',
+    haut: 'bg-cyan-500/10 border-cyan-500/20 text-cyan-300',
+    bas: 'bg-yellow-500/10 border-yellow-500/20 text-yellow-300',
+  }
+  return map[cat] || 'bg-white/[0.06] border-white/[0.08] text-slate-400'
+}
+</script>
+
+<style scoped>
+.slide-up-enter-active, .slide-up-leave-active { transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+.slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(30px); }
+</style>

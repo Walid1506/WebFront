@@ -44,7 +44,7 @@
             <p class="font-[1000] text-yellow-400 text-lg tracking-tighter">{{ r.weight_kg }} <span class="text-xs text-yellow-600">kg</span></p>
             <p v-if="r.reps" class="text-slate-500 text-xs">{{ r.reps }} rép.</p>
           </div>
-          <button @click="deleteRecord(r.id)" class="p-2 rounded-xl text-slate-700 hover:text-red-400 transition opacity-0 group-hover:opacity-100">
+          <button @click="deleteRecord(r.id)" class="p-2 rounded-xl text-slate-500 hover:text-red-400 transition">
             <UIcon name="i-heroicons-trash" class="text-base" />
           </button>
         </div>

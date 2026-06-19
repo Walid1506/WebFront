@@ -174,6 +174,16 @@
           </div>
 
           <div class="mt-4 space-y-3 pt-4 border-t border-white/10">
+            <div v-if="sessionData.exercises.length > 0" class="flex gap-2">
+              <button
+                @click="saveAsTemplateOpen = true; templateName = sessionData.title"
+                class="flex-1 bg-violet-500/10 border border-violet-500/30 text-violet-300 font-black text-sm py-3.5 rounded-2xl hover:bg-violet-500/20 transition-all flex items-center justify-center gap-2"
+              >
+                <UIcon name="i-heroicons-bookmark" class="text-base" />
+                Sauvegarder comme modèle
+              </button>
+            </div>
+
             <button
               @click="openLibrary"
               class="w-full bg-white text-black font-black text-sm py-4 rounded-2xl hover:bg-slate-200 transition-all flex items-center justify-center gap-2 shadow-xl"
@@ -189,6 +199,24 @@
               Terminer la séance
             </button>
           </div>
+
+          <!-- Modal sauvegarder comme modèle -->
+          <Transition name="fade-modal">
+            <div v-if="saveAsTemplateOpen" class="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-[40px] flex items-center justify-center p-6 z-50">
+              <div class="bg-[#0f0f0f] border border-white/10 rounded-[30px] p-6 w-full">
+                <h3 class="text-white font-black text-xl mb-4">Nom du modèle</h3>
+                <input v-model="templateName" type="text" placeholder="Ex: Push lourd, Pull léger..." autofocus
+                  class="w-full bg-slate-900 border border-white/10 text-white font-bold rounded-2xl px-4 py-3 outline-none focus:border-violet-500 mb-4" />
+                <div class="flex gap-2">
+                  <button @click="saveAsTemplateOpen = false" class="flex-1 py-3 rounded-2xl bg-slate-900 text-slate-400 font-black">Annuler</button>
+                  <button @click="saveAsTemplate" :disabled="!templateName.trim() || savingTemplate"
+                    class="flex-1 py-3 rounded-2xl bg-violet-500 text-white font-black disabled:opacity-40">
+                    {{ savingTemplate ? '...' : 'Sauvegarder' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </Transition>
         </div>
 
         <div v-else-if="currentStep === 'library'" class="flex flex-col h-full w-full bg-[#050505]">
@@ -417,6 +445,11 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'save'])
 
+const supabase = useSupabaseClient()
+const saveAsTemplateOpen = ref(false)
+const templateName = ref('')
+const savingTemplate = ref(false)
+
 const currentStep = ref('main')
 const searchQuery = ref('')
 const activeCategory = ref('Tout')
@@ -433,6 +466,23 @@ const activeExo = ref<any>(null)
 const activeConfig = ref(createDefaultConfig())
 
 const categories = ['Tout', 'Pec', 'Dos', 'Jambes', 'Epaules', 'Bras', 'Abdos', 'Cardio', 'Mobilite']
+
+async function saveAsTemplate() {
+  if (!templateName.value.trim()) return
+  savingTemplate.value = true
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { savingTemplate.value = false; return }
+  await supabase.from('workout_templates').insert({
+    user_id: user.id,
+    name: templateName.value.trim(),
+    category: sessionData.value.category,
+    notes: sessionData.value.notes || '',
+    exercises: JSON.parse(JSON.stringify(sessionData.value.exercises))
+  })
+  savingTemplate.value = false
+  saveAsTemplateOpen.value = false
+  templateName.value = ''
+}
 
 const formattedDate = computed(() => {
   if (!props.date) return ''
@@ -603,8 +653,7 @@ function onImageError(event: Event) {
   transform: translateX(-30px);
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 0px;
-  background: transparent;
-}
+.custom-scrollbar::-webkit-scrollbar { width: 0px; background: transparent; }
+.fade-modal-enter-active, .fade-modal-leave-active { transition: opacity 0.2s; }
+.fade-modal-enter-from, .fade-modal-leave-to { opacity: 0; }
 </style>

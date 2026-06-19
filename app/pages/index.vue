@@ -22,6 +22,15 @@
       </div>
 
       <div class="flex items-center gap-2">
+        <!-- Cloche notifications -->
+        <button @click="activeTab = 'amis'" class="relative w-9 h-9 rounded-2xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center shrink-0 active:scale-95 transition-all">
+          <UIcon name="i-heroicons-bell" class="text-slate-400 text-lg" />
+          <span v-if="pendingCount > 0"
+            class="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-violet-500 rounded-full flex items-center justify-center px-1 shadow-lg shadow-violet-500/40">
+            <span class="text-white text-[10px] font-black">{{ pendingCount }}</span>
+          </span>
+        </button>
+
         <button @click="activeTab = 'profil'" class="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-400 to-emerald-400 p-[2px] shrink-0">
           <div class="w-full h-full bg-[#060d1a] rounded-full overflow-hidden flex items-center justify-center">
             <img v-if="avatarUrl" :src="avatarUrl" class="w-full h-full object-cover" alt="Avatar" />
@@ -55,11 +64,24 @@
         <div class="relative p-6 md:p-10 rounded-[30px] md:rounded-[45px] bg-white/[0.04] backdrop-blur-2xl border border-white/[0.08] overflow-hidden shadow-2xl">
           <div class="absolute -top-10 -right-10 w-40 h-40 bg-cyan-500/20 rounded-full blur-[60px] pointer-events-none"></div>
           <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-emerald-500/15 rounded-full blur-[60px] pointer-events-none"></div>
-          <h1 class="relative text-3xl md:text-5xl font-[1000] tracking-tighter leading-none mb-2 md:mb-4 text-white">
-            Salut, <span class="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">{{ userName }}</span> !
-          </h1>
-          <p class="relative text-slate-400 font-medium italic text-sm md:text-base">Ta rigueur est ta seule limite.</p>
+          <div class="relative flex items-start justify-between gap-4">
+            <div>
+              <h1 class="text-3xl md:text-5xl font-[1000] tracking-tighter leading-none mb-2 md:mb-4 text-white">
+                Salut, <span class="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">{{ userName }}</span> !
+              </h1>
+              <p class="text-slate-400 font-medium italic text-sm md:text-base">Ta rigueur est ta seule limite.</p>
+            </div>
+            <!-- Mini badge niveau -->
+            <button @click="activeTab = 'niveau'" class="shrink-0 flex flex-col items-center gap-1 active:scale-95 transition-all">
+              <div class="w-14 h-14 rounded-[18px] flex items-center justify-center shadow-xl"
+                :class="homeLevelColor ? `bg-gradient-to-br ${homeLevelColor}` : 'bg-white/10'">
+                <span class="text-white font-[1000] text-xl">{{ homeLevelInfo?.level || '?' }}</span>
+              </div>
+              <span class="text-[9px] font-black text-slate-500 uppercase tracking-wider">{{ homeLevelInfo?.name || 'XP' }}</span>
+            </button>
+          </div>
         </div>
+        <ProgrammeWidget :today-session="todaySession" @open-today="openToday" />
         <Dashboard />
       </section>
 
@@ -82,6 +104,24 @@
           <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Nutrition</h2>
         </div>
         <AlimentationSection />
+      </section>
+
+      <!-- Niveau / XP -->
+      <section :class="{ 'hidden': activeTab !== 'niveau' }" class="p-4 space-y-4 mt-4 md:mt-8">
+        <div class="flex items-center gap-3 px-1">
+          <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-yellow-400 to-orange-500 rounded-full"></div>
+          <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Progression</h2>
+        </div>
+        <Niveau />
+      </section>
+
+      <!-- Amis -->
+      <section :class="{ 'hidden': activeTab !== 'amis' }" class="p-4 space-y-4 mt-4 md:mt-8">
+        <div class="flex items-center gap-3 px-1">
+          <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-cyan-400 to-emerald-400 rounded-full"></div>
+          <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Amis</h2>
+        </div>
+        <Amis @pending-change="pendingCount = $event" />
       </section>
 
       <!-- Profil -->
@@ -152,6 +192,79 @@
       @close="closeModal"
       @save="saveSession"
     />
+
+    <!-- ── Picker de séance (calendrier) ── -->
+    <Transition name="slide-up">
+      <div v-if="pickerOpen" class="fixed inset-0 z-[250] flex items-end justify-center bg-black/60 backdrop-blur-sm" @click.self="pickerOpen = false">
+        <div class="w-full max-w-lg bg-[#0a1525] rounded-t-[36px] border-t border-white/[0.08] overflow-hidden">
+          <!-- Handle -->
+          <div class="flex justify-center pt-3 pb-1">
+            <div class="w-10 h-1 bg-white/20 rounded-full"></div>
+          </div>
+
+          <div class="px-5 pt-3 pb-4">
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{{ formatPickerDate(pickerDate) }}</p>
+            <h3 class="text-xl font-black text-white mt-0.5 mb-4">Quelle séance ?</h3>
+
+            <!-- Nouvelle séance from scratch -->
+            <button @click="openNewSession"
+              class="w-full flex items-center gap-4 bg-white/[0.06] border border-white/[0.10] rounded-[20px] p-4 mb-4 active:scale-95 transition-all">
+              <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500 to-emerald-500 flex items-center justify-center shrink-0">
+                <UIcon name="i-heroicons-plus" class="text-white text-lg" />
+              </div>
+              <div class="text-left">
+                <p class="text-white font-black text-sm">Nouvelle séance</p>
+                <p class="text-slate-500 text-xs">Créer depuis zéro</p>
+              </div>
+            </button>
+
+            <!-- Séances sauvegardées -->
+            <div v-if="savedTemplates.length > 0">
+              <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Mes séances</p>
+              <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
+                <button v-for="t in savedTemplates" :key="t.id" @click="assignTemplate(t)"
+                  class="w-full flex items-center gap-4 bg-white/[0.04] border border-white/[0.08] rounded-[18px] p-3.5 active:scale-95 transition-all text-left hover:bg-white/[0.07]">
+                  <div class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 font-black text-base" :class="templateBg(t.category)">
+                    {{ t.name.charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-white font-black text-sm truncate">{{ t.name }}</p>
+                    <p class="text-slate-500 text-xs truncate">{{ t.notes || 'Aucune note' }}</p>
+                  </div>
+                  <UIcon name="i-heroicons-arrow-right" class="text-slate-600 text-sm shrink-0" />
+                </button>
+              </div>
+            </div>
+            <div v-else-if="!loadingPicker" class="text-center py-4">
+              <p class="text-slate-600 text-xs font-black mb-3">Aucune séance sauvegardée</p>
+            </div>
+
+            <!-- Gérer les séances -->
+            <button @click="pickerOpen = false; manageSessionsOpen = true"
+              class="w-full mt-3 flex items-center justify-center gap-2 text-slate-500 text-xs font-black py-2 hover:text-slate-300 transition">
+              <UIcon name="i-heroicons-cog-6-tooth" class="text-sm" />
+              Gérer mes séances sauvegardées
+            </button>
+          </div>
+          <div class="pb-8"></div>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- ── Gérer mes séances sauvegardées ── -->
+    <Transition name="slide-up">
+      <div v-if="manageSessionsOpen" class="fixed inset-0 z-[260] bg-[#060d1a]/98 backdrop-blur-2xl flex flex-col">
+        <div class="flex items-center gap-4 px-5 py-5 border-b border-white/[0.08]">
+          <button @click="manageSessionsOpen = false" class="p-2 rounded-xl bg-white/[0.06] text-slate-400 hover:text-white transition">
+            <UIcon name="i-heroicons-arrow-left" class="text-xl" />
+          </button>
+          <h2 class="text-xl font-black">Mes séances</h2>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4">
+          <Programmes @refresh="refreshTemplates" />
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -164,6 +277,10 @@ import Dashboard from '~/components/custom/dashboard.vue'
 import AlimentationSection from '~/components/custom/alimentation.vue'
 import Records from '~/components/custom/records.vue'
 import TimerRepos from '~/components/custom/timer.vue'
+import ProgrammeWidget from '~/components/custom/programme-widget.vue'
+import Programmes from '~/components/custom/programmes.vue'
+import Amis from '~/components/custom/amis.vue'
+import Niveau from '~/components/custom/niveau.vue'
 
 const router = useRouter()
 const supabase = useSupabaseClient()
@@ -173,6 +290,8 @@ const tabs = [
   { id: 'accueil', label: 'Accueil', icon: 'i-heroicons-home' },
   { id: 'agenda', label: 'Agenda', icon: 'i-heroicons-calendar' },
   { id: 'nutrition', label: 'Nutrition', icon: 'i-heroicons-fire' },
+  { id: 'niveau', label: 'Niveau', icon: 'i-heroicons-star' },
+  { id: 'amis', label: 'Amis', icon: 'i-heroicons-user-group' },
 ]
 
 const isModalOpen = ref(false)
@@ -183,6 +302,33 @@ const userName = ref('Invité')
 const avatarUrl = ref('')
 const avatarInput = ref(null)
 const uploadingAvatar = ref(false)
+
+const pickerOpen = ref(false)
+const pickerDate = ref(null)
+const savedTemplates = ref([])
+const loadingPicker = ref(false)
+const manageSessionsOpen = ref(false)
+const pendingCount = ref(0)
+
+function localDateStr(d = new Date()) {
+  return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-')
+}
+
+const todaySession = computed(() => {
+  return sessions.value.find(s => s.date === localDateStr()) || null
+})
+
+// Mini badge niveau sur l'accueil
+const { totalXP: homeXP, levelInfo: homeLevelInfo, fetchXP: fetchHomeXP } = useXP()
+const homeLevelColor = computed(() => homeLevelInfo.value?.color || '')
+
+const LEVEL_COLORS_HOME = [
+  '', 'from-slate-400 to-slate-500', 'from-slate-300 to-slate-400',
+  'from-emerald-400 to-green-500', 'from-emerald-400 to-teal-500',
+  'from-cyan-400 to-blue-500', 'from-blue-400 to-indigo-500',
+  'from-violet-400 to-purple-600', 'from-purple-400 to-pink-500',
+  'from-yellow-400 to-orange-500', 'from-yellow-300 to-amber-500',
+]
 
 let currentUserId = null
 
@@ -200,6 +346,8 @@ onMounted(async () => {
   userName.value = profile?.username || user.email?.split('@')[0] || 'Invité'
   avatarUrl.value = profile?.avatar_url || ''
   await fetchSessions()
+  fetchHomeXP()
+  fetchPendingCount(user.id)
 })
 
 function triggerAvatarUpload() {
@@ -261,11 +409,77 @@ async function handleDeleteSession(dateStr) {
   await fetchSessions()
 }
 
-function onDateSelected(date) {
-  selectedDate.value = date
-  const session = sessions.value.find(s => s.date === date)
-  sessionToEdit.value = session ? JSON.parse(JSON.stringify(session.data)) : null
+async function onDateSelected(date) {
+  const existing = sessions.value.find(s => s.date === date)
+  if (existing) {
+    // Date already has a session → open editor directly
+    selectedDate.value = date
+    sessionToEdit.value = JSON.parse(JSON.stringify(existing.data))
+    isModalOpen.value = true
+    return
+  }
+  // No session yet → show picker
+  pickerDate.value = date
+  pickerOpen.value = true
+  loadingPicker.value = true
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    const { data } = await supabase.from('workout_templates').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+    savedTemplates.value = data || []
+  }
+  loadingPicker.value = false
+}
+
+function openNewSession() {
+  pickerOpen.value = false
+  selectedDate.value = pickerDate.value
+  sessionToEdit.value = null
   isModalOpen.value = true
+}
+
+async function assignTemplate(template) {
+  pickerOpen.value = false
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user || !pickerDate.value) return
+  const sessionData = {
+    title: template.name,
+    category: template.category || '',
+    notes: template.notes || '',
+    exercises: template.exercises || []
+  }
+  await supabase.from('sport_sessions').insert({ user_id: user.id, date: pickerDate.value, data: sessionData })
+  await fetchSessions()
+}
+
+function formatPickerDate(dateStr) {
+  if (!dateStr) return ''
+  return new Date(dateStr).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+}
+
+async function fetchPendingCount(uid) {
+  const { count } = await supabase.from('friendships').select('id', { count: 'exact', head: true })
+    .eq('addressee_id', uid).eq('status', 'pending')
+  pendingCount.value = count || 0
+}
+
+async function refreshTemplates() {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+  const { data } = await supabase.from('workout_templates').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+  savedTemplates.value = data || []
+}
+
+function templateBg(cat) {
+  const map = {
+    push: 'bg-orange-500/10 text-orange-400',
+    pull: 'bg-blue-500/10 text-blue-400',
+    jambes: 'bg-emerald-500/10 text-emerald-400',
+    'full-body': 'bg-purple-500/10 text-purple-400',
+    cardio: 'bg-red-500/10 text-red-400',
+    haut: 'bg-cyan-500/10 text-cyan-400',
+    bas: 'bg-yellow-500/10 text-yellow-400',
+  }
+  return map[cat] || 'bg-violet-500/10 text-violet-400'
 }
 
 function closeModal() {
@@ -274,8 +488,17 @@ function closeModal() {
   selectedDate.value = null
 }
 
+function openToday() {
+  onDateSelected(localDateStr())
+}
+
 async function handleLogout() {
   await supabase.auth.signOut()
   window.location.href = '/login'
 }
 </script>
+
+<style scoped>
+.slide-up-enter-active, .slide-up-leave-active { transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+.slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(20px); }
+</style>
