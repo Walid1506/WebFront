@@ -194,7 +194,12 @@ async function searchUser() {
   searchResult.value = null
   searchDone.value = false
 
-  const { data } = await supabase.from('profiles').select('id, username, avatar_url').ilike('username', searchQuery.value.trim()).single()
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, username, avatar_url')
+    .ilike('username', searchQuery.value.trim())
+    .limit(1)
+    .maybeSingle()
 
   searchDone.value = true
   searching.value = false
@@ -220,9 +225,17 @@ async function sendRequest() {
 }
 
 async function fetchPending() {
-  const { data } = await supabase.from('friendships').select('*, profile:profiles!requester_id(id, username, avatar_url)')
+  const { data: requests } = await supabase.from('friendships').select('*')
     .eq('addressee_id', currentUserId).eq('status', 'pending')
-  pendingReceived.value = data || []
+  if (!requests?.length) { pendingReceived.value = []; return }
+
+  const ids = requests.map(r => r.requester_id)
+  const { data: profiles } = await supabase.from('profiles').select('id, username, avatar_url').in('id', ids)
+
+  pendingReceived.value = requests.map(r => ({
+    ...r,
+    profile: profiles?.find(p => p.id === r.requester_id) || null
+  }))
 }
 
 async function acceptRequest(id) {
@@ -241,27 +254,36 @@ const { xpToLevel } = useXP()
 
 async function fetchFriends() {
   const now = new Date()
-  const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+  const firstOfMonth = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), '01'].join('-')
 
-  const { data: sent } = await supabase.from('friendships').select('addressee_id, profile:profiles!addressee_id(id, username, avatar_url)')
-    .eq('requester_id', currentUserId).eq('status', 'accepted')
+  const [{ data: sent }, { data: received }] = await Promise.all([
+    supabase.from('friendships').select('id, addressee_id').eq('requester_id', currentUserId).eq('status', 'accepted'),
+    supabase.from('friendships').select('id, requester_id').eq('addressee_id', currentUserId).eq('status', 'accepted'),
+  ])
 
-  const { data: received } = await supabase.from('friendships').select('requester_id, profile:profiles!requester_id(id, username, avatar_url)')
-    .eq('addressee_id', currentUserId).eq('status', 'accepted')
-
-  const allFriends = [
-    ...(sent || []).map(f => ({ ...f, friendId: f.addressee_id, profile: f.profile })),
-    ...(received || []).map(f => ({ ...f, friendId: f.requester_id, profile: f.profile }))
+  const allFriendIds = [
+    ...(sent || []).map(f => f.addressee_id),
+    ...(received || []).map(f => f.requester_id),
   ]
 
-  const enriched = await Promise.all(allFriends.map(async f => {
+  if (!allFriendIds.length) { friends.value = []; return }
+
+  const { data: profiles } = await supabase.from('profiles').select('id, username, avatar_url').in('id', allFriendIds)
+
+  const enriched = await Promise.all(allFriendIds.map(async friendId => {
     const [{ data: sessions }, { data: allSess }, { data: templates }] = await Promise.all([
-      supabase.from('sport_sessions').select('id').eq('user_id', f.friendId).gte('date', firstOfMonth),
-      supabase.from('sport_sessions').select('date').eq('user_id', f.friendId),
-      supabase.from('workout_templates').select('id').eq('user_id', f.friendId),
+      supabase.from('sport_sessions').select('id').eq('user_id', friendId).gte('date', firstOfMonth),
+      supabase.from('sport_sessions').select('date').eq('user_id', friendId),
+      supabase.from('workout_templates').select('id').eq('user_id', friendId),
     ])
     const xp = (allSess?.length || 0) * 100 + (templates?.length || 0) * 30
-    return { ...f, sessionCount: sessions?.length || 0, xp, level: xpToLevel(xp) }
+    return {
+      friendId,
+      profile: profiles?.find(p => p.id === friendId) || null,
+      sessionCount: sessions?.length || 0,
+      xp,
+      level: xpToLevel(xp)
+    }
   }))
 
   friends.value = enriched
@@ -277,8 +299,10 @@ async function openFriendProfile(f) {
 }
 
 async function removeFriend(f) {
-  await supabase.from('friendships').delete()
-    .or(`and(requester_id.eq.${currentUserId},addressee_id.eq.${f.friendId}),and(requester_id.eq.${f.friendId},addressee_id.eq.${currentUserId})`)
+  await Promise.all([
+    supabase.from('friendships').delete().eq('requester_id', currentUserId).eq('addressee_id', f.friendId),
+    supabase.from('friendships').delete().eq('requester_id', f.friendId).eq('addressee_id', currentUserId),
+  ])
   friendProfile.value = null
   await fetchFriends()
 }

@@ -341,9 +341,20 @@ onMounted(async () => {
     .from('profiles')
     .select('username, avatar_url')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
-  userName.value = profile?.username || user.email?.split('@')[0] || 'Invité'
+  const defaultUsername = user.email?.split('@')[0] || 'user'
+
+  if (!profile) {
+    await supabase.from('profiles').upsert({ id: user.id, username: defaultUsername }, { onConflict: 'id' })
+    userName.value = defaultUsername
+  } else if (!profile.username) {
+    await supabase.from('profiles').update({ username: defaultUsername }).eq('id', user.id)
+    userName.value = defaultUsername
+  } else {
+    userName.value = profile.username
+  }
+
   avatarUrl.value = profile?.avatar_url || ''
   await fetchSessions()
   fetchHomeXP()
