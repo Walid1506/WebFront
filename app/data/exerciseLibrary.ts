@@ -801,7 +801,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Version câble pour des élévations latérales avec tension constante tout au long du mouvement.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Upright_Cable_Row/0.jpg`
+    mediaUrl: `${CDN}/Side_Lateral_Raise/0.jpg`
   },
   {
     id: 79,
@@ -811,7 +811,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Unilatéral pour cibler chaque deltoïde indépendamment. Tension constante sur l\'arc complet.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Upright_Cable_Row/0.jpg`
+    mediaUrl: `${CDN}/Side_Lateral_Raise/0.jpg`
   },
   {
     id: 80,
@@ -821,7 +821,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Travail du deltoïde antérieur avec tension continue, plus efficace qu\'avec haltères.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Face_Pull/0.jpg`
+    mediaUrl: `${CDN}/Front_Dumbbell_Raise/0.jpg`
   },
   {
     id: 81,
@@ -945,7 +945,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Isolation du triceps avec une contraction maximale en extension complète du bras.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/EZ-Bar_Skullcrusher/0.jpg`
+    mediaUrl: `${CDN}/Tricep_Dumbbell_Kickback/0.jpg`
   },
 
   // ─── POULIE - JAMBES & FESSIERS ───────────────────────────────────────────
@@ -957,7 +957,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Écartement de la jambe en dehors pour cibler le fessier moyen et le TFL.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Barbell_Hip_Thrust/0.jpg`
+    mediaUrl: `${CDN}/Cable_Hip_Adduction/0.jpg`
   },
   {
     id: 94,
@@ -977,7 +977,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Extension de hanche vers l\'arrière avec câble. Excellent isolant des fessiers.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Barbell_Hip_Thrust/0.jpg`
+    mediaUrl: `${CDN}/Glute_Kickback/0.jpg`
   },
   {
     id: 96,
@@ -1060,5 +1060,27 @@ export const exerciseLibrary = [
     description: 'Crunch câble à genoux depuis la poulie haute. Version chargée et efficace pour les abdos.',
     mediaType: 'image',
     mediaUrl: `${CDN}/Cable_Crunch/0.jpg`
+  },
+
+  // ─── MACHINE - ÉPAULES & DOS ──────────────────────────────────────────────
+  {
+    id: 104,
+    name: 'Presse épaule machine',
+    muscle: 'Épaules',
+    category: 'Epaules',
+    equipment: 'Machine',
+    description: 'Développé épaule guidé en machine. Idéal pour progresser sans risque articulaire.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Leverage_Shoulder_Press/0.jpg`
+  },
+  {
+    id: 105,
+    name: 'Traction assistée machine',
+    muscle: 'Dos',
+    category: 'Dos',
+    equipment: 'Machine',
+    description: 'Traction avec contrepoids pour apprendre le mouvement et progresser vers les tractions libres.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Chin-Up/0.jpg`
   }
 ]
