@@ -102,11 +102,14 @@
               {{ isOnline(f.friendId) ? 'En ligne' : (f.lastSeen ? formatLastSeen(f.lastSeen) : 'Hors ligne') }}
             </p>
           </div>
-          <button @click="chatFriend = f; resetUnread(f)"
-            class="relative w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 active:scale-90 transition-all"
+          <button
+            type="button"
+            @click.stop="openChat(f)"
+            class="relative w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 active:scale-90 transition-all"
+            style="touch-action: manipulation"
             :style="{ backgroundColor: `color-mix(in srgb, var(--accent-solid) 15%, transparent)`, border: `1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent)` }">
-            <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="text-lg" :style="{ color: 'var(--accent-solid)' }" />
-            <span v-if="f.unreadCount > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
+            <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="text-lg pointer-events-none" :style="{ color: 'var(--accent-solid)' }" />
+            <span v-if="f.unreadCount > 0" class="pointer-events-none absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
               <span class="text-white text-[9px] font-black">{{ f.unreadCount > 9 ? '9+' : f.unreadCount }}</span>
             </span>
           </button>
@@ -477,6 +480,11 @@ function formatLastSeen(ts) {
 function resetUnread(f) {
   const idx = friends.value.findIndex(fr => fr.friendId === f.friendId)
   if (idx !== -1) friends.value[idx] = { ...friends.value[idx], unreadCount: 0 }
+}
+
+function openChat(f) {
+  chatFriend.value = f
+  resetUnread(f)
 }
 
 function calcVolume(sessions) {

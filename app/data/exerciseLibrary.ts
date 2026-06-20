@@ -706,8 +706,8 @@ export const exerciseLibrary = [
     category: 'Pec',
     equipment: 'Câbles',
     description: 'Cible le haut des pectoraux avec un angle ascendant. Excellent pour finir une séance pec.',
-    mediaType: 'gif',
-    mediaUrl: `${FP}/Low-Cable-Crossover.gif`
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Low_Cable_Crossover/0.jpg`
   },
   {
     id: 70,
@@ -717,7 +717,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Fly horizontal avec câbles pour un travail uniforme du pec. Prise neutre, coudes légèrement fléchis.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Cable_Fly/0.jpg`
+    mediaUrl: `${CDN}/Single-Arm_Cable_Crossover/0.jpg`
   },
   {
     id: 71,
@@ -726,8 +726,8 @@ export const exerciseLibrary = [
     category: 'Pec',
     equipment: 'Câbles',
     description: 'Presse pectorale fonctionnelle debout avec câbles. Engage aussi le gainage.',
-    mediaType: 'gif',
-    mediaUrl: `${FP}/Standing-Cable-Chest-Press.gif`
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Chest_Press/0.jpg`
   },
   {
     id: 72,
@@ -748,8 +748,8 @@ export const exerciseLibrary = [
     category: 'Dos',
     equipment: 'Câbles',
     description: 'Prise neutre serrée pour cibler les dorsaux et les biceps simultanément.',
-    mediaType: 'gif',
-    mediaUrl: `${FP}/Close-Grip-Lat-Pulldown.gif`
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Close-Grip_Front_Lat_Pulldown/0.jpg`
   },
   {
     id: 74,
@@ -758,8 +758,8 @@ export const exerciseLibrary = [
     category: 'Dos',
     equipment: 'Câbles',
     description: 'Isolation pure des dorsaux, bras tendus. Parfait pour sentir et activer les dorsaux.',
-    mediaType: 'gif',
-    mediaUrl: `${FP}/Straight-Arm-Pulldown.gif`
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Elevated_Cable_Rows/0.jpg`
   },
   {
     id: 75,
@@ -769,7 +769,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Tirage horizontal unilatéral pour corriger les déséquilibres et maximiser l\'amplitude.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/One_Arm_Cable_Row/0.jpg`
+    mediaUrl: `${CDN}/Seated_Cable_Rows/0.jpg`
   },
   {
     id: 76,
@@ -779,7 +779,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Tirage diagonal avec corde depuis la poulie haute. Très bon pour la partie basse des dorsaux.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Cable_Straight_Arm_Pulldown/0.jpg`
+    mediaUrl: `${CDN}/Elevated_Cable_Rows/0.jpg`
   },
   {
     id: 77,
@@ -789,7 +789,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Lat pulldown prise large et pronation, focus sur l\'ouverture du dos et la largeur.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Lat_Pulldown_-_Close_Grip/0.jpg`
+    mediaUrl: `${CDN}/Close-Grip_Front_Lat_Pulldown/0.jpg`
   },
 
   // ─── POULIE - ÉPAULES ─────────────────────────────────────────────────────
@@ -800,8 +800,8 @@ export const exerciseLibrary = [
     category: 'Epaules',
     equipment: 'Câbles',
     description: 'Version câble pour des élévations latérales avec tension constante tout au long du mouvement.',
-    mediaType: 'gif',
-    mediaUrl: `${FP}/Cable-Lateral-Raise.gif`
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Upright_Cable_Row/0.jpg`
   },
   {
     id: 79,
@@ -811,7 +811,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Unilatéral pour cibler chaque deltoïde indépendamment. Tension constante sur l\'arc complet.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/One-Arm_Cable_Lateral_Raise/0.jpg`
+    mediaUrl: `${CDN}/Upright_Cable_Row/0.jpg`
   },
   {
     id: 80,
@@ -820,8 +820,8 @@ export const exerciseLibrary = [
     category: 'Epaules',
     equipment: 'Câbles',
     description: 'Travail du deltoïde antérieur avec tension continue, plus efficace qu\'avec haltères.',
-    mediaType: 'gif',
-    mediaUrl: `${FP}/Cable-Front-Raise.gif`
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Face_Pull/0.jpg`
   },
   {
     id: 81,
@@ -840,8 +840,8 @@ export const exerciseLibrary = [
     category: 'Epaules',
     equipment: 'Câbles',
     description: 'Travaille le deltoïde moyen et les trapèzes. Prise serrée, tirer jusqu\'au menton.',
-    mediaType: 'gif',
-    mediaUrl: `${FP}/Cable-Upright-Row.gif`
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Upright_Cable_Row/0.jpg`
   },
 
   // ─── POULIE - BICEPS ──────────────────────────────────────────────────────
@@ -852,8 +852,8 @@ export const exerciseLibrary = [
     category: 'Bras',
     equipment: 'Câbles',
     description: 'Curl debout avec poulie basse pour une tension maximale sur les biceps en bas du mouvement.',
-    mediaType: 'gif',
-    mediaUrl: `${FP}/Standing-Cable-Biceps-Curl.gif`
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Barbell_Curl/0.jpg`
   },
   {
     id: 84,
@@ -863,7 +863,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Curl marteau avec corde à la poulie. Travaille le brachial et le brachioradial.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Cable_Rope_Hammer_Curl/0.jpg`
+    mediaUrl: `${CDN}/Alternate_Incline_Dumbbell_Curl/0.jpg`
   },
   {
     id: 85,
@@ -872,8 +872,8 @@ export const exerciseLibrary = [
     category: 'Bras',
     equipment: 'Câbles',
     description: 'Curl depuis la poulie haute, bras tendu à l\'horizontale. Excellent pour la contraction des biceps.',
-    mediaType: 'gif',
-    mediaUrl: `${FP}/Overhead-Cable-Curl.gif`
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Overhead_Cable_Curl/0.jpg`
   },
   {
     id: 86,
@@ -883,7 +883,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Curl unilatéral pour corriger les asymétries et mieux contrôler la supination.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Cable_Standing_Curl/0.jpg`
+    mediaUrl: `${CDN}/Cable_Preacher_Curl/0.jpg`
   },
   {
     id: 87,
@@ -904,8 +904,8 @@ export const exerciseLibrary = [
     category: 'Bras',
     equipment: 'Câbles',
     description: 'Extension triceps avec corde. Les mains s\'écartent en bas pour maximaliser la contraction.',
-    mediaType: 'gif',
-    mediaUrl: `${FP}/Rope-Pushdown.gif`
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Triceps_Pushdown/0.jpg`
   },
   {
     id: 89,
@@ -915,7 +915,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Pushdown avec barre droite. Prise pronation pour accent sur le chef latéral.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Cable_Pushdown/0.jpg`
+    mediaUrl: `${CDN}/Triceps_Pushdown/0.jpg`
   },
   {
     id: 90,
@@ -924,8 +924,8 @@ export const exerciseLibrary = [
     category: 'Bras',
     equipment: 'Câbles',
     description: 'Variante avec barre en V pour un meilleur angle de poignet et plus de confort.',
-    mediaType: 'gif',
-    mediaUrl: `${FP}/Triceps-Pushdown.gif`
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Lying_Triceps_Extension/0.jpg`
   },
   {
     id: 91,
@@ -945,7 +945,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Isolation du triceps avec une contraction maximale en extension complète du bras.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Cable_Triceps_Kickback/0.jpg`
+    mediaUrl: `${CDN}/EZ-Bar_Skullcrusher/0.jpg`
   },
 
   // ─── POULIE - JAMBES & FESSIERS ───────────────────────────────────────────
@@ -957,7 +957,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Écartement de la jambe en dehors pour cibler le fessier moyen et le TFL.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Cable_Hip_Abduction/0.jpg`
+    mediaUrl: `${CDN}/Barbell_Hip_Thrust/0.jpg`
   },
   {
     id: 94,
@@ -976,8 +976,8 @@ export const exerciseLibrary = [
     category: 'Jambes',
     equipment: 'Câbles',
     description: 'Extension de hanche vers l\'arrière avec câble. Excellent isolant des fessiers.',
-    mediaType: 'gif',
-    mediaUrl: `${FP}/Cable-Glute-Kickback.gif`
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Barbell_Hip_Thrust/0.jpg`
   },
   {
     id: 96,
@@ -987,7 +987,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Curl des ischios en position debout avec câble cheville. Bonne amplitude et isolation.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Standing_Cable_Leg_Curl/0.jpg`
+    mediaUrl: `${CDN}/Seated_Leg_Curl/0.jpg`
   },
   {
     id: 97,
@@ -997,7 +997,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Charnière de hanche avec câble entre les jambes. Excellent pour ischios et fessiers.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Cable_Pull_Through/0.jpg`
+    mediaUrl: `${CDN}/Romanian_Deadlift/0.jpg`
   },
   {
     id: 98,
@@ -1006,8 +1006,8 @@ export const exerciseLibrary = [
     category: 'Jambes',
     equipment: 'Câbles',
     description: 'Squat avec résistance câble. Maintient la tension sur les quads tout au long du mouvement.',
-    mediaType: 'gif',
-    mediaUrl: `${FP}/Cable-Squat.gif`
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Split_Squat_with_Dumbbells/0.jpg`
   },
 
   // ─── POULIE - ABDOS & CORE ────────────────────────────────────────────────
@@ -1018,8 +1018,8 @@ export const exerciseLibrary = [
     category: 'Abdos',
     equipment: 'Câbles',
     description: 'Rotation en diagonale haute vers basse. Travaille les obliques et le gainage rotatif.',
-    mediaType: 'gif',
-    mediaUrl: `${FP}/Cable-Woodchop.gif`
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Standing_Cable_Wood_Chop/0.jpg`
   },
   {
     id: 100,
@@ -1029,7 +1029,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Rotation de bas en haut pour cibler les obliques inférieurs et la chaine antérieure.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Cable_Woodchop/0.jpg`
+    mediaUrl: `${CDN}/Standing_Cable_Wood_Chop/0.jpg`
   },
   {
     id: 101,
@@ -1048,8 +1048,8 @@ export const exerciseLibrary = [
     category: 'Abdos',
     equipment: 'Câbles',
     description: 'Rotation du tronc avec résistance câble. Cible les obliques avec tension constante.',
-    mediaType: 'gif',
-    mediaUrl: `${FP}/Cable-Oblique-Crunch.gif`
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Russian_Twist/0.jpg`
   },
   {
     id: 103,
@@ -1058,7 +1058,7 @@ export const exerciseLibrary = [
     category: 'Abdos',
     equipment: 'Câbles',
     description: 'Crunch câble à genoux depuis la poulie haute. Version chargée et efficace pour les abdos.',
-    mediaType: 'gif',
-    mediaUrl: `${FP}/Kneeling-Cable-Crunch.gif`
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Crunch/0.jpg`
   }
 ]
