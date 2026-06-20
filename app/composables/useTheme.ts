@@ -9,8 +9,6 @@ export const THEMES = {
   sakura: {
     id: 'sakura', name: 'Sakura', emoji: '🌸',
     bg: '#1e0818',
-    bgImage: '/images/gif sakura.gif',
-    bgOverlay: 'rgba(20, 4, 16, 0.55)',
     blobs: ['rgba(244,114,182,0.30)', 'rgba(217,70,239,0.22)', 'rgba(251,113,133,0.20)', 'rgba(236,72,153,0.18)', 'rgba(192,38,211,0.16)'],
     accentFrom: '#f472b6', accentTo: '#e879f9', accentSolid: '#f472b6',
     preview: ['#f472b6', '#e879f9', '#fb7185'],

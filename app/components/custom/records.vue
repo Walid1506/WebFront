@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white/[0.04] backdrop-blur-2xl rounded-[28px] md:rounded-[40px] p-5 md:p-8 border border-white/[0.08] shadow-2xl relative overflow-hidden">
-    <div class="absolute -top-10 -right-10 w-40 h-40 bg-violet-500/10 rounded-full blur-[70px] pointer-events-none"></div>
+    <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[70px] pointer-events-none" style="background: color-mix(in srgb, var(--accent-solid) 10%, transparent)"></div>
     <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-amber-500/10 rounded-full blur-[70px] pointer-events-none"></div>
     <div>
     <!-- Header -->

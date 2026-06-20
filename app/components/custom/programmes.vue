@@ -3,11 +3,11 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-2 h-6 bg-gradient-to-b from-violet-400 to-purple-600 rounded-full"></div>
+        <div class="w-2 h-6 bg-gradient-to-b from-[var(--accent-from)] to-[var(--accent-to)] rounded-full"></div>
         <h2 class="text-xl font-black uppercase tracking-tighter">Mes séances</h2>
       </div>
       <button @click="openCreate"
-        class="flex items-center gap-2 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-black px-4 py-2 rounded-2xl text-sm shadow-lg shadow-violet-500/20 active:scale-95 transition-all">
+        class="flex items-center gap-2 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black px-4 py-2 rounded-2xl text-sm shadow-lg shadow-[color:var(--accent-solid)]/20 active:scale-95 transition-all">
         <UIcon name="i-heroicons-plus" />
         Créer
       </button>
@@ -15,12 +15,12 @@
 
     <!-- Empty -->
     <div v-if="sessions.length === 0" class="bg-white/[0.04] backdrop-blur-2xl rounded-[28px] border border-white/[0.08] p-8 text-center">
-      <div class="w-14 h-14 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mx-auto mb-3">
-        <UIcon name="i-heroicons-clipboard-document-list" class="text-2xl text-violet-400" />
+      <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background: color-mix(in srgb, var(--accent-solid) 10%, transparent); border: 1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent)">
+        <UIcon name="i-heroicons-clipboard-document-list" class="text-2xl" style="color: var(--accent-solid)" />
       </div>
       <p class="text-white font-black">Aucune séance sauvegardée</p>
       <p class="text-slate-500 text-sm mt-1">Crée des séances type — Push, Pull, Legs... — puis assigne-les à tes jours.</p>
-      <button @click="openCreate" class="mt-4 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-black px-6 py-3 rounded-2xl text-sm active:scale-95 transition-all">
+      <button @click="openCreate" class="mt-4 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black px-6 py-3 rounded-2xl text-sm active:scale-95 transition-all">
         Créer ma première séance
       </button>
     </div>
@@ -56,7 +56,7 @@
 
     <!-- ── Modal créer/éditer ── -->
     <Transition name="slide-up">
-      <div v-if="modalOpen" class="fixed inset-0 z-[200] bg-[#060d1a]/98 backdrop-blur-2xl flex flex-col">
+      <div v-if="modalOpen" class="fixed inset-0 z-[200] backdrop-blur-2xl flex flex-col" :style="{ backgroundColor: bgAlpha(theme.bg, 0.98) }">
         <div class="flex items-center gap-4 px-5 py-5 border-b border-white/[0.08]">
           <button @click="closeModal" class="p-2 rounded-xl bg-white/[0.06] text-slate-400 hover:text-white transition">
             <UIcon name="i-heroicons-arrow-left" class="text-xl" />
@@ -94,7 +94,7 @@
 
         <div class="p-5 border-t border-white/[0.08]">
           <button @click="save" :disabled="!form.name.trim() || saving"
-            class="w-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-black py-4 rounded-[20px] text-base shadow-xl active:scale-95 transition-all disabled:opacity-40">
+            class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-4 rounded-[20px] text-base shadow-xl active:scale-95 transition-all disabled:opacity-40">
             {{ saving ? 'Sauvegarde...' : 'Sauvegarder' }}
           </button>
         </div>
@@ -105,6 +105,14 @@
 
 <script setup>
 const supabase = useSupabaseClient()
+const { theme } = useTheme()
+
+function bgAlpha(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r},${g},${b},${alpha})`
+}
 
 const sessions = ref([])
 const modalOpen = ref(false)

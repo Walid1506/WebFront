@@ -1,6 +1,6 @@
 <template>
   <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-    <div class="w-full max-w-3xl bg-[#0a0a0a] border border-white/10 rounded-[40px] shadow-2xl overflow-hidden relative flex flex-col h-[90vh]">
+    <div class="w-full max-w-3xl border border-white/10 rounded-[40px] shadow-2xl overflow-hidden relative flex flex-col h-[90vh]" :style="{ backgroundColor: bgAlpha(theme.bg, 0.97) }">
       <Transition name="slide" mode="out-in">
         
         <div v-if="currentStep === 'main'" class="flex flex-col h-full w-full p-6">
@@ -15,12 +15,13 @@
                   v-model="sessionData.title"
                   type="text"
                   placeholder="Ex: Push lourd, Jambes, Cardio..."
-                  class="w-full bg-transparent text-2xl font-[1000] tracking-tighter text-white outline-none placeholder-slate-700 focus:text-green-500 transition-colors"
+                  class="w-full bg-transparent text-2xl font-[1000] tracking-tighter text-white outline-none placeholder-slate-700 focus:text-[var(--accent-solid)] transition-colors"
                 />
 
                 <p class="text-slate-500 font-bold text-xs mt-1 capitalize">
                   {{ formattedDate }}
                 </p>
+                <p v-if="hasDraft" class="text-[10px] text-slate-600 font-black mt-0.5">Brouillon sauvegardé</p>
               </div>
 
               <div class="grid grid-cols-2 gap-3 mt-4">
@@ -30,7 +31,7 @@
                   </label>
                   <select
                     v-model="sessionData.category"
-                    class="w-full bg-slate-900 border border-white/10 text-white py-3 px-4 rounded-2xl outline-none focus:border-green-500"
+                    class="w-full bg-white/[0.06] border border-white/10 text-white py-3 px-4 rounded-2xl outline-none focus:border-[var(--accent-solid)]"
                   >
                     <option value="">Choisir</option>
                     <option value="haut">Haut</option>
@@ -49,7 +50,7 @@
                   <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">
                     Nombre d'exercices
                   </label>
-                  <div class="h-[50px] rounded-2xl border border-white/10 bg-slate-900 px-4 flex items-center text-white font-black">
+                  <div class="h-[50px] rounded-2xl border border-white/10 bg-white/[0.06] px-4 flex items-center text-white font-black">
                     {{ sessionData.exercises.length }}
                   </div>
                 </div>
@@ -63,14 +64,14 @@
                   v-model="sessionData.notes"
                   rows="3"
                   placeholder="Notes, ressenti, objectif..."
-                  class="w-full bg-slate-900 border border-white/10 text-white py-3 px-4 rounded-2xl outline-none focus:border-green-500 resize-none"
+                  class="w-full bg-white/[0.06] border border-white/10 text-white py-3 px-4 rounded-2xl outline-none focus:border-[var(--accent-solid)] resize-none"
                 />
               </div>
             </div>
 
             <button
               @click="$emit('close')"
-              class="p-3 bg-slate-900 rounded-2xl hover:bg-slate-800 transition-colors shrink-0"
+              class="p-3 bg-white/[0.06] rounded-2xl hover:bg-white/[0.08] transition-colors shrink-0"
             >
               <UIcon name="i-heroicons-x-mark" class="text-white text-xl" />
             </button>
@@ -85,7 +86,7 @@
             <div
               v-for="(exo, index) in sessionData.exercises"
               :key="`${exo.name}-${index}`"
-              class="bg-slate-900/50 p-4 rounded-3xl border border-white/5 relative"
+              class="bg-white/[0.04] p-4 rounded-3xl border border-white/5 relative"
             >
               <div class="absolute top-4 right-4 flex gap-2">
                 <button
@@ -129,7 +130,7 @@
                   </template>
 
                   <template v-else>
-                    <div class="w-full h-full flex items-center justify-center text-slate-500 font-black text-2xl bg-slate-800">
+                    <div class="w-full h-full flex items-center justify-center text-slate-500 font-black text-2xl bg-white/[0.08]">
                       {{ exo.name?.charAt(0) || '?' }}
                     </div>
                   </template>
@@ -177,7 +178,7 @@
             <div v-if="sessionData.exercises.length > 0" class="flex gap-2">
               <button
                 @click="saveAsTemplateOpen = true; templateName = sessionData.title"
-                class="flex-1 bg-violet-500/10 border border-violet-500/30 text-violet-300 font-black text-sm py-3.5 rounded-2xl hover:bg-violet-500/20 transition-all flex items-center justify-center gap-2"
+                class="flex-1 font-black text-sm py-3.5 rounded-2xl transition-all flex items-center justify-center gap-2" style="background: color-mix(in srgb, var(--accent-solid) 10%, transparent); border: 1px solid color-mix(in srgb, var(--accent-solid) 30%, transparent); color: var(--accent-solid)"
               >
                 <UIcon name="i-heroicons-bookmark" class="text-base" />
                 Sauvegarder comme modèle
@@ -194,7 +195,7 @@
 
             <button
               @click="saveSession"
-              class="w-full bg-green-500 text-black font-black text-lg py-4 rounded-2xl shadow-[0_10px_30px_rgba(34,197,94,0.4)] hover:scale-[1.02] active:scale-95 transition-all"
+              class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-lg py-4 rounded-2xl shadow-[0_10px_30px_color-mix(in_srgb,var(--accent-solid)_40%,transparent)] hover:scale-[1.02] active:scale-95 transition-all"
             >
               Terminer la séance
             </button>
@@ -203,14 +204,14 @@
           <!-- Modal sauvegarder comme modèle -->
           <Transition name="fade-modal">
             <div v-if="saveAsTemplateOpen" class="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-[40px] flex items-center justify-center p-6 z-50">
-              <div class="bg-[#0f0f0f] border border-white/10 rounded-[30px] p-6 w-full">
+              <div class="bg-white/[0.06] border border-white/10 rounded-[30px] p-6 w-full">
                 <h3 class="text-white font-black text-xl mb-4">Nom du modèle</h3>
                 <input v-model="templateName" type="text" placeholder="Ex: Push lourd, Pull léger..." autofocus
-                  class="w-full bg-slate-900 border border-white/10 text-white font-bold rounded-2xl px-4 py-3 outline-none focus:border-violet-500 mb-4" />
+                  class="w-full bg-white/[0.06] border border-white/10 text-white font-bold rounded-2xl px-4 py-3 outline-none focus:border-[color:var(--accent-solid)] mb-4" />
                 <div class="flex gap-2">
-                  <button @click="saveAsTemplateOpen = false" class="flex-1 py-3 rounded-2xl bg-slate-900 text-slate-400 font-black">Annuler</button>
+                  <button @click="saveAsTemplateOpen = false" class="flex-1 py-3 rounded-2xl bg-white/[0.06] text-slate-400 font-black">Annuler</button>
                   <button @click="saveAsTemplate" :disabled="!templateName.trim() || savingTemplate"
-                    class="flex-1 py-3 rounded-2xl bg-violet-500 text-white font-black disabled:opacity-40">
+                    class="flex-1 py-3 rounded-2xl bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black disabled:opacity-40">
                     {{ savingTemplate ? '...' : 'Sauvegarder' }}
                   </button>
                 </div>
@@ -219,7 +220,7 @@
           </Transition>
         </div>
 
-        <div v-else-if="currentStep === 'library'" class="flex flex-col h-full w-full bg-[#050505]">
+        <div v-else-if="currentStep === 'library'" class="flex flex-col h-full w-full">
           <div class="p-4 sm:p-5 flex items-center gap-3 border-b border-white/5">
             <button
               @click="currentStep = 'main'"
@@ -237,12 +238,12 @@
                 v-model="searchQuery"
                 type="text"
                 placeholder="Rechercher un exercice"
-                class="w-full h-12 rounded-2xl bg-slate-900 border border-white/5 pl-11 pr-4 text-white outline-none focus:border-green-500"
+                class="w-full h-12 rounded-2xl bg-white/[0.06] border border-white/[0.08] pl-11 pr-4 text-white outline-none focus:border-[var(--accent-solid)]"
               />
             </div>
           </div>
 
-          <div class="p-4 border-b border-white/5 bg-black/30">
+          <div class="p-4 border-b border-white/5 bg-white/[0.04]">
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="cat in categories"
@@ -250,8 +251,9 @@
                 @click="activeCategory = cat"
                 class="px-4 py-2 rounded-full font-black text-[11px] uppercase transition-all"
                 :class="activeCategory === cat
-                  ? 'bg-green-500 text-black'
-                  : 'bg-slate-900 text-slate-300 border border-white/5'"
+                  ? 'border-[color:var(--accent-solid)] text-white'
+                  : 'bg-white/[0.04] text-slate-300 border border-white/5'"
+                :style="activeCategory === cat ? { backgroundColor: 'color-mix(in srgb, var(--accent-solid) 20%, transparent)' } : {}"
               >
                 {{ cat }}
               </button>
@@ -263,7 +265,7 @@
               v-for="exo in filteredLibrary"
               :key="exo.id"
               @click="openConfig(exo)"
-              class="rounded-[28px] bg-[#0b0b0b] border border-white/5 p-4 flex items-center gap-4 hover:border-green-500/30 hover:bg-green-500/5 transition-all cursor-pointer"
+              class="rounded-[28px] bg-white/[0.04] border border-white/5 p-4 flex items-center gap-4 hover:bg-white/[0.06] transition-all cursor-pointer"
             >
               <div class="w-24 h-24 rounded-2xl overflow-hidden bg-white shrink-0 flex items-center justify-center">
                 <template v-if="isVideo(exo.mediaType, exo.mediaUrl)">
@@ -306,7 +308,7 @@
 
               <div class="shrink-0">
                 <button
-                  class="w-10 h-10 rounded-full bg-slate-900 border border-white/5 flex items-center justify-center text-slate-400"
+                  class="w-10 h-10 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-slate-400"
                 >
                   <UIcon name="i-heroicons-plus" class="text-xl" />
                 </button>
@@ -363,40 +365,46 @@
               </template>
             </div>
 
-            <div class="bg-slate-900 p-4 rounded-3xl border border-white/5">
+            <div class="bg-white/[0.06] p-4 rounded-3xl border border-white/[0.08]">
               <p class="text-slate-300 text-sm leading-relaxed">
                 {{ activeExo?.description }}
               </p>
             </div>
 
-            <div class="flex items-center justify-between bg-slate-900 p-4 rounded-3xl border border-white/5">
+            <div class="flex items-center justify-between bg-white/[0.06] p-4 rounded-3xl border border-white/[0.08]">
               <span class="font-black uppercase text-xs text-slate-500">Séries</span>
               <div class="flex items-center gap-4">
-                <button @click="decrease('sets')" class="w-10 h-10 bg-slate-800 rounded-full font-bold text-white">-</button>
+                <button @click="decrease('sets')" class="w-10 h-10 bg-white/[0.08] rounded-full font-bold text-white">-</button>
                 <input v-model.number="activeConfig.sets" type="number" min="1" class="w-12 bg-transparent text-center font-black text-xl outline-none text-white" />
-                <button @click="increase('sets')" class="w-10 h-10 bg-slate-800 rounded-full font-bold text-white">+</button>
+                <button @click="increase('sets')" class="w-10 h-10 bg-white/[0.08] rounded-full font-bold text-white">+</button>
               </div>
             </div>
 
-            <div class="flex items-center justify-between bg-slate-900 p-4 rounded-3xl border border-white/5">
+            <div class="flex items-center justify-between bg-white/[0.06] p-4 rounded-3xl border border-white/[0.08]">
               <span class="font-black uppercase text-xs text-slate-500">Répétitions</span>
               <div class="flex items-center gap-4">
-                <button @click="decrease('reps')" class="w-10 h-10 bg-slate-800 rounded-full font-bold text-white">-</button>
+                <button @click="decrease('reps')" class="w-10 h-10 bg-white/[0.08] rounded-full font-bold text-white">-</button>
                 <input v-model.number="activeConfig.reps" type="number" min="1" class="w-12 bg-transparent text-center font-black text-xl outline-none text-white" />
-                <button @click="increase('reps')" class="w-10 h-10 bg-slate-800 rounded-full font-bold text-white">+</button>
+                <button @click="increase('reps')" class="w-10 h-10 bg-white/[0.08] rounded-full font-bold text-white">+</button>
               </div>
             </div>
 
-            <div class="flex items-center justify-between bg-slate-900 p-4 rounded-3xl border border-white/5">
-              <span class="font-black uppercase text-xs text-slate-500">Repos (sec)</span>
-              <div class="flex items-center gap-4">
-                <button @click="decrease('rest', 0)" class="w-10 h-10 bg-slate-800 rounded-full font-bold text-white">-</button>
-                <input v-model.number="activeConfig.rest" type="number" min="0" class="w-16 bg-transparent text-center font-black text-xl outline-none text-white" />
-                <button @click="increase('rest')" class="w-10 h-10 bg-slate-800 rounded-full font-bold text-white">+</button>
+            <div class="bg-white/[0.06] p-4 rounded-3xl border border-white/[0.08] space-y-3">
+              <span class="font-black uppercase text-xs text-slate-500 block">Temps de repos</span>
+              <div class="flex flex-wrap gap-2">
+                <button v-for="preset in restPresets" :key="preset.value"
+                  @click="activeConfig.rest = preset.value"
+                  class="px-3 py-1.5 rounded-2xl text-xs font-black transition-all active:scale-95"
+                  :class="activeConfig.rest === preset.value
+                    ? 'text-white shadow-lg'
+                    : 'bg-white/[0.06] text-slate-400 border border-white/[0.08]'"
+                  :style="activeConfig.rest === preset.value ? { background: `linear-gradient(to right, var(--accent-from), var(--accent-to))` } : {}">
+                  {{ preset.label }}
+                </button>
               </div>
             </div>
 
-            <div class="bg-slate-900 p-6 rounded-3xl border border-white/5 text-center">
+            <div class="bg-white/[0.06] p-6 rounded-3xl border border-white/[0.08] text-center">
               <label class="font-black uppercase text-[10px] text-slate-500 block mb-2">
                 Charge (optionnel - kg)
               </label>
@@ -405,12 +413,12 @@
                 type="number"
                 min="0"
                 step="0.5"
-                class="bg-transparent text-center font-[1000] text-5xl w-full outline-none text-green-500"
+                class="bg-transparent text-center font-[1000] text-5xl w-full outline-none text-[var(--accent-solid)]"
                 placeholder="0"
               />
             </div>
 
-            <div class="bg-slate-900 p-4 rounded-3xl border border-white/5">
+            <div class="bg-white/[0.06] p-4 rounded-3xl border border-white/[0.08]">
               <label class="font-black uppercase text-[10px] text-slate-500 block mb-3">
                 Notes exercice
               </label>
@@ -418,14 +426,14 @@
                 v-model="activeConfig.notes"
                 rows="3"
                 placeholder="Tempo, consignes, focus..."
-                class="w-full bg-slate-800 border border-white/10 text-white py-3 px-4 rounded-2xl outline-none resize-none"
+                class="w-full bg-white/[0.06] border border-white/10 text-white py-3 px-4 rounded-2xl outline-none resize-none"
               />
             </div>
           </div>
 
           <button
             @click="confirmExercise"
-            class="mt-6 w-full bg-white text-black font-[1000] py-5 rounded-3xl hover:bg-green-500 transition-all shadow-xl"
+            class="mt-6 w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-[1000] py-5 rounded-3xl transition-all shadow-xl"
           >
             {{ editingIndex !== null ? "Mettre à jour" : "Ajouter l'exercice" }}
           </button>
@@ -435,8 +443,18 @@
   </div>
 </template>
 
+
 <script setup lang="ts">
 import { exerciseLibrary } from '~/data/exerciseLibrary'
+
+const { theme } = useTheme()
+
+function bgAlpha(hex: string, alpha: number) {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r},${g},${b},${alpha})`
+}
 
 const props = defineProps({
   date: String,
@@ -463,6 +481,14 @@ const sessionData = ref({
 })
 
 const activeExo = ref<any>(null)
+const restPresets = [
+  { label: '30s', value: 30 },
+  { label: '1 min', value: 60 },
+  { label: '1 min 30', value: 90 },
+  { label: '2 min', value: 120 },
+  { label: '3 min', value: 180 },
+]
+
 const activeConfig = ref(createDefaultConfig())
 
 const categories = ['Tout', 'Pec', 'Dos', 'Jambes', 'Epaules', 'Bras', 'Abdos', 'Cardio', 'Mobilite']
@@ -511,6 +537,17 @@ const filteredLibrary = computed(() => {
   })
 })
 
+watch(sessionData, (val) => {
+  if (props.date) {
+    const key = `draft-seance-${props.date}`
+    localStorage.setItem(key, JSON.stringify(val))
+  }
+}, { deep: true })
+
+const hasDraft = computed(() =>
+  sessionData.value.exercises.length > 0 || sessionData.value.title.trim().length > 0
+)
+
 onMounted(() => {
   if (props.initialData) {
     const data = JSON.parse(JSON.stringify(props.initialData))
@@ -518,6 +555,18 @@ onMounted(() => {
     sessionData.value.category = data.category || ''
     sessionData.value.notes = data.notes || ''
     sessionData.value.exercises = data.exercises || []
+  } else if (props.date) {
+    const key = `draft-seance-${props.date}`
+    const draft = localStorage.getItem(key)
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft)
+        sessionData.value.title = parsed.title || ''
+        sessionData.value.category = parsed.category || ''
+        sessionData.value.notes = parsed.notes || ''
+        sessionData.value.exercises = parsed.exercises || []
+      } catch {}
+    }
   }
 })
 
@@ -602,6 +651,10 @@ function removeExercise(index: number) {
 function saveSession() {
   if (!sessionData.value.title?.trim()) {
     sessionData.value.title = 'Nouvelle séance'
+  }
+
+  if (props.date) {
+    localStorage.removeItem(`draft-seance-${props.date}`)
   }
 
   emit('save', {

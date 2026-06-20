@@ -62,13 +62,13 @@
       <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Sources d'XP</p>
       <div class="space-y-3">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shrink-0">
-            <UIcon name="i-heroicons-calendar-days" class="text-violet-400" />
+          <div class="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0" style="background: color-mix(in srgb, var(--accent-solid) 10%, transparent); border: 1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent)">
+            <UIcon name="i-heroicons-calendar-days" :style="{ color: 'var(--accent-solid)' }" />
           </div>
           <div class="flex-1">
             <div class="flex justify-between items-center mb-1">
               <p class="text-white font-black text-sm">Séances loggées</p>
-              <span class="text-violet-400 font-black text-sm">+{{ breakdown.sessions }} XP</span>
+              <span class="font-black text-sm" :style="{ color: 'var(--accent-solid)' }">+{{ breakdown.sessions }} XP</span>
             </div>
             <p class="text-slate-600 text-xs">{{ breakdown.sessions / 100 }} séance{{ breakdown.sessions / 100 > 1 ? 's' : '' }} × 100 XP</p>
           </div>

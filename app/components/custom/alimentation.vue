@@ -8,10 +8,10 @@
             <div class="flex gap-4">
               <button
                 @click="openCamera"
-                class="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-2xl flex items-center justify-center hover:opacity-90 transition-colors border border-purple-500/30 group"
+                class="w-12 h-12 rounded-2xl flex items-center justify-center hover:opacity-90 transition-colors group" style="background: color-mix(in srgb, var(--accent-solid) 15%, transparent); border: 1px solid color-mix(in srgb, var(--accent-solid) 30%, transparent)"
                 title="Analyser un plat avec l'IA"
               >
-                <UIcon name="i-heroicons-sparkles" class="text-2xl text-purple-400 group-hover:text-white" />
+                <UIcon name="i-heroicons-sparkles" class="text-2xl group-hover:text-white transition-colors" style="color: var(--accent-solid)" />
               </button>
 
               <button
@@ -64,7 +64,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div class="lg:col-span-5 space-y-8">
             <div class="bg-white/[0.04] backdrop-blur-2xl rounded-[35px] p-6 border border-white/[0.08] shadow-2xl relative overflow-hidden">
-              <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+              <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--accent-from)] via-[var(--accent-to)] to-[var(--accent-from)]"></div>
 
               <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-[1000] text-white flex items-center gap-2">
@@ -186,7 +186,7 @@
           <div class="lg:col-span-7 space-y-8">
             <button
               @click="currentScreen = 'library'"
-              class="w-full bg-[#2F6BFF] text-white font-black text-xl py-6 rounded-[30px] shadow-lg hover:bg-blue-600 transition-all flex items-center justify-center gap-3"
+              class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-xl py-6 rounded-[30px] shadow-lg shadow-[color:var(--accent-solid)]/20 transition-all active:scale-95 flex items-center justify-center gap-3"
             >
               <UIcon name="i-heroicons-plus-circle" class="text-3xl" />
               Ajouter un aliment
@@ -265,7 +265,7 @@
                   v-model="searchQuery"
                   type="text"
                   placeholder="Rechercher un aliment..."
-                  class="w-full bg-[#1A1A1A] text-white font-bold text-lg rounded-2xl py-4 pl-14 pr-6 outline-none focus:ring-2 focus:ring-[#2F6BFF] transition-all"
+                  class="w-full bg-[#1A1A1A] text-white font-bold text-lg rounded-2xl py-4 pl-14 pr-6 outline-none focus:ring-2 focus:ring-[color:var(--accent-solid)] transition-all"
                 />
               </div>
             </div>
@@ -276,7 +276,8 @@
                   v-for="cat in allCatFilters"
                   :key="cat"
                   @click="activeCatFilter = cat"
-                  :class="activeCatFilter === cat ? 'bg-[#2F6BFF] text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800'"
+                  :class="activeCatFilter === cat ? 'text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800'"
+                  :style="activeCatFilter === cat ? { background: 'linear-gradient(to right, var(--accent-from), var(--accent-to))' } : {}"
                   class="px-6 py-3 rounded-full font-black text-sm uppercase whitespace-nowrap transition-colors shrink-0"
                 >
                   {{ cat }}
@@ -291,12 +292,12 @@
                 v-for="food in filteredDb"
                 :key="food.id"
                 @click="selectFood(food)"
-                class="bg-[#111111] p-5 rounded-[30px] flex flex-col cursor-pointer border border-white/5 hover:border-[#2F6BFF]/30 transition-all group"
+                class="bg-[#111111] p-5 rounded-[30px] flex flex-col cursor-pointer border border-white/5 hover:border-white/15 transition-all group"
               >
                 <div class="flex items-start gap-4 mb-4">
                   <img :src="food.img" class="w-20 h-20 rounded-2xl object-cover bg-white shrink-0" @error="onImageError" />
                   <div class="flex-1 min-w-0 text-left">
-                    <h4 class="text-white font-black text-lg leading-tight group-hover:text-[#2F6BFF] transition-colors">{{ food.name }}</h4>
+                    <h4 class="food-name text-white font-black text-lg leading-tight transition-colors">{{ food.name }}</h4>
                     <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">{{ food.cat }}</p>
                   </div>
                 </div>
@@ -320,7 +321,7 @@
           <UIcon name="i-heroicons-arrow-left" class="text-4xl" />
         </button>
 
-        <img :src="selectedFood.img" class="w-48 h-48 rounded-full object-cover border-4 border-[#2F6BFF] mb-8 shadow-2xl" @error="onImageError" />
+        <img :src="selectedFood.img" class="w-48 h-48 rounded-full object-cover mb-8 shadow-2xl" style="border: 4px solid var(--accent-solid)" @error="onImageError" />
         <h3 class="text-4xl font-[1000] text-white mb-8 text-center">{{ selectedFood.name }}</h3>
 
         <div class="bg-[#111111] border border-white/10 p-8 rounded-[40px] mb-8 w-full max-w-md text-center">
@@ -348,7 +349,7 @@
           </div>
         </div>
 
-        <button @click="addFood" class="w-full max-w-md bg-[#2F6BFF] text-white font-black text-2xl py-6 rounded-[30px] shadow-lg hover:bg-blue-600 transition-all">
+        <button @click="addFood" class="w-full max-w-md bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-2xl py-6 rounded-[30px] shadow-lg shadow-[color:var(--accent-solid)]/20 transition-all active:scale-95">
           Ajouter au journal
         </button>
       </div>
@@ -359,7 +360,7 @@
         </button>
 
         <div class="w-full max-w-md flex flex-col items-center">
-          <div id="reader" class="w-full h-64 border-4 border-[#2F6BFF] rounded-[40px] relative overflow-hidden bg-slate-900/50 mb-6"></div>
+          <div id="reader" class="w-full h-64 rounded-[40px] relative overflow-hidden bg-slate-900/50 mb-6" style="border: 4px solid var(--accent-solid)"></div>
 
           <div class="w-full space-y-3 mb-6">
             <button
@@ -379,7 +380,7 @@
               />
               <button
                 @click="submitManualBarcode"
-                class="w-full bg-[#2F6BFF] text-white font-black py-3 rounded-2xl"
+                class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-3 rounded-2xl active:scale-95 transition-all"
               >
                 Rechercher ce code
               </button>
@@ -416,9 +417,9 @@
             <h2 class="text-2xl font-black leading-none">Analyse IA</h2>
             <p class="text-slate-500 text-xs font-bold mt-0.5">Photo → macros estimés</p>
           </div>
-          <div class="ml-auto flex items-center gap-2 bg-purple-500/10 border border-purple-500/30 px-3 py-1.5 rounded-full">
-            <div class="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-            <span class="text-purple-400 text-xs font-black uppercase tracking-widest">IA</span>
+          <div class="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-full" style="background: color-mix(in srgb, var(--accent-solid) 10%, transparent); border: 1px solid color-mix(in srgb, var(--accent-solid) 30%, transparent)">
+            <div class="w-2 h-2 rounded-full animate-pulse" style="background: var(--accent-solid)"></div>
+            <span class="text-xs font-black uppercase tracking-widest" style="color: var(--accent-solid)">IA</span>
           </div>
         </div>
 
@@ -427,14 +428,14 @@
           <div
             v-if="!aiImage"
             @click="triggerFileInput"
-            class="w-full aspect-square max-h-80 rounded-[40px] border-2 border-dashed border-white/15 flex flex-col items-center justify-center gap-5 cursor-pointer hover:border-purple-500/50 hover:bg-purple-500/5 transition-all"
+            class="upload-zone w-full aspect-square max-h-80 rounded-[40px] border-2 border-dashed border-white/15 flex flex-col items-center justify-center gap-5 cursor-pointer transition-all"
           >
             <UIcon name="i-heroicons-camera" class="text-6xl text-slate-700" />
             <div class="text-center">
               <p class="text-white font-bold">Prends une photo de ton plat</p>
               <p class="text-slate-600 text-sm mt-1">ou sélectionne depuis ta galerie</p>
             </div>
-            <span class="bg-purple-600 hover:bg-purple-500 text-white font-black px-8 py-3 rounded-2xl transition-colors">
+            <span class="text-white font-black px-8 py-3 rounded-2xl transition-colors" style="background: linear-gradient(to right, var(--accent-from), var(--accent-to))">
               Choisir une photo
             </span>
           </div>
@@ -457,7 +458,7 @@
             <button
               v-if="!aiResult && !aiLoading"
               @click="analyzeImage"
-              class="w-full mt-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-black text-xl py-5 rounded-[25px] shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-3"
+              class="w-full mt-4 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-xl py-5 rounded-[25px] shadow-xl shadow-[color:var(--accent-solid)]/20 hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-3"
             >
               <UIcon name="i-heroicons-sparkles" class="text-2xl" />
               Analyser avec l'IA
@@ -511,7 +512,7 @@
 
             <button
               @click="addAiResult"
-              class="w-full bg-[#2F6BFF] text-white font-black text-xl py-5 rounded-[25px] shadow-lg hover:bg-blue-600 active:scale-95 transition-all"
+              class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-xl py-5 rounded-[25px] shadow-lg shadow-[color:var(--accent-solid)]/20 active:scale-95 transition-all"
             >
               Ajouter au journal
             </button>
@@ -551,9 +552,9 @@
               @keyup.enter="addCustomCartItem"
               type="text"
               placeholder="Ajouter produit..."
-              class="flex-1 bg-slate-900 border border-white/10 text-white font-bold py-4 px-6 rounded-2xl outline-none focus:border-blue-500"
+              class="flex-1 bg-slate-900 border border-white/10 text-white font-bold py-4 px-6 rounded-2xl outline-none focus:border-[color:var(--accent-solid)]"
             />
-            <button @click="addCustomCartItem" class="bg-blue-600 text-white font-black px-8 rounded-2xl">Ajouter</button>
+            <button @click="addCustomCartItem" class="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black px-8 rounded-2xl active:scale-95 transition-all">Ajouter</button>
           </div>
 
           <div class="flex-1 overflow-y-auto p-8 space-y-3 custom-scrollbar">
@@ -1262,4 +1263,6 @@ function addAiResult() {
 .slide-leave-to { opacity: 0; transform: translateX(-30px) scale(0.98); }
 .fade-quick-enter-active, .fade-quick-leave-active { transition: opacity 0.3s; }
 .fade-quick-enter-from, .fade-quick-leave-to { opacity: 0; }
+.group:hover .food-name { color: var(--accent-solid); }
+.upload-zone:hover { border-color: color-mix(in srgb, var(--accent-solid) 50%, transparent); background: color-mix(in srgb, var(--accent-solid) 5%, transparent); }
 </style>

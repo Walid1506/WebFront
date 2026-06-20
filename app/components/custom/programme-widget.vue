@@ -1,16 +1,16 @@
 <template>
   <div>
     <!-- Séance prévue aujourd'hui -->
-    <div v-if="todaySession" class="relative bg-white/[0.04] backdrop-blur-2xl rounded-[28px] border border-violet-500/20 overflow-hidden shadow-lg">
-      <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-violet-500 via-purple-400 to-violet-500"></div>
-      <div class="absolute -top-10 -right-10 w-40 h-40 bg-violet-500/10 rounded-full blur-[60px] pointer-events-none"></div>
+    <div v-if="todaySession" class="relative bg-white/[0.04] backdrop-blur-2xl rounded-[28px] overflow-hidden shadow-lg" style="border: 1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent)">
+      <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--accent-from)] via-[var(--accent-to)] to-[var(--accent-from)]"></div>
+      <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none" style="background: color-mix(in srgb, var(--accent-solid) 10%, transparent)"></div>
 
       <div class="p-5">
         <div class="flex items-center justify-between mb-4">
           <div>
             <div class="flex items-center gap-2 mb-1">
-              <div class="w-2 h-2 bg-violet-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(167,139,250,0.8)]"></div>
-              <span class="text-[10px] font-black text-violet-400 uppercase tracking-[0.2em]">Séance du jour</span>
+              <div class="w-2 h-2 rounded-full animate-pulse" style="background: var(--accent-solid); box-shadow: 0 0 8px color-mix(in srgb, var(--accent-solid) 80%, transparent)"></div>
+              <span class="text-[10px] font-black uppercase tracking-[0.2em]" style="color: var(--accent-solid)">Séance du jour</span>
             </div>
             <h3 class="text-white font-black text-lg">{{ todaySession.data?.title || 'Entraînement' }}</h3>
             <p class="text-slate-500 text-xs mt-0.5">
@@ -45,7 +45,7 @@
         </div>
 
         <button @click="showFull = true"
-          class="w-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-black py-3.5 rounded-2xl text-sm shadow-lg shadow-violet-500/20 active:scale-95 transition-all flex items-center justify-center gap-2">
+          class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-3.5 rounded-2xl text-sm shadow-lg shadow-[color:var(--accent-solid)]/20 active:scale-95 transition-all flex items-center justify-center gap-2">
           <UIcon name="i-heroicons-play" />
           Voir la séance
         </button>
@@ -66,13 +66,13 @@
 
     <!-- Overlay séance complète -->
     <Transition name="slide-up">
-      <div v-if="showFull" class="fixed inset-0 z-[300] bg-[#060d1a]/98 backdrop-blur-2xl flex flex-col">
+      <div v-if="showFull" class="fixed inset-0 z-[300] backdrop-blur-2xl flex flex-col" :style="{ backgroundColor: bgAlpha(theme.bg, 0.98) }">
         <div class="flex items-center gap-4 px-5 py-5 border-b border-white/[0.08]">
           <button @click="showFull = false" class="p-2 rounded-xl bg-white/[0.06] text-slate-400 hover:text-white transition">
             <UIcon name="i-heroicons-arrow-left" class="text-xl" />
           </button>
           <div>
-            <p class="text-xs font-black text-violet-400 uppercase tracking-widest">Séance du jour</p>
+            <p class="text-xs font-black uppercase tracking-widest" style="color: var(--accent-solid)">Séance du jour</p>
             <h2 class="text-xl font-black text-white">{{ todaySession?.data?.title || 'Entraînement' }}</h2>
           </div>
         </div>
@@ -90,7 +90,7 @@
               <p class="text-white font-black text-base">{{ ex.name }}</p>
               <p class="text-slate-500 text-xs mt-0.5">{{ ex.muscle }}</p>
               <div class="flex items-center gap-2 mt-2">
-                <span class="bg-violet-500/10 border border-violet-500/20 text-violet-300 text-xs font-black px-3 py-1 rounded-full">{{ ex.sets }} séries</span>
+                <span class="text-xs font-black px-3 py-1 rounded-full" style="background: color-mix(in srgb, var(--accent-solid) 10%, transparent); border: 1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent); color: var(--accent-solid)">{{ ex.sets }} séries</span>
                 <span class="bg-white/[0.06] border border-white/[0.08] text-white text-xs font-black px-3 py-1 rounded-full">{{ ex.reps }} rép.</span>
                 <span v-if="ex.weight" class="text-xs font-black px-3 py-1 rounded-full" style="background: color-mix(in srgb, var(--accent-solid) 12%, transparent); border: 1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent); color: var(--accent-solid)">{{ ex.weight }} kg</span>
               </div>
@@ -101,7 +101,7 @@
 
         <div class="p-4 border-t border-white/[0.08]">
           <button @click="showFull = false"
-            class="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-black py-4 rounded-[20px] text-base shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2">
+            class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-4 rounded-[20px] text-base shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2">
             <UIcon name="i-heroicons-check-circle" class="text-xl" />
             C'est parti !
           </button>
@@ -112,6 +112,15 @@
 </template>
 
 <script setup>
+const { theme } = useTheme()
+
+function bgAlpha(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r},${g},${b},${alpha})`
+}
+
 const props = defineProps({
   todaySession: { type: Object, default: null }
 })

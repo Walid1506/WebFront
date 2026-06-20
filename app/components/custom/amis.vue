@@ -37,15 +37,15 @@
     </div>
 
     <!-- Demandes reçues -->
-    <div v-if="pendingReceived.length > 0" class="bg-white/[0.04] backdrop-blur-2xl rounded-[28px] border border-violet-500/20 p-5">
+    <div v-if="pendingReceived.length > 0" class="bg-white/[0.04] backdrop-blur-2xl rounded-[28px] p-5" style="border: 1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent)">
       <div class="flex items-center gap-2 mb-3">
-        <div class="w-2 h-2 bg-violet-400 rounded-full animate-pulse"></div>
-        <p class="text-[10px] font-black text-violet-400 uppercase tracking-widest">Demandes reçues</p>
-        <span class="bg-violet-500/20 text-violet-300 text-xs font-black px-2 py-0.5 rounded-full">{{ pendingReceived.length }}</span>
+        <div class="w-2 h-2 rounded-full animate-pulse" style="background: var(--accent-solid)"></div>
+        <p class="text-[10px] font-black uppercase tracking-widest" style="color: var(--accent-solid)">Demandes reçues</p>
+        <span class="text-xs font-black px-2 py-0.5 rounded-full" style="background: color-mix(in srgb, var(--accent-solid) 20%, transparent); color: var(--accent-solid)">{{ pendingReceived.length }}</span>
       </div>
       <div class="space-y-2">
         <div v-for="r in pendingReceived" :key="r.id" class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-violet-400 to-purple-500 p-[2px] shrink-0">
+          <div class="w-10 h-10 rounded-full p-[2px] shrink-0" style="background: linear-gradient(to top right, var(--accent-from), var(--accent-to))">
             <div class="w-full h-full rounded-full overflow-hidden flex items-center justify-center" :style="{ backgroundColor: theme.bg }">
               <img v-if="r.profile?.avatar_url" :src="r.profile.avatar_url" class="w-full h-full object-cover" />
               <span v-else class="text-white font-black text-sm">{{ r.profile?.username?.charAt(0).toUpperCase() }}</span>
@@ -99,13 +99,16 @@
           <div class="flex-1 min-w-0 cursor-pointer" @click="openFriendProfile(f)">
             <p class="text-white font-black truncate">{{ f.profile?.username }}</p>
             <p class="text-xs mt-0.5" :class="isOnline(f.friendId) ? 'text-emerald-400 font-black' : 'text-slate-500'">
-              {{ isOnline(f.friendId) ? 'En ligne' : `${f.sessionCount} séance${f.sessionCount !== 1 ? 's' : ''} ce mois` }}
+              {{ isOnline(f.friendId) ? 'En ligne' : (f.lastSeen ? formatLastSeen(f.lastSeen) : 'Hors ligne') }}
             </p>
           </div>
-          <button @click="chatFriend = f"
-            class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 active:scale-90 transition-all"
+          <button @click="chatFriend = f; resetUnread(f)"
+            class="relative w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 active:scale-90 transition-all"
             :style="{ backgroundColor: `color-mix(in srgb, var(--accent-solid) 15%, transparent)`, border: `1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent)` }">
             <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="text-lg" :style="{ color: 'var(--accent-solid)' }" />
+            <span v-if="f.unreadCount > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
+              <span class="text-white text-[9px] font-black">{{ f.unreadCount > 9 ? '9+' : f.unreadCount }}</span>
+            </span>
           </button>
         </div>
       </div>
@@ -136,94 +139,105 @@
         <div class="flex-1 overflow-y-auto p-5 space-y-4">
 
           <!-- ── Vue comparaison ── -->
-          <div v-if="showComparison && myStats" class="space-y-3">
-            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Toi vs {{ friendProfile.profile?.username }}</p>
+          <div v-if="showComparison && myStats" class="space-y-4">
 
-            <!-- Ligne de stats -->
-            <div v-for="stat in comparisonStats" :key="stat.label"
-              class="bg-white/[0.04] rounded-2xl border border-white/[0.08] p-4 space-y-2">
-              <p class="text-[10px] font-black text-slate-500 uppercase tracking-wider">{{ stat.label }}</p>
-              <div class="flex items-center gap-3">
-                <!-- Moi -->
-                <div class="flex-1 text-center">
-                  <p class="font-black text-xl" :style="{ color: 'var(--accent-solid)' }">{{ stat.meDisplay }}</p>
-                  <p class="text-[10px] text-slate-600 font-black uppercase">Toi</p>
+            <!-- Stats séances compact -->
+            <div class="bg-white/[0.04] rounded-[24px] border border-white/[0.08] overflow-hidden">
+              <div class="grid grid-cols-3 border-b border-white/[0.06]">
+                <div class="py-3 text-center">
+                  <p class="text-[10px] font-black uppercase tracking-wider" :style="{ color: 'var(--accent-solid)' }">Toi</p>
                 </div>
-                <!-- Barre -->
-                <div class="flex-1 flex flex-col gap-1.5">
-                  <div class="h-2 rounded-full bg-white/[0.06] overflow-hidden">
-                    <div class="h-full rounded-full transition-all duration-700"
-                      :style="{ width: stat.mePercent + '%', background: `linear-gradient(to right, var(--accent-from), var(--accent-to))` }"></div>
-                  </div>
-                  <div class="h-2 rounded-full bg-white/[0.06] overflow-hidden">
-                    <div class="h-full bg-violet-500 rounded-full transition-all duration-700" :style="{ width: stat.friendPercent + '%' }"></div>
-                  </div>
+                <div class="py-3 text-center border-x border-white/[0.06]"></div>
+                <div class="py-3 text-center">
+                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider truncate px-1">{{ friendProfile.profile?.username }}</p>
                 </div>
-                <!-- Ami -->
-                <div class="flex-1 text-center">
-                  <p class="text-violet-400 font-black text-xl">{{ stat.friendDisplay }}</p>
-                  <p class="text-[10px] text-slate-600 font-black uppercase">{{ friendProfile.profile?.username }}</p>
-                </div>
+              </div>
+              <div class="grid grid-cols-3 items-center border-b border-white/[0.04] last:border-0 py-3">
+                <p class="font-black text-2xl text-center" :style="{ color: 'var(--accent-solid)' }">{{ myStats.totalSessions }}</p>
+                <p class="text-[10px] font-black text-slate-500 uppercase text-center">Total séances</p>
+                <p class="font-black text-2xl text-slate-300 text-center">{{ friendProfile.totalSessions }}</p>
+              </div>
+              <div class="grid grid-cols-3 items-center py-3">
+                <p class="font-black text-2xl text-center" :style="{ color: 'var(--accent-solid)' }">{{ myStats.monthSessions }}</p>
+                <p class="text-[10px] font-black text-slate-500 uppercase text-center">Ce mois</p>
+                <p class="font-black text-2xl text-slate-300 text-center">{{ friendProfile.sessionCount }}</p>
               </div>
             </div>
 
-            <!-- Exercices en commun -->
+            <!-- Exercices -->
             <template v-if="exerciseComparison">
-              <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1 mt-2">
-                Exercices en commun ({{ exerciseComparison.shared.length }})
-              </p>
 
-              <div v-if="exerciseComparison.shared.length === 0"
-                class="bg-white/[0.04] rounded-2xl border border-white/[0.08] p-4 text-center text-slate-500 text-xs font-black">
-                Aucun exercice en commun pour l'instant
-              </div>
-
-              <div v-for="ex in exerciseComparison.shared" :key="ex.name"
-                class="bg-white/[0.04] rounded-2xl border border-white/[0.08] p-4 space-y-2">
-                <p class="text-white font-black text-sm truncate">{{ ex.name }}</p>
-                <div class="flex items-center gap-3">
-                  <div class="flex-1 text-center">
-                    <p class="font-black text-lg" :style="{ color: 'var(--accent-solid)' }">{{ ex.meW }} kg</p>
-                    <p class="text-[10px] text-slate-600 font-black uppercase">Toi</p>
-                  </div>
-                  <div class="flex-1 flex flex-col gap-1.5">
-                    <div class="h-2 rounded-full bg-white/[0.06] overflow-hidden">
-                      <div class="h-full rounded-full transition-all duration-700"
-                        :style="{ width: ex.mePercent + '%', background: 'linear-gradient(to right, var(--accent-from), var(--accent-to))' }"></div>
+              <!-- En commun -->
+              <div>
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1 mb-2">
+                  En commun ({{ exerciseComparison.shared.length }})
+                </p>
+                <div v-if="exerciseComparison.shared.length === 0"
+                  class="bg-white/[0.04] rounded-2xl border border-white/[0.08] p-4 text-center text-slate-600 text-xs font-black">
+                  Aucun exercice en commun
+                </div>
+                <div v-for="ex in exerciseComparison.shared" :key="ex.name"
+                  class="bg-white/[0.04] rounded-2xl border border-white/[0.08] p-4 mb-2 last:mb-0">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-xl"
+                      style="background: color-mix(in srgb, var(--accent-solid) 12%, transparent); border: 1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent)">
+                      {{ exoEmoji(ex.name) }}
                     </div>
-                    <div class="h-2 rounded-full bg-white/[0.06] overflow-hidden">
-                      <div class="h-full bg-violet-500 rounded-full transition-all duration-700" :style="{ width: ex.frPercent + '%' }"></div>
-                    </div>
+                    <p class="text-white font-black text-sm truncate">{{ ex.name }}</p>
                   </div>
-                  <div class="flex-1 text-center">
-                    <p class="text-violet-400 font-black text-lg">{{ ex.frW }} kg</p>
-                    <p class="text-[10px] text-slate-600 font-black uppercase">{{ friendProfile.profile?.username }}</p>
+                  <div class="flex items-center gap-3">
+                    <div class="text-center w-16 shrink-0">
+                      <p class="font-black text-lg" :style="{ color: 'var(--accent-solid)' }">{{ ex.meW }}<span class="text-xs font-bold"> kg</span></p>
+                      <p class="text-[10px] text-slate-600 font-black uppercase">Toi</p>
+                    </div>
+                    <div class="flex-1 flex flex-col gap-1.5">
+                      <div class="h-2 rounded-full bg-white/[0.06] overflow-hidden">
+                        <div class="h-full rounded-full" :style="{ width: ex.mePercent + '%', background: 'linear-gradient(to right, var(--accent-from), var(--accent-to))' }"></div>
+                      </div>
+                      <div class="h-2 rounded-full bg-white/[0.06] overflow-hidden">
+                        <div class="h-full rounded-full bg-slate-500" :style="{ width: ex.frPercent + '%' }"></div>
+                      </div>
+                    </div>
+                    <div class="text-center w-16 shrink-0">
+                      <p class="text-slate-300 font-black text-lg">{{ ex.frW }}<span class="text-xs font-bold"> kg</span></p>
+                      <p class="text-[10px] text-slate-600 font-black uppercase truncate">{{ friendProfile.profile?.username }}</p>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Exercices exclusifs -->
-              <div v-if="exerciseComparison.onlyMe.length || exerciseComparison.onlyFr.length"
-                class="grid grid-cols-2 gap-2">
-                <div v-if="exerciseComparison.onlyMe.length"
-                  class="bg-white/[0.04] rounded-2xl border border-white/[0.08] p-3 space-y-2">
-                  <p class="text-[10px] font-black uppercase tracking-wider" :style="{ color: 'var(--accent-solid)' }">Toi seulement</p>
-                  <p v-for="n in exerciseComparison.onlyMe.slice(0, 5)" :key="n"
-                    class="text-white text-xs font-bold truncate">{{ n }}</p>
-                  <p v-if="exerciseComparison.onlyMe.length > 5" class="text-slate-600 text-[10px] font-black">
-                    +{{ exerciseComparison.onlyMe.length - 5 }} autres
-                  </p>
-                </div>
-                <div v-if="exerciseComparison.onlyFr.length"
-                  class="bg-white/[0.04] rounded-2xl border border-white/[0.08] p-3 space-y-2">
-                  <p class="text-[10px] font-black text-violet-400 uppercase tracking-wider">{{ friendProfile.profile?.username }} seulement</p>
-                  <p v-for="n in exerciseComparison.onlyFr.slice(0, 5)" :key="n"
-                    class="text-white text-xs font-bold truncate">{{ n }}</p>
-                  <p v-if="exerciseComparison.onlyFr.length > 5" class="text-slate-600 text-[10px] font-black">
-                    +{{ exerciseComparison.onlyFr.length - 5 }} autres
-                  </p>
+              <!-- Toi seulement -->
+              <div v-if="exerciseComparison.onlyMe.length">
+                <p class="text-[10px] font-black uppercase tracking-widest px-1 mb-2" :style="{ color: 'var(--accent-solid)' }">
+                  Toi seulement ({{ exerciseComparison.onlyMe.length }})
+                </p>
+                <div class="bg-white/[0.04] rounded-2xl border border-white/[0.08] overflow-hidden">
+                  <div v-for="ex in exerciseComparison.onlyMe" :key="ex.name"
+                    class="flex items-center gap-3 px-4 py-3 border-b border-white/[0.04] last:border-0">
+                    <span class="text-lg shrink-0">{{ exoEmoji(ex.name) }}</span>
+                    <p class="text-white font-bold text-sm flex-1 truncate">{{ ex.name }}</p>
+                    <span v-if="ex.weight" class="text-sm font-black shrink-0" :style="{ color: 'var(--accent-solid)' }">{{ ex.weight }} kg</span>
+                    <span v-else class="text-slate-600 text-xs font-black shrink-0">— kg</span>
+                  </div>
                 </div>
               </div>
+
+              <!-- Ami seulement -->
+              <div v-if="exerciseComparison.onlyFr.length">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-2">
+                  {{ friendProfile.profile?.username }} seulement ({{ exerciseComparison.onlyFr.length }})
+                </p>
+                <div class="bg-white/[0.04] rounded-2xl border border-white/[0.08] overflow-hidden">
+                  <div v-for="ex in exerciseComparison.onlyFr" :key="ex.name"
+                    class="flex items-center gap-3 px-4 py-3 border-b border-white/[0.04] last:border-0">
+                    <span class="text-lg shrink-0">{{ exoEmoji(ex.name) }}</span>
+                    <p class="text-white font-bold text-sm flex-1 truncate">{{ ex.name }}</p>
+                    <span v-if="ex.weight" class="text-slate-300 text-sm font-black shrink-0">{{ ex.weight }} kg</span>
+                    <span v-else class="text-slate-600 text-xs font-black shrink-0">— kg</span>
+                  </div>
+                </div>
+              </div>
+
             </template>
 
             <button @click="showComparison = false" class="w-full text-slate-500 text-xs font-black py-2 hover:text-slate-300 transition">
@@ -243,6 +257,9 @@
                 </div>
               </div>
               <p class="text-white font-black text-xl">{{ friendProfile.profile?.username }}</p>
+              <p v-if="friendProfile.recentSessions?.[0]" class="text-xs text-slate-500 mt-1">
+                Dernière séance : {{ formatDate(friendProfile.recentSessions[0].date) }}
+              </p>
               <div class="flex justify-center gap-6 mt-4">
                 <div>
                   <p class="font-black text-2xl" :style="{ color: 'var(--accent-solid)' }">{{ friendProfile.sessionCount }}</p>
@@ -253,60 +270,47 @@
                   <p class="font-black text-2xl" :style="{ color: 'var(--accent-to, #34d399)' }">{{ friendProfile.totalSessions }}</p>
                   <p class="text-slate-500 text-xs font-black uppercase">total</p>
                 </div>
-                <div class="w-px bg-white/[0.08]"></div>
-                <div>
-                  <p class="text-white font-black text-2xl">{{ formatVolume(friendProfile.totalVolume) }}</p>
-                  <p class="text-slate-500 text-xs font-black uppercase">volume</p>
-                </div>
               </div>
             </div>
 
             <!-- Dernières séances avec exercices -->
-            <div class="bg-white/[0.04] rounded-[28px] border border-white/[0.08] p-5">
-              <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Dernières séances</p>
+            <div class="space-y-3">
+              <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Dernières séances</p>
               <div v-if="friendProfile.recentSessions?.length > 0" class="space-y-3">
                 <div v-for="s in friendProfile.recentSessions" :key="s.id"
-                  class="bg-white/[0.03] rounded-2xl border border-white/[0.06] overflow-hidden">
-                  <!-- Header séance -->
-                  <button class="w-full flex items-center gap-3 p-3 text-left active:bg-white/[0.04] transition-all"
-                    @click="toggleSession(s.id)">
-                    <div class="w-2 h-2 rounded-full shrink-0" :style="{ backgroundColor: 'var(--accent-solid)' }"></div>
+                  class="bg-white/[0.04] rounded-[24px] border border-white/[0.08] overflow-hidden">
+
+                  <!-- Header : nom du programme + date -->
+                  <div class="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-white/[0.06]">
                     <div class="flex-1 min-w-0">
                       <p class="text-white font-black text-sm truncate">{{ s.data?.title || 'Séance' }}</p>
-                      <p class="text-slate-500 text-xs">{{ formatDate(s.date) }}</p>
+                      <p class="text-slate-500 text-xs mt-0.5">{{ formatDate(s.date) }}</p>
                     </div>
-                    <span v-if="s.data?.category" class="text-[10px] font-black px-2 py-0.5 rounded-full border shrink-0" :class="catClass(s.data.category)">
+                    <span v-if="s.data?.category" class="text-[10px] font-black px-2.5 py-1 rounded-full border shrink-0" :class="catClass(s.data.category)">
                       {{ s.data.category }}
                     </span>
-                    <UIcon :name="expandedSessions.has(s.id) ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
-                      class="text-slate-600 text-sm shrink-0" />
-                  </button>
+                  </div>
 
-                  <!-- Exercices détaillés -->
-                  <div v-if="expandedSessions.has(s.id)" class="px-3 pb-3 space-y-2">
-                    <div v-if="s.data?.notes && !s.data?.exercises?.length"
-                      class="text-slate-400 text-xs font-medium bg-white/[0.03] rounded-xl p-3 leading-relaxed">
-                      {{ s.data.notes }}
-                    </div>
-                    <div v-else-if="s.data?.exercises?.length">
+                  <!-- Exercices tous visibles directement -->
+                  <div class="px-4 py-3 space-y-0">
+                    <div v-if="s.data?.exercises?.length">
                       <div v-for="(ex, ei) in s.data.exercises" :key="ei"
-                        class="flex items-center gap-3 py-2 border-b border-white/[0.04] last:border-0">
-                        <span class="text-[10px] font-black text-slate-600 w-4 shrink-0">{{ ei + 1 }}</span>
-                        <p class="text-white font-bold text-sm flex-1">{{ ex.name }}</p>
-                        <div class="flex items-center gap-1.5 shrink-0">
-                          <span v-if="ex.sets" class="text-[10px] font-black px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-300">
-                            {{ ex.sets }}×
+                        class="flex items-center gap-2 py-2.5 border-b border-white/[0.04] last:border-0">
+                        <span class="text-[10px] font-black text-slate-600 w-5 shrink-0">{{ ei + 1 }}</span>
+                        <p class="text-white font-bold text-sm flex-1 truncate">{{ ex.name }}</p>
+                        <div class="flex items-center gap-1 shrink-0 flex-wrap justify-end">
+                          <span v-if="ex.sets && ex.reps" class="text-xs font-black text-slate-400">
+                            {{ ex.sets }}×{{ ex.reps }}
                           </span>
-                          <span v-if="ex.reps" class="text-[10px] font-black px-2 py-0.5 rounded-full bg-white/[0.06] border border-white/[0.08] text-white">
-                            {{ ex.reps }} rép
-                          </span>
-                          <span v-if="ex.weight" class="text-[10px] font-black px-2 py-0.5 rounded-full" style="background: color-mix(in srgb, var(--accent-solid) 12%, transparent); border: 1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent); color: var(--accent-solid)">
+                          <span v-else-if="ex.sets" class="text-xs font-black text-slate-400">{{ ex.sets }} séries</span>
+                          <span v-if="ex.weight" class="text-xs font-black px-2 py-0.5 rounded-full" style="background: color-mix(in srgb, var(--accent-solid) 15%, transparent); border: 1px solid color-mix(in srgb, var(--accent-solid) 25%, transparent); color: var(--accent-solid)">
                             {{ ex.weight }} kg
                           </span>
                         </div>
                       </div>
                     </div>
-                    <p v-else class="text-slate-600 text-xs font-black text-center py-1">Aucun détail</p>
+                    <div v-else-if="s.data?.notes" class="text-slate-400 text-xs py-2 leading-relaxed">{{ s.data.notes }}</div>
+                    <p v-else class="text-slate-600 text-xs font-black text-center py-2">Aucun exercice enregistré</p>
                   </div>
                 </div>
               </div>
@@ -356,7 +360,6 @@ const friendProfile = ref(null)
 const chatFriend = ref(null)
 const showComparison = ref(false)
 const myStats = ref(null)
-const expandedSessions = ref(new Set())
 
 let currentUserId = null
 
@@ -444,14 +447,36 @@ async function fetchFriends() {
 
   if (!allFriendIds.length) { friends.value = []; return }
 
-  const { data: profiles } = await supabase.from('profiles').select('id, username, avatar_url').in('id', allFriendIds)
+  const { data: profiles } = await supabase.from('profiles').select('id, username, avatar_url, last_seen').in('id', allFriendIds)
+
+  const { data: unreadMsgs } = await supabase.from('messages')
+    .select('sender_id').eq('receiver_id', currentUserId).eq('read', false).in('sender_id', allFriendIds)
+  const unreadBySender = {}
+  for (const m of unreadMsgs || []) {
+    unreadBySender[m.sender_id] = (unreadBySender[m.sender_id] || 0) + 1
+  }
 
   const enriched = await Promise.all(allFriendIds.map(async friendId => {
     const { data: sessions } = await supabase.from('sport_sessions').select('id').eq('user_id', friendId).gte('date', firstOfMonth)
-    return { friendId, profile: profiles?.find(p => p.id === friendId) || null, sessionCount: sessions?.length || 0 }
+    const profile = profiles?.find(p => p.id === friendId) || null
+    return { friendId, profile, sessionCount: sessions?.length || 0, unreadCount: unreadBySender[friendId] || 0, lastSeen: profile?.last_seen || null }
   }))
 
   friends.value = enriched
+}
+
+function formatLastSeen(ts) {
+  const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 60000)
+  if (diff < 1) return 'Vu à l\'instant'
+  if (diff < 60) return `Vu il y a ${diff} min`
+  const h = Math.floor(diff / 60)
+  if (h < 24) return `Vu il y a ${h}h`
+  return `Vu il y a ${Math.floor(h / 24)}j`
+}
+
+function resetUnread(f) {
+  const idx = friends.value.findIndex(fr => fr.friendId === f.friendId)
+  if (idx !== -1) friends.value[idx] = { ...friends.value[idx], unreadCount: 0 }
 }
 
 function calcVolume(sessions) {
@@ -471,7 +496,6 @@ function formatVolume(kg) {
 }
 
 async function openFriendProfile(f) {
-  expandedSessions.value = new Set()
   showComparison.value = false
 
   const [{ data: recentSessions }, { data: allSessions }] = await Promise.all([
@@ -483,12 +507,6 @@ async function openFriendProfile(f) {
   friendProfile.value = { ...f, recentSessions: recentSessions || [], allSessionsData: allSessions || [], totalSessions: allSessions?.length || 0, totalVolume }
 }
 
-function toggleSession(id) {
-  const s = new Set(expandedSessions.value)
-  if (s.has(id)) s.delete(id)
-  else s.add(id)
-  expandedSessions.value = s
-}
 
 async function openComparison() {
   showComparison.value = !showComparison.value
@@ -533,13 +551,9 @@ const comparisonStats = computed(() => {
   ).size
   const maxTotal = Math.max(me.totalSessions, fr.totalSessions, 1)
   const maxMonth = Math.max(me.monthSessions, fr.sessionCount, 1)
-  const maxVol = Math.max(me.totalVolume, fr.totalVolume, 1)
-  const maxEx = Math.max(me.uniqueExercises, frUniqueEx, 1)
   return [
     { label: 'Séances totales', me: me.totalSessions, friend: fr.totalSessions, meDisplay: me.totalSessions, friendDisplay: fr.totalSessions, mePercent: (me.totalSessions / maxTotal) * 100, friendPercent: (fr.totalSessions / maxTotal) * 100 },
     { label: 'Séances ce mois', me: me.monthSessions, friend: fr.sessionCount, meDisplay: me.monthSessions, friendDisplay: fr.sessionCount, mePercent: (me.monthSessions / maxMonth) * 100, friendPercent: (fr.sessionCount / maxMonth) * 100 },
-    { label: 'Volume total', me: me.totalVolume, friend: fr.totalVolume, meDisplay: formatVolume(me.totalVolume), friendDisplay: formatVolume(fr.totalVolume), mePercent: (me.totalVolume / maxVol) * 100, friendPercent: (fr.totalVolume / maxVol) * 100 },
-    { label: 'Exercices différents', me: me.uniqueExercises, friend: frUniqueEx, meDisplay: me.uniqueExercises, friendDisplay: frUniqueEx, mePercent: (me.uniqueExercises / maxEx) * 100, friendPercent: (frUniqueEx / maxEx) * 100 },
   ]
 })
 
@@ -554,20 +568,35 @@ const exerciseComparison = computed(() => {
     }
   }
 
-  const myNames = new Set(Object.keys(myStats.value.bestWeights))
-  const frNames = new Set(Object.keys(frBestWeights))
+  const normalize = s => s.trim().toLowerCase()
 
-  const shared = [...myNames].filter(n => frNames.has(n)).map(name => {
-    const meW = myStats.value.bestWeights[name]
-    const frW = frBestWeights[name]
-    const max = Math.max(meW, frW, 1)
-    return { name, meW, frW, mePercent: (meW / max) * 100, frPercent: (frW / max) * 100 }
-  }).sort((a, b) => Math.max(b.meW, b.frW) - Math.max(a.meW, a.frW))
+  const myMap = {}
+  for (const [name, w] of Object.entries(myStats.value.bestWeights)) myMap[normalize(name)] = { name, weight: w }
+  const frMap = {}
+  for (const [name, w] of Object.entries(frBestWeights)) frMap[normalize(name)] = { name, weight: w }
 
-  const onlyMe = [...myNames].filter(n => !frNames.has(n))
-  const onlyFr = [...frNames].filter(n => !myNames.has(n))
+  const shared = Object.keys(myMap)
+    .filter(k => frMap[k])
+    .map(k => {
+      const meW = myMap[k].weight
+      const frW = frMap[k].weight
+      const max = Math.max(meW, frW, 1)
+      return { name: myMap[k].name, meW, frW, mePercent: (meW / max) * 100, frPercent: (frW / max) * 100 }
+    }).sort((a, b) => Math.max(b.meW, b.frW) - Math.max(a.meW, a.frW))
 
-  return { shared, onlyMe, onlyFr, frBestWeights }
+  const sharedKeys = new Set(Object.keys(myMap).filter(k => frMap[k]))
+
+  const onlyMe = Object.keys(myMap)
+    .filter(k => !sharedKeys.has(k))
+    .map(k => myMap[k])
+    .sort((a, b) => (b.weight || 0) - (a.weight || 0))
+
+  const onlyFr = Object.keys(frMap)
+    .filter(k => !sharedKeys.has(k))
+    .map(k => frMap[k])
+    .sort((a, b) => (b.weight || 0) - (a.weight || 0))
+
+  return { shared, onlyMe, onlyFr }
 })
 
 async function removeFriend(f) {
@@ -578,6 +607,21 @@ async function removeFriend(f) {
   friendProfile.value = null
   showComparison.value = false
   await fetchFriends()
+}
+
+function exoEmoji(name) {
+  const n = name.toLowerCase()
+  if (n.includes('développé') || n.includes('bench') || n.includes('pec') || n.includes('poitrine') || n.includes('écarté')) return '🏋️'
+  if (n.includes('squat') || n.includes('leg') || n.includes('jambe') || n.includes('cuisse') || n.includes('fente') || n.includes('presse')) return '🦵'
+  if (n.includes('curl') || n.includes('bicep') || n.includes('marteau')) return '💪'
+  if (n.includes('tricep') || n.includes('dips') || n.includes('extension')) return '🔱'
+  if (n.includes('tirage') || n.includes('traction') || n.includes('dos') || n.includes('row') || n.includes('pull')) return '🔙'
+  if (n.includes('épaule') || n.includes('shoulder') || n.includes('latéral') || n.includes('elev') || n.includes('face pull') || n.includes('oiseau')) return '🎯'
+  if (n.includes('deadlift') || n.includes('soulevé') || n.includes('roumain')) return '⚡'
+  if (n.includes('mollet') || n.includes('calf')) return '🦶'
+  if (n.includes('abdo') || n.includes('crunch') || n.includes('planche') || n.includes('gainage')) return '🎽'
+  if (n.includes('cardio') || n.includes('course') || n.includes('vélo') || n.includes('rameur')) return '🏃'
+  return '🏋️'
 }
 
 function formatDate(d) {

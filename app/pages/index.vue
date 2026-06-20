@@ -1,11 +1,5 @@
 <template>
-  <div class="min-h-screen text-white font-sans" :style="{ backgroundColor: theme.bgImage ? 'transparent' : theme.bg }">
-
-    <!-- Fond GIF (sakura uniquement) -->
-    <div v-if="theme.bgImage" class="fixed inset-0 -z-20 overflow-hidden pointer-events-none">
-      <img :src="theme.bgImage" class="w-full h-full object-cover scale-110" style="filter: blur(3px)" />
-      <div class="absolute inset-0" :style="{ backgroundColor: theme.bgOverlay }"></div>
-    </div>
+  <div class="min-h-screen text-white font-sans" :style="{ backgroundColor: theme.bg }">
 
     <!-- Blobs de fond (thème dynamique) -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
@@ -29,11 +23,11 @@
 
       <div class="flex items-center gap-2">
         <!-- Cloche notifications -->
-        <button @click="changeTab('amis')" class="relative w-9 h-9 rounded-2xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center shrink-0 active:scale-95 transition-all">
+        <button @click="notifOpen = !notifOpen; if(notifOpen) fetchNotifications(currentUserId)" class="relative w-9 h-9 rounded-2xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center shrink-0 active:scale-95 transition-all">
           <UIcon name="i-heroicons-bell" class="text-slate-400 text-lg" />
-          <span v-if="pendingCount > 0"
-            class="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-violet-500 rounded-full flex items-center justify-center px-1 shadow-lg shadow-violet-500/40">
-            <span class="text-white text-[10px] font-black">{{ pendingCount }}</span>
+          <span v-if="totalBadge > 0"
+            class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
+            <span class="text-white text-[9px] font-black">{{ totalBadge > 9 ? '9+' : totalBadge }}</span>
           </span>
         </button>
 
@@ -200,6 +194,65 @@
 
     <TimerRepos />
 
+    <!-- ── Panel notifications ── -->
+    <Transition name="fade">
+      <div v-if="notifOpen" class="fixed inset-0 z-[600]" @click.self="notifOpen = false">
+        <div class="absolute top-14 right-4 w-80 rounded-[24px] border border-white/[0.08] backdrop-blur-2xl shadow-2xl overflow-hidden"
+          :style="{ backgroundColor: bgAlpha(theme.bg, 0.97) }">
+          <div class="flex items-center justify-between px-5 py-4 border-b border-white/[0.08]">
+            <p class="font-black text-white">Notifications</p>
+            <button @click="notifOpen = false" class="text-slate-500 hover:text-white transition">
+              <UIcon name="i-heroicons-x-mark" class="text-lg" />
+            </button>
+          </div>
+
+          <!-- Demandes d'amis -->
+          <div v-if="notifRequests.length" class="p-4 border-b border-white/[0.06]">
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Demandes d'amis</p>
+            <div v-for="r in notifRequests" :key="r.id" class="flex items-center gap-3 mb-2 last:mb-0">
+              <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[var(--accent-from)] to-[var(--accent-to)] p-[1.5px] shrink-0">
+                <div class="w-full h-full rounded-full overflow-hidden flex items-center justify-center" :style="{ backgroundColor: theme.bg }">
+                  <img v-if="r.profile?.avatar_url" :src="r.profile.avatar_url" class="w-full h-full object-cover" />
+                  <span v-else class="text-white font-black text-xs">{{ r.profile?.username?.charAt(0).toUpperCase() }}</span>
+                </div>
+              </div>
+              <p class="text-white font-black text-sm flex-1 truncate">{{ r.profile?.username }}</p>
+              <div class="flex gap-1 shrink-0">
+                <button @click="acceptFromNotif(r)" class="px-3 py-1.5 rounded-xl text-xs font-black text-white" :style="{ background: `linear-gradient(to right, var(--accent-from), var(--accent-to))` }">✓</button>
+                <button @click="declineFromNotif(r)" class="px-3 py-1.5 rounded-xl text-xs font-black bg-white/[0.06] text-slate-400">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Messages non lus -->
+          <div v-if="notifMessages.length" class="p-4">
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Messages non lus</p>
+            <div v-for="m in notifMessages" :key="m.senderId"
+              @click="changeTab('amis'); notifOpen = false"
+              class="flex items-center gap-3 mb-2 last:mb-0 cursor-pointer hover:bg-white/[0.04] rounded-2xl p-2 -mx-2 transition">
+              <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[var(--accent-from)] to-[var(--accent-to)] p-[1.5px] shrink-0">
+                <div class="w-full h-full rounded-full overflow-hidden flex items-center justify-center" :style="{ backgroundColor: theme.bg }">
+                  <img v-if="m.profile?.avatar_url" :src="m.profile.avatar_url" class="w-full h-full object-cover" />
+                  <span v-else class="text-white font-black text-xs">{{ m.profile?.username?.charAt(0).toUpperCase() }}</span>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-white font-black text-sm truncate">{{ m.profile?.username }}</p>
+                <p class="text-slate-500 text-xs truncate">{{ m.lastMsg }}</p>
+              </div>
+              <span class="bg-red-500 text-white text-[9px] font-black min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 shrink-0">{{ m.count }}</span>
+            </div>
+          </div>
+
+          <!-- Vide -->
+          <div v-if="!notifRequests.length && !notifMessages.length" class="p-8 text-center">
+            <UIcon name="i-heroicons-bell-slash" class="text-3xl text-slate-700 mb-2" />
+            <p class="text-slate-600 text-sm font-black">Aucune notification</p>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <ModalSeance
       v-if="isModalOpen"
       :date="selectedDate"
@@ -336,6 +389,11 @@ const savedTemplates = ref([])
 const loadingPicker = ref(false)
 const manageSessionsOpen = ref(false)
 const pendingCount = ref(0)
+const notifOpen = ref(false)
+const notifRequests = ref([])
+const notifMessages = ref([])
+const unreadMsgCount = ref(0)
+const totalBadge = computed(() => pendingCount.value + unreadMsgCount.value)
 
 function localDateStr(d = new Date()) {
   return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-')
@@ -377,6 +435,7 @@ onMounted(async () => {
   initTheme()
   await fetchSessions()
   fetchPendingCount(user.id)
+  fetchNotifications(user.id)
   joinPresence(user.id)
   // Demander permission push après 3s (laisse l'app charger)
   setTimeout(() => requestAndSubscribe(user.id), 3000)
@@ -492,6 +551,43 @@ async function fetchPendingCount(uid) {
   const { count } = await supabase.from('friendships').select('id', { count: 'exact', head: true })
     .eq('addressee_id', uid).eq('status', 'pending')
   pendingCount.value = count || 0
+}
+
+async function fetchNotifications(uid) {
+  if (!uid) return
+  const [{ data: requests }, { data: unread }] = await Promise.all([
+    supabase.from('friendships').select('id, requester_id').eq('addressee_id', uid).eq('status', 'pending'),
+    supabase.from('messages').select('sender_id, content, created_at').eq('receiver_id', uid).eq('read', false).order('created_at', { ascending: false }),
+  ])
+
+  if (requests?.length) {
+    const ids = requests.map(r => r.requester_id)
+    const { data: profiles } = await supabase.from('profiles').select('id, username, avatar_url').in('id', ids)
+    notifRequests.value = requests.map(r => ({ ...r, profile: profiles?.find(p => p.id === r.requester_id) }))
+  } else { notifRequests.value = [] }
+  pendingCount.value = notifRequests.value.length
+
+  if (unread?.length) {
+    const senderIds = [...new Set(unread.map(m => m.sender_id))]
+    const { data: profiles } = await supabase.from('profiles').select('id, username, avatar_url').in('id', senderIds)
+    const grouped = {}
+    for (const m of unread) {
+      if (!grouped[m.sender_id]) grouped[m.sender_id] = { senderId: m.sender_id, count: 0, lastMsg: m.content, profile: profiles?.find(p => p.id === m.sender_id) }
+      grouped[m.sender_id].count++
+    }
+    notifMessages.value = Object.values(grouped)
+  } else { notifMessages.value = [] }
+  unreadMsgCount.value = notifMessages.value.reduce((s, m) => s + m.count, 0)
+}
+
+async function acceptFromNotif(r) {
+  await supabase.from('friendships').update({ status: 'accepted' }).eq('id', r.id)
+  await fetchNotifications(currentUserId)
+}
+
+async function declineFromNotif(r) {
+  await supabase.from('friendships').delete().eq('id', r.id)
+  await fetchNotifications(currentUserId)
 }
 
 async function refreshTemplates() {

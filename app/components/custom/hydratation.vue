@@ -1,19 +1,19 @@
 <template>
-  <div class="bg-slate-900/50 backdrop-blur-xl rounded-[28px] md:rounded-[40px] p-5 md:p-8 border border-white/5 shadow-2xl">
+  <div class="bg-white/[0.04] backdrop-blur-xl rounded-[28px] md:rounded-[40px] p-5 md:p-8 border border-white/[0.08] shadow-2xl">
     <!-- Header -->
     <div class="flex justify-between items-start mb-6">
       <div>
         <div class="flex items-center gap-2 mb-1">
-          <div class="w-2 h-2 bg-blue-400 rounded-full shadow-[0_0_10px_rgba(96,165,250,0.8)]"></div>
+          <div class="w-2 h-2 rounded-full" :style="{ backgroundColor: 'var(--accent-solid)', boxShadow: '0 0 10px color-mix(in srgb, var(--accent-solid) 80%, transparent)' }"></div>
           <h2 class="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Hydratation</h2>
         </div>
         <div class="flex items-baseline gap-2">
           <span class="text-5xl font-[1000] tracking-tighter text-white">{{ count }}</span>
-          <span class="text-xl font-black text-blue-400 italic">/ 8</span>
+          <span class="text-xl font-black italic text-[var(--accent-solid)]">/ 8</span>
         </div>
         <p class="text-slate-500 text-xs font-medium mt-1">{{ count >= 8 ? 'Objectif atteint ! 🎯' : `${8 - count} verre${8 - count > 1 ? 's' : ''} restant` }}</p>
       </div>
-      <button @click="reset" class="p-3 rounded-2xl bg-slate-800 text-slate-500 hover:text-white transition active:scale-95">
+      <button @click="reset" class="p-3 rounded-2xl bg-white/[0.08] text-slate-500 hover:text-white transition active:scale-95">
         <UIcon name="i-heroicons-arrow-path" class="text-lg" />
       </button>
     </div>
@@ -27,22 +27,23 @@
         class="flex flex-col items-center gap-1 group"
       >
         <div
-          class="w-full aspect-square rounded-xl flex items-center justify-center transition-all duration-300 active:scale-90"
-          :class="i <= count ? 'bg-blue-500/20 border border-blue-500/50' : 'bg-slate-800 border border-white/5'"
+          class="w-full aspect-square rounded-xl flex items-center justify-center transition-all duration-300 active:scale-90 border"
+          :class="i <= count ? '' : 'bg-white/[0.06] border-white/[0.08]'"
+          :style="i <= count ? { backgroundColor: 'color-mix(in srgb, var(--accent-solid) 20%, transparent)', borderColor: 'color-mix(in srgb, var(--accent-solid) 50%, transparent)' } : {}"
         >
           <UIcon
             name="i-heroicons-beaker"
             class="text-lg transition-all duration-300"
-            :class="i <= count ? 'text-blue-400' : 'text-slate-700'"
+            :class="i <= count ? 'text-[var(--accent-solid)]' : 'text-slate-700'"
           />
         </div>
       </button>
     </div>
 
     <!-- Progress bar -->
-    <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+    <div class="h-1.5 bg-white/[0.08] rounded-full overflow-hidden">
       <div
-        class="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-500"
+        class="h-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] rounded-full transition-all duration-500"
         :style="{ width: `${(count / 8) * 100}%` }"
       />
     </div>
@@ -50,6 +51,8 @@
 </template>
 
 <script setup>
+const { theme } = useTheme()
+
 const storageKey = computed(() => {
   const today = new Date().toISOString().slice(0, 10)
   return `fittrack_water_${today}`
