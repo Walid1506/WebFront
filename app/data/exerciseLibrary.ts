@@ -696,5 +696,369 @@ export const exerciseLibrary = [
     description: 'Très utile pour améliorer squat et mouvements jambes.',
     mediaType: 'image',
     mediaUrl: `${CDN}/Ankle_Circles/0.jpg`
+  },
+
+  // ─── POULIE - PECTORAUX ───────────────────────────────────────────────────
+  {
+    id: 69,
+    name: 'Écarté poulie basse',
+    muscle: 'Pectoraux',
+    category: 'Pec',
+    equipment: 'Câbles',
+    description: 'Cible le haut des pectoraux avec un angle ascendant. Excellent pour finir une séance pec.',
+    mediaType: 'gif',
+    mediaUrl: `${FP}/Low-Cable-Crossover.gif`
+  },
+  {
+    id: 70,
+    name: 'Écarté poulie milieu',
+    muscle: 'Pectoraux',
+    category: 'Pec',
+    equipment: 'Câbles',
+    description: 'Fly horizontal avec câbles pour un travail uniforme du pec. Prise neutre, coudes légèrement fléchis.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Fly/0.jpg`
+  },
+  {
+    id: 71,
+    name: 'Développé poulie debout',
+    muscle: 'Pectoraux',
+    category: 'Pec',
+    equipment: 'Câbles',
+    description: 'Presse pectorale fonctionnelle debout avec câbles. Engage aussi le gainage.',
+    mediaType: 'gif',
+    mediaUrl: `${FP}/Standing-Cable-Chest-Press.gif`
+  },
+  {
+    id: 72,
+    name: 'Crossover poulie basse prise pronation',
+    muscle: 'Pectoraux',
+    category: 'Pec',
+    equipment: 'Câbles',
+    description: 'Variation du crossover depuis la poulie basse pour isoler la contraction du pec.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Low_Cable_Crossover/0.jpg`
+  },
+
+  // ─── POULIE - DOS ─────────────────────────────────────────────────────────
+  {
+    id: 73,
+    name: 'Tirage vertical prise serrée',
+    muscle: 'Dos',
+    category: 'Dos',
+    equipment: 'Câbles',
+    description: 'Prise neutre serrée pour cibler les dorsaux et les biceps simultanément.',
+    mediaType: 'gif',
+    mediaUrl: `${FP}/Close-Grip-Lat-Pulldown.gif`
+  },
+  {
+    id: 74,
+    name: 'Tirage bras tendus poulie',
+    muscle: 'Dos',
+    category: 'Dos',
+    equipment: 'Câbles',
+    description: 'Isolation pure des dorsaux, bras tendus. Parfait pour sentir et activer les dorsaux.',
+    mediaType: 'gif',
+    mediaUrl: `${FP}/Straight-Arm-Pulldown.gif`
+  },
+  {
+    id: 75,
+    name: 'Rowing unilatéral poulie',
+    muscle: 'Dos',
+    category: 'Dos',
+    equipment: 'Câbles',
+    description: 'Tirage horizontal unilatéral pour corriger les déséquilibres et maximiser l\'amplitude.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/One_Arm_Cable_Row/0.jpg`
+  },
+  {
+    id: 76,
+    name: 'Tirage corde poulie haute',
+    muscle: 'Dos',
+    category: 'Dos',
+    equipment: 'Câbles',
+    description: 'Tirage diagonal avec corde depuis la poulie haute. Très bon pour la partie basse des dorsaux.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Straight_Arm_Pulldown/0.jpg`
+  },
+  {
+    id: 77,
+    name: 'Tirage vertical large pronation',
+    muscle: 'Dos',
+    category: 'Dos',
+    equipment: 'Câbles',
+    description: 'Lat pulldown prise large et pronation, focus sur l\'ouverture du dos et la largeur.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Lat_Pulldown_-_Close_Grip/0.jpg`
+  },
+
+  // ─── POULIE - ÉPAULES ─────────────────────────────────────────────────────
+  {
+    id: 78,
+    name: 'Élévations latérales poulie basse',
+    muscle: 'Épaules',
+    category: 'Epaules',
+    equipment: 'Câbles',
+    description: 'Version câble pour des élévations latérales avec tension constante tout au long du mouvement.',
+    mediaType: 'gif',
+    mediaUrl: `${FP}/Cable-Lateral-Raise.gif`
+  },
+  {
+    id: 79,
+    name: 'Élévations latérales unilatérales poulie',
+    muscle: 'Épaules',
+    category: 'Epaules',
+    equipment: 'Câbles',
+    description: 'Unilatéral pour cibler chaque deltoïde indépendamment. Tension constante sur l\'arc complet.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/One-Arm_Cable_Lateral_Raise/0.jpg`
+  },
+  {
+    id: 80,
+    name: 'Élévations frontales poulie',
+    muscle: 'Épaules',
+    category: 'Epaules',
+    equipment: 'Câbles',
+    description: 'Travail du deltoïde antérieur avec tension continue, plus efficace qu\'avec haltères.',
+    mediaType: 'gif',
+    mediaUrl: `${FP}/Cable-Front-Raise.gif`
+  },
+  {
+    id: 81,
+    name: 'Oiseau poulie',
+    muscle: 'Épaules',
+    category: 'Epaules',
+    equipment: 'Câbles',
+    description: 'Travaille le deltoïde postérieur avec tension constante. Excellent pour l\'arrière d\'épaule.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Rear_Delt_Fly/0.jpg`
+  },
+  {
+    id: 82,
+    name: 'Tirage menton câble',
+    muscle: 'Épaules',
+    category: 'Epaules',
+    equipment: 'Câbles',
+    description: 'Travaille le deltoïde moyen et les trapèzes. Prise serrée, tirer jusqu\'au menton.',
+    mediaType: 'gif',
+    mediaUrl: `${FP}/Cable-Upright-Row.gif`
+  },
+
+  // ─── POULIE - BICEPS ──────────────────────────────────────────────────────
+  {
+    id: 83,
+    name: 'Curl poulie basse',
+    muscle: 'Biceps',
+    category: 'Bras',
+    equipment: 'Câbles',
+    description: 'Curl debout avec poulie basse pour une tension maximale sur les biceps en bas du mouvement.',
+    mediaType: 'gif',
+    mediaUrl: `${FP}/Standing-Cable-Biceps-Curl.gif`
+  },
+  {
+    id: 84,
+    name: 'Curl marteau corde poulie',
+    muscle: 'Biceps',
+    category: 'Bras',
+    equipment: 'Câbles',
+    description: 'Curl marteau avec corde à la poulie. Travaille le brachial et le brachioradial.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Rope_Hammer_Curl/0.jpg`
+  },
+  {
+    id: 85,
+    name: 'Curl poulie haute',
+    muscle: 'Biceps',
+    category: 'Bras',
+    equipment: 'Câbles',
+    description: 'Curl depuis la poulie haute, bras tendu à l\'horizontale. Excellent pour la contraction des biceps.',
+    mediaType: 'gif',
+    mediaUrl: `${FP}/Overhead-Cable-Curl.gif`
+  },
+  {
+    id: 86,
+    name: 'Curl unilatéral poulie basse',
+    muscle: 'Biceps',
+    category: 'Bras',
+    equipment: 'Câbles',
+    description: 'Curl unilatéral pour corriger les asymétries et mieux contrôler la supination.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Standing_Curl/0.jpg`
+  },
+  {
+    id: 87,
+    name: 'Curl pupitre câble',
+    muscle: 'Biceps',
+    category: 'Bras',
+    equipment: 'Câbles',
+    description: 'Isolation stricte des biceps avec appui, impossible de tricher. Prise supination.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Preacher_Curl/0.jpg`
+  },
+
+  // ─── POULIE - TRICEPS ─────────────────────────────────────────────────────
+  {
+    id: 88,
+    name: 'Extension corde poulie haute',
+    muscle: 'Triceps',
+    category: 'Bras',
+    equipment: 'Câbles',
+    description: 'Extension triceps avec corde. Les mains s\'écartent en bas pour maximaliser la contraction.',
+    mediaType: 'gif',
+    mediaUrl: `${FP}/Rope-Pushdown.gif`
+  },
+  {
+    id: 89,
+    name: 'Extension barre droite poulie',
+    muscle: 'Triceps',
+    category: 'Bras',
+    equipment: 'Câbles',
+    description: 'Pushdown avec barre droite. Prise pronation pour accent sur le chef latéral.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Pushdown/0.jpg`
+  },
+  {
+    id: 90,
+    name: 'Extension barre V poulie',
+    muscle: 'Triceps',
+    category: 'Bras',
+    equipment: 'Câbles',
+    description: 'Variante avec barre en V pour un meilleur angle de poignet et plus de confort.',
+    mediaType: 'gif',
+    mediaUrl: `${FP}/Triceps-Pushdown.gif`
+  },
+  {
+    id: 91,
+    name: 'Extension nuque corde poulie',
+    muscle: 'Triceps',
+    category: 'Bras',
+    equipment: 'Câbles',
+    description: 'Extension au-dessus de la tête avec corde. Très bon étirement du long chef du triceps.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Rope_Overhead_Triceps_Extension/0.jpg`
+  },
+  {
+    id: 92,
+    name: 'Kickback triceps poulie',
+    muscle: 'Triceps',
+    category: 'Bras',
+    equipment: 'Câbles',
+    description: 'Isolation du triceps avec une contraction maximale en extension complète du bras.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Triceps_Kickback/0.jpg`
+  },
+
+  // ─── POULIE - JAMBES & FESSIERS ───────────────────────────────────────────
+  {
+    id: 93,
+    name: 'Hip abduction poulie',
+    muscle: 'Fessiers',
+    category: 'Jambes',
+    equipment: 'Câbles',
+    description: 'Écartement de la jambe en dehors pour cibler le fessier moyen et le TFL.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Hip_Abduction/0.jpg`
+  },
+  {
+    id: 94,
+    name: 'Hip adduction poulie',
+    muscle: 'Adducteurs',
+    category: 'Jambes',
+    equipment: 'Câbles',
+    description: 'Ramener la jambe vers l\'intérieur pour cibler les adducteurs. Debout ou allongé.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Hip_Adduction/0.jpg`
+  },
+  {
+    id: 95,
+    name: 'Kickback fessiers poulie',
+    muscle: 'Fessiers',
+    category: 'Jambes',
+    equipment: 'Câbles',
+    description: 'Extension de hanche vers l\'arrière avec câble. Excellent isolant des fessiers.',
+    mediaType: 'gif',
+    mediaUrl: `${FP}/Cable-Glute-Kickback.gif`
+  },
+  {
+    id: 96,
+    name: 'Leg curl debout poulie',
+    muscle: 'Ischios',
+    category: 'Jambes',
+    equipment: 'Câbles',
+    description: 'Curl des ischios en position debout avec câble cheville. Bonne amplitude et isolation.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Standing_Cable_Leg_Curl/0.jpg`
+  },
+  {
+    id: 97,
+    name: 'Pull through câble',
+    muscle: 'Fessiers',
+    category: 'Jambes',
+    equipment: 'Câbles',
+    description: 'Charnière de hanche avec câble entre les jambes. Excellent pour ischios et fessiers.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Pull_Through/0.jpg`
+  },
+  {
+    id: 98,
+    name: 'Squat câble (Goblet)',
+    muscle: 'Jambes',
+    category: 'Jambes',
+    equipment: 'Câbles',
+    description: 'Squat avec résistance câble. Maintient la tension sur les quads tout au long du mouvement.',
+    mediaType: 'gif',
+    mediaUrl: `${FP}/Cable-Squat.gif`
+  },
+
+  // ─── POULIE - ABDOS & CORE ────────────────────────────────────────────────
+  {
+    id: 99,
+    name: 'Bûcheron poulie (Woodchop)',
+    muscle: 'Abdominaux',
+    category: 'Abdos',
+    equipment: 'Câbles',
+    description: 'Rotation en diagonale haute vers basse. Travaille les obliques et le gainage rotatif.',
+    mediaType: 'gif',
+    mediaUrl: `${FP}/Cable-Woodchop.gif`
+  },
+  {
+    id: 100,
+    name: 'Bûcheron bas vers haut poulie',
+    muscle: 'Abdominaux',
+    category: 'Abdos',
+    equipment: 'Câbles',
+    description: 'Rotation de bas en haut pour cibler les obliques inférieurs et la chaine antérieure.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Cable_Woodchop/0.jpg`
+  },
+  {
+    id: 101,
+    name: 'Pallof press poulie',
+    muscle: 'Abdominaux',
+    category: 'Abdos',
+    equipment: 'Câbles',
+    description: 'Anti-rotation avec câble. Exerce une pression horizontale pour renforcer le gainage.',
+    mediaType: 'image',
+    mediaUrl: `${CDN}/Pallof_Press/0.jpg`
+  },
+  {
+    id: 102,
+    name: 'Twist oblique câble',
+    muscle: 'Abdominaux',
+    category: 'Abdos',
+    equipment: 'Câbles',
+    description: 'Rotation du tronc avec résistance câble. Cible les obliques avec tension constante.',
+    mediaType: 'gif',
+    mediaUrl: `${FP}/Cable-Oblique-Crunch.gif`
+  },
+  {
+    id: 103,
+    name: 'Crunch poulie genou à terre',
+    muscle: 'Abdominaux',
+    category: 'Abdos',
+    equipment: 'Câbles',
+    description: 'Crunch câble à genoux depuis la poulie haute. Version chargée et efficace pour les abdos.',
+    mediaType: 'gif',
+    mediaUrl: `${FP}/Kneeling-Cable-Crunch.gif`
   }
 ]
