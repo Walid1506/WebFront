@@ -15,7 +15,12 @@
 
     <!-- Overlay timer -->
     <Transition name="slide-up">
-      <div v-if="isOpen" class="fixed inset-0 z-[200] flex flex-col items-center justify-center backdrop-blur-2xl" :style="{ backgroundColor: bgAlpha(theme.bg, 0.96) }">
+      <div v-if="isOpen" class="fixed inset-0 z-[200] flex flex-col items-center justify-center backdrop-blur-2xl" :style="{ backgroundColor: theme.bgImage ? bgAlpha(theme.bg, 0.55) : bgAlpha(theme.bg, 0.96) }">
+        <!-- GIF background (sakura) -->
+        <div v-if="theme.bgImage" class="absolute inset-0 -z-10 overflow-hidden">
+          <img :src="theme.bgImage" class="w-full h-full object-cover scale-110" style="filter: blur(3px)" />
+          <div class="absolute inset-0" :style="{ backgroundColor: theme.bgOverlay }"></div>
+        </div>
         <div class="absolute -top-20 left-1/4 w-72 h-72 rounded-full blur-[100px] pointer-events-none" :style="{ backgroundColor: theme.blobs[0] }"></div>
         <div class="absolute bottom-0 right-1/4 w-72 h-72 rounded-full blur-[100px] pointer-events-none" :style="{ backgroundColor: theme.blobs[1] }"></div>
         <!-- Header -->

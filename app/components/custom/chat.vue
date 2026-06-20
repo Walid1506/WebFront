@@ -55,20 +55,30 @@
               <div v-if="msg.media_url" class="rounded-[18px] overflow-hidden border border-white/[0.08] cursor-pointer"
                 :class="isMine(msg) ? 'rounded-tr-sm' : 'rounded-tl-sm'"
                 @click="viewImage = msg.media_url">
-                <img :src="msg.media_url" class="max-w-[220px] max-h-[300px] object-cover block" />
+                <img :src="msg.media_url" class="max-w-[220px] max-h-[300px] object-cover block" loading="lazy" />
               </div>
 
               <!-- Texte -->
               <div v-if="msg.content" class="px-4 py-2.5 rounded-[18px] text-sm font-medium leading-relaxed"
-                :class="[
-                  isMine(msg)
-                    ? 'bg-gradient-to-br from-[var(--accent-from)] to-[var(--accent-to)] text-white rounded-tr-sm'
-                    : 'bg-white/[0.08] border border-white/[0.08] text-white rounded-tl-sm'
-                ]">
+                :class="isMine(msg)
+                  ? 'bg-gradient-to-br from-[var(--accent-from)] to-[var(--accent-to)] text-white rounded-tr-sm'
+                  : 'bg-white/[0.08] border border-white/[0.08] text-white rounded-tl-sm'">
                 {{ msg.content }}
               </div>
 
-              <span class="text-[10px] text-slate-700 font-bold px-1">{{ formatTime(msg.created_at) }}</span>
+              <!-- Heure + accusé de réception (mes messages seulement) -->
+              <div class="flex items-center gap-1 px-1" :class="isMine(msg) ? 'flex-row-reverse' : ''">
+                <span class="text-[10px] text-slate-700 font-bold">{{ formatTime(msg.created_at) }}</span>
+                <!-- Accusé de réception -->
+                <span v-if="isMine(msg)" class="text-[10px] font-black flex items-center gap-0.5 transition-colors duration-300"
+                  :style="{ color: msg.read ? 'var(--accent-solid)' : 'rgba(100,116,139,0.6)' }">
+                  <UIcon v-if="msg.read" name="i-heroicons-eye" class="text-xs" />
+                  <template v-else>
+                    <UIcon name="i-heroicons-check" class="text-xs -mr-1" />
+                    <UIcon name="i-heroicons-check" class="text-xs" />
+                  </template>
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -86,26 +96,21 @@
     <!-- Input -->
     <div class="shrink-0 px-3 py-3 border-t border-white/[0.08] backdrop-blur-xl" :style="{ backgroundColor: bgAlpha(theme.bg, 0.92) }">
       <div class="flex items-end gap-2">
-        <!-- Photo -->
         <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="sendPhoto" />
         <button @click="fileInput?.click()"
           class="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center shrink-0 active:scale-90 transition-all">
           <UIcon name="i-heroicons-photo" class="text-slate-400 text-lg" />
         </button>
-
-        <!-- Texte -->
         <div class="flex-1 bg-white/[0.06] border border-white/[0.08] rounded-[20px] px-4 py-2.5 flex items-end gap-2 min-h-[44px]">
           <textarea ref="textareaEl" v-model="newMessage" @keydown.enter.exact.prevent="sendMessage"
             rows="1" placeholder="Message..."
             class="flex-1 bg-transparent text-white text-sm outline-none resize-none placeholder:text-slate-700 leading-relaxed max-h-32"
             @input="autoResize" />
         </div>
-
-        <!-- Envoyer -->
         <button @click="sendMessage" :disabled="!newMessage.trim() || sending"
           class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 active:scale-90 transition-all"
           :class="newMessage.trim() ? 'bg-gradient-to-br from-[var(--accent-from)] to-[var(--accent-to)] shadow-lg shadow-[color:var(--accent-solid)]/15' : 'bg-white/[0.04] border border-white/[0.06]'">
-          <UIcon name="i-heroicons-paper-airplane" class="text-white text-lg" :class="newMessage.trim() ? '' : 'text-slate-700'" />
+          <UIcon name="i-heroicons-paper-airplane" class="text-lg" :class="newMessage.trim() ? 'text-white' : 'text-slate-700'" />
         </button>
       </div>
     </div>
@@ -139,7 +144,6 @@ defineEmits(['close'])
 
 const supabase = useSupabaseClient()
 const { isOnline } = usePresence()
-const config = useRuntimeConfig()
 
 const messages = ref([])
 const newMessage = ref('')
@@ -160,10 +164,12 @@ onMounted(async () => {
   if (!user) return
   currentUserId = user.id
 
-  const { data: profile } = await supabase.from('profiles').select('username, last_seen').eq('id', props.friendId).maybeSingle()
-  if (profile?.last_seen) lastSeen.value = formatLastSeen(profile.last_seen)
+  const [{ data: profile }, { data: myProfile }] = await Promise.all([
+    supabase.from('profiles').select('username, last_seen').eq('id', props.friendId).maybeSingle(),
+    supabase.from('profiles').select('username').eq('id', user.id).maybeSingle(),
+  ])
 
-  const { data: myProfile } = await supabase.from('profiles').select('username').eq('id', user.id).maybeSingle()
+  if (profile?.last_seen) lastSeen.value = formatLastSeen(profile.last_seen)
   currentUsername = myProfile?.username || user.email?.split('@')[0] || 'Quelqu\'un'
 
   await fetchMessages()
@@ -191,6 +197,7 @@ async function markRead() {
 
 function subscribeRealtime() {
   channel = supabase.channel(`chat-${[currentUserId, props.friendId].sort().join('-')}`)
+    // Nouveaux messages reçus
     .on('postgres_changes', {
       event: 'INSERT', schema: 'public', table: 'messages',
       filter: `receiver_id=eq.${currentUserId}`
@@ -200,6 +207,14 @@ function subscribeRealtime() {
         await markRead()
         scrollToBottom()
       }
+    })
+    // Mes messages passent à "lu" (l'ami a ouvert le chat)
+    .on('postgres_changes', {
+      event: 'UPDATE', schema: 'public', table: 'messages',
+      filter: `sender_id=eq.${currentUserId}`
+    }, payload => {
+      const idx = messages.value.findIndex(m => m.id === payload.new.id)
+      if (idx !== -1) messages.value[idx] = { ...messages.value[idx], ...payload.new }
     })
     .subscribe()
 }
@@ -214,7 +229,8 @@ async function sendMessage() {
   const { data } = await supabase.from('messages').insert({
     sender_id: currentUserId,
     receiver_id: props.friendId,
-    content
+    content,
+    read: false
   }).select().single()
 
   if (data) {
@@ -242,7 +258,8 @@ async function sendPhoto(event) {
   const { data } = await supabase.from('messages').insert({
     sender_id: currentUserId,
     receiver_id: props.friendId,
-    media_url: publicUrl
+    media_url: publicUrl,
+    read: false
   }).select().single()
 
   if (data) {

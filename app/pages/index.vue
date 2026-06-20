@@ -1,5 +1,11 @@
 <template>
-  <div class="min-h-screen text-white font-sans" :style="{ backgroundColor: theme.bg }">
+  <div class="min-h-screen text-white font-sans" :style="{ backgroundColor: theme.bgImage ? 'transparent' : theme.bg }">
+
+    <!-- Fond GIF (sakura uniquement) -->
+    <div v-if="theme.bgImage" class="fixed inset-0 -z-20 overflow-hidden pointer-events-none">
+      <img :src="theme.bgImage" class="w-full h-full object-cover scale-110" style="filter: blur(3px)" />
+      <div class="absolute inset-0" :style="{ backgroundColor: theme.bgOverlay }"></div>
+    </div>
 
     <!-- Blobs de fond (thème dynamique) -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
@@ -23,7 +29,7 @@
 
       <div class="flex items-center gap-2">
         <!-- Cloche notifications -->
-        <button @click="activeTab = 'amis'" class="relative w-9 h-9 rounded-2xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center shrink-0 active:scale-95 transition-all">
+        <button @click="changeTab('amis')" class="relative w-9 h-9 rounded-2xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center shrink-0 active:scale-95 transition-all">
           <UIcon name="i-heroicons-bell" class="text-slate-400 text-lg" />
           <span v-if="pendingCount > 0"
             class="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-violet-500 rounded-full flex items-center justify-center px-1 shadow-lg shadow-violet-500/40">
@@ -31,7 +37,7 @@
           </span>
         </button>
 
-        <button @click="activeTab = 'profil'" class="w-9 h-9 rounded-full bg-gradient-to-tr from-[var(--accent-from)] to-[var(--accent-to)] p-[2px] shrink-0">
+        <button @click="changeTab('profil')" class="w-9 h-9 rounded-full bg-gradient-to-tr from-[var(--accent-from)] to-[var(--accent-to)] p-[2px] shrink-0">
           <div class="w-full h-full rounded-full overflow-hidden flex items-center justify-center transition-colors duration-700" :style="{ backgroundColor: theme.bg }">
             <img v-if="avatarUrl" :src="avatarUrl" class="w-full h-full object-cover" alt="Avatar" />
             <span v-else class="text-white font-black text-sm">{{ userName.charAt(0).toUpperCase() }}</span>
@@ -45,7 +51,7 @@
       <button
         v-for="tab in tabs"
         :key="tab.id"
-        @click="activeTab = tab.id"
+        @click="changeTab(tab.id)"
         class="flex items-center gap-2 px-5 py-4 text-sm font-bold uppercase tracking-widest transition-all duration-200 border-b-2 -mb-px"
         :class="activeTab === tab.id ? 'border-[var(--accent-solid)]' : 'text-slate-500 border-transparent hover:text-slate-300'"
         :style="activeTab === tab.id ? { color: 'var(--accent-solid)' } : {}"
@@ -58,8 +64,8 @@
     <!-- Contenu principal -->
     <main class="max-w-5xl mx-auto pb-28 md:pb-12 md:px-4">
 
-      <!-- Accueil -->
-      <section :class="{ 'hidden': activeTab !== 'accueil' }" class="p-4 space-y-5 mt-4 md:mt-8">
+      <!-- Accueil — toujours monté -->
+      <section v-show="activeTab === 'accueil'" class="p-4 space-y-5 mt-4 md:mt-8">
         <div class="relative p-6 md:p-10 rounded-[30px] md:rounded-[45px] bg-white/[0.04] backdrop-blur-2xl border border-white/[0.08] overflow-hidden shadow-2xl">
           <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none opacity-40" :style="{ backgroundColor: theme.blobs[0] }"></div>
           <div class="absolute -bottom-10 -left-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none opacity-30" :style="{ backgroundColor: theme.blobs[2] }"></div>
@@ -70,22 +76,13 @@
               </h1>
               <p class="text-slate-400 font-medium italic text-sm md:text-base">Ta rigueur est ta seule limite.</p>
             </div>
-            <!-- Mini badge niveau -->
-            <button @click="activeTab = 'niveau'" class="shrink-0 flex flex-col items-center gap-1 active:scale-95 transition-all">
-              <div class="w-14 h-14 rounded-[18px] flex items-center justify-center shadow-xl"
-                :class="homeLevelColor ? `bg-gradient-to-br ${homeLevelColor}` : 'bg-white/10'">
-                <span class="text-white font-[1000] text-xl">{{ homeLevelInfo?.level || '?' }}</span>
-              </div>
-              <span class="text-[9px] font-black text-slate-500 uppercase tracking-wider">{{ homeLevelInfo?.name || 'XP' }}</span>
-            </button>
           </div>
         </div>
         <ProgrammeWidget :today-session="todaySession" @open-today="openToday" />
-        <Dashboard />
       </section>
 
-      <!-- Agenda -->
-      <section :class="{ 'hidden': activeTab !== 'agenda' }" class="p-4 space-y-4 mt-4 md:mt-8">
+      <!-- Agenda — monté à la première visite -->
+      <section v-if="mountedTabs.has('agenda')" v-show="activeTab === 'agenda'" class="p-4 space-y-4 mt-4 md:mt-8">
         <div class="flex items-center gap-3 px-1">
           <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-[var(--accent-from)] to-[var(--accent-to)] rounded-full"></div>
           <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Ton Planning</h2>
@@ -96,8 +93,8 @@
         <Records />
       </section>
 
-      <!-- Nutrition -->
-      <section :class="{ 'hidden': activeTab !== 'nutrition' }" class="p-4 space-y-4 mt-4 md:mt-8">
+      <!-- Nutrition — monté à la première visite -->
+      <section v-if="mountedTabs.has('nutrition')" v-show="activeTab === 'nutrition'" class="p-4 space-y-4 mt-4 md:mt-8">
         <div class="flex items-center gap-3 px-1">
           <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-orange-400 to-pink-500 rounded-full"></div>
           <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Nutrition</h2>
@@ -105,17 +102,8 @@
         <AlimentationSection />
       </section>
 
-      <!-- Niveau / XP -->
-      <section :class="{ 'hidden': activeTab !== 'niveau' }" class="p-4 space-y-4 mt-4 md:mt-8">
-        <div class="flex items-center gap-3 px-1">
-          <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-yellow-400 to-orange-500 rounded-full"></div>
-          <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Progression</h2>
-        </div>
-        <Niveau />
-      </section>
-
-      <!-- Amis -->
-      <section :class="{ 'hidden': activeTab !== 'amis' }" class="p-4 space-y-4 mt-4 md:mt-8">
+      <!-- Amis — monté à la première visite -->
+      <section v-if="mountedTabs.has('amis')" v-show="activeTab === 'amis'" class="p-4 space-y-4 mt-4 md:mt-8">
         <div class="flex items-center gap-3 px-1">
           <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-[var(--accent-from)] to-[var(--accent-to)] rounded-full"></div>
           <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Amis</h2>
@@ -123,8 +111,8 @@
         <Amis @pending-change="pendingCount = $event" />
       </section>
 
-      <!-- Profil -->
-      <section :class="{ 'hidden': activeTab !== 'profil' }" class="p-4 space-y-5 mt-4 md:mt-8">
+      <!-- Profil — monté à la première visite -->
+      <section v-if="mountedTabs.has('profil')" v-show="activeTab === 'profil'" class="p-4 space-y-5 mt-4 md:mt-8">
         <div class="relative p-6 md:p-10 rounded-[30px] md:rounded-[45px] bg-white/[0.04] backdrop-blur-2xl border border-white/[0.08] shadow-2xl overflow-hidden">
           <div class="absolute -top-16 -right-16 w-56 h-56 rounded-full blur-[80px] pointer-events-none opacity-50" :style="{ backgroundColor: theme.blobs[0] }"></div>
           <div class="absolute -bottom-16 -left-16 w-56 h-56 rounded-full blur-[80px] pointer-events-none opacity-40" :style="{ backgroundColor: theme.blobs[1] }"></div>
@@ -198,10 +186,10 @@
         <button
           v-for="tab in tabs"
           :key="tab.id"
-          @click="activeTab = tab.id"
           class="flex flex-col items-center gap-1 px-4 py-1.5 rounded-xl transition-all duration-200 min-w-[60px]"
           :class="activeTab === tab.id ? '' : 'text-slate-500'"
           :style="activeTab === tab.id ? { color: 'var(--accent-solid)' } : {}"
+          @click="changeTab(tab.id)"
         >
           <UIcon :name="tab.icon" class="text-2xl transition-transform duration-200" :class="activeTab === tab.id ? 'scale-110' : 'scale-100'" />
           <span class="text-[10px] font-bold uppercase tracking-wider leading-none">{{ tab.label }}</span>
@@ -300,14 +288,12 @@ definePageMeta({ layout: false })
 
 import Calendrier from '~/components/custom/calendrier.vue'
 import ModalSeance from '~/components/custom/seance.vue'
-import Dashboard from '~/components/custom/dashboard.vue'
 import AlimentationSection from '~/components/custom/alimentation.vue'
 import Records from '~/components/custom/records.vue'
 import TimerRepos from '~/components/custom/timer.vue'
 import ProgrammeWidget from '~/components/custom/programme-widget.vue'
 import Programmes from '~/components/custom/programmes.vue'
 import Amis from '~/components/custom/amis.vue'
-import Niveau from '~/components/custom/niveau.vue'
 
 const router = useRouter()
 const supabase = useSupabaseClient()
@@ -322,11 +308,16 @@ function bgAlpha(hex, alpha) {
 }
 
 const activeTab = ref('accueil')
+// Onglets montés une fois visités (lazy mount, garde en mémoire après)
+const mountedTabs = ref(new Set(['accueil']))
+function changeTab(id) {
+  activeTab.value = id
+  mountedTabs.value.add(id)
+}
 const tabs = [
   { id: 'accueil', label: 'Accueil', icon: 'i-heroicons-home' },
   { id: 'agenda', label: 'Agenda', icon: 'i-heroicons-calendar' },
   { id: 'nutrition', label: 'Nutrition', icon: 'i-heroicons-fire' },
-  { id: 'niveau', label: 'Niveau', icon: 'i-heroicons-star' },
   { id: 'amis', label: 'Amis', icon: 'i-heroicons-user-group' },
 ]
 
@@ -354,20 +345,8 @@ const todaySession = computed(() => {
   return sessions.value.find(s => s.date === localDateStr()) || null
 })
 
-// Mini badge niveau sur l'accueil
-const { totalXP: homeXP, levelInfo: homeLevelInfo, fetchXP: fetchHomeXP } = useXP()
-const homeLevelColor = computed(() => homeLevelInfo.value?.color || '')
-
 const { join: joinPresence, leave: leavePresence } = usePresence()
 const { requestAndSubscribe } = usePush()
-
-const LEVEL_COLORS_HOME = [
-  '', 'from-slate-400 to-slate-500', 'from-slate-300 to-slate-400',
-  'from-emerald-400 to-green-500', 'from-emerald-400 to-teal-500',
-  'from-cyan-400 to-blue-500', 'from-blue-400 to-indigo-500',
-  'from-violet-400 to-purple-600', 'from-purple-400 to-pink-500',
-  'from-yellow-400 to-orange-500', 'from-yellow-300 to-amber-500',
-]
 
 let currentUserId = null
 
@@ -397,7 +376,6 @@ onMounted(async () => {
   avatarUrl.value = profile?.avatar_url || ''
   initTheme()
   await fetchSessions()
-  fetchHomeXP()
   fetchPendingCount(user.id)
   joinPresence(user.id)
   // Demander permission push après 3s (laisse l'app charger)

@@ -1,14 +1,14 @@
 <template>
-  <div class="w-full max-w-7xl mx-auto space-y-6 pb-20 pt-4 px-4 min-h-screen bg-black text-white font-sans">
+  <div class="w-full max-w-7xl mx-auto space-y-6 pb-20 pt-4 px-4 min-h-screen text-white font-sans">
     <Transition name="slide" mode="out-in">
       <div v-if="currentScreen === 'main'" key="main" class="flex flex-col gap-6">
-        <div class="bg-black/80 backdrop-blur-xl sticky top-0 z-40 py-4 border-b border-white/5 space-y-4">
+        <div class="backdrop-blur-xl sticky top-0 z-40 py-4 border-b border-white/[0.06] space-y-4">
           <div class="flex justify-between items-center">
             <h1 class="text-4xl font-[1000] tracking-tighter text-white">Nutrition</h1>
             <div class="flex gap-4">
               <button
                 @click="openCamera"
-                class="w-12 h-12 bg-gradient-to-br from-purple-900/60 to-blue-900/60 rounded-2xl flex items-center justify-center hover:opacity-90 transition-colors border border-purple-500/30 group"
+                class="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-2xl flex items-center justify-center hover:opacity-90 transition-colors border border-purple-500/30 group"
                 title="Analyser un plat avec l'IA"
               >
                 <UIcon name="i-heroicons-sparkles" class="text-2xl text-purple-400 group-hover:text-white" />
@@ -16,14 +16,14 @@
 
               <button
                 @click="openScanner"
-                class="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center hover:bg-slate-800 transition-colors border border-white/5 group"
+                class="w-12 h-12 bg-white/[0.08] rounded-2xl flex items-center justify-center hover:bg-white/[0.12] transition-colors border border-white/[0.08] group"
               >
                 <UIcon name="i-heroicons-qr-code" class="text-2xl text-slate-400 group-hover:text-white" />
               </button>
 
               <button
                 @click="currentScreen = 'cart'"
-                class="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center hover:bg-slate-800 transition-colors border border-white/5 relative group"
+                class="w-12 h-12 bg-white/[0.08] rounded-2xl flex items-center justify-center hover:bg-white/[0.12] transition-colors border border-white/[0.08] relative group"
               >
                 <UIcon name="i-heroicons-shopping-cart" class="text-2xl text-slate-400 group-hover:text-white" />
                 <span
@@ -36,8 +36,8 @@
             </div>
           </div>
 
-          <div class="flex items-center justify-between bg-slate-900/50 p-2 rounded-2xl border border-white/5 w-full max-w-md mx-auto">
-            <button @click="changeDay(-1)" class="p-3 bg-slate-800 rounded-xl hover:bg-slate-700 transition">
+          <div class="flex items-center justify-between bg-white/[0.06] p-2 rounded-2xl border border-white/[0.08] w-full max-w-md mx-auto">
+            <button @click="changeDay(-1)" class="p-3 bg-white/[0.08] rounded-xl hover:bg-white/[0.14] transition">
               <UIcon name="i-heroicons-chevron-left" class="text-white" />
             </button>
 
@@ -50,17 +50,20 @@
             <button
               @click="changeDay(1)"
               :disabled="isToday"
-              class="p-3 bg-slate-800 rounded-xl transition"
-              :class="isToday ? 'opacity-30 cursor-not-allowed' : 'hover:bg-slate-700'"
+              class="p-3 bg-white/[0.08] rounded-xl transition"
+              :class="isToday ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/[0.14]'"
             >
               <UIcon name="i-heroicons-chevron-right" class="text-white" />
             </button>
           </div>
         </div>
 
+        <!-- Suivi du poids -->
+        <Dashboard />
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div class="lg:col-span-5 space-y-8">
-            <div class="bg-[#0a0a0a] rounded-[35px] p-6 border border-white/5 shadow-2xl relative overflow-hidden">
+            <div class="bg-white/[0.04] backdrop-blur-2xl rounded-[35px] p-6 border border-white/[0.08] shadow-2xl relative overflow-hidden">
               <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
 
               <div class="flex justify-between items-center mb-6">
@@ -245,11 +248,12 @@
             </div>
           </div>
         </div>
+
       </div>
 
-      <div v-else-if="currentScreen === 'library'" key="library" class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl">
+      <div v-else-if="currentScreen === 'library'" key="library" class="fixed inset-0 z-[100] backdrop-blur-2xl">
         <div class="w-full max-w-7xl mx-auto flex flex-col h-full">
-          <div class="sticky top-0 z-30 bg-black/95 backdrop-blur-xl px-4 sm:px-8 pt-4 sm:pt-8 pb-4 border-b border-white/10">
+          <div class="sticky top-0 z-30 backdrop-blur-2xl px-4 sm:px-8 pt-4 sm:pt-8 pb-4 border-b border-white/10">
             <div class="flex items-center justify-between mb-4 gap-4">
               <button @click="currentScreen = 'main'" class="flex items-center gap-2 text-slate-400 hover:text-white transition shrink-0">
                 <UIcon name="i-heroicons-arrow-left" class="text-3xl" />
@@ -311,7 +315,7 @@
         </div>
       </div>
 
-      <div v-else-if="currentScreen === 'quantity' && selectedFood" key="quantity" class="fixed inset-0 z-[120] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-6">
+      <div v-else-if="currentScreen === 'quantity' && selectedFood" key="quantity" class="fixed inset-0 z-[120] backdrop-blur-2xl flex flex-col items-center justify-center p-6">
         <button @click="goBackFromQuantity" class="absolute top-8 left-8 text-slate-400 hover:text-white transition">
           <UIcon name="i-heroicons-arrow-left" class="text-4xl" />
         </button>
@@ -349,7 +353,7 @@
         </button>
       </div>
 
-      <div v-else-if="currentScreen === 'scanner'" key="scanner" class="fixed inset-0 z-[110] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-6">
+      <div v-else-if="currentScreen === 'scanner'" key="scanner" class="fixed inset-0 z-[110] backdrop-blur-2xl flex flex-col items-center justify-center p-6">
         <button @click="closeScanner" class="absolute top-8 left-8 text-slate-400 bg-slate-900 p-4 rounded-full">
           <UIcon name="i-heroicons-x-mark" class="text-2xl" />
         </button>
@@ -404,7 +408,7 @@
 
       <!-- ── ÉCRAN ANALYSE IA ── -->
       <div v-else-if="currentScreen === 'camera'" key="camera" class="fixed inset-0 z-[110] bg-black flex flex-col">
-        <div class="flex items-center gap-4 px-6 py-5 border-b border-white/10 bg-black/80 backdrop-blur-xl">
+        <div class="flex items-center gap-4 px-6 py-5 border-b border-white/10 backdrop-blur-2xl">
           <button @click="currentScreen = 'main'" class="text-slate-400 hover:text-white transition">
             <UIcon name="i-heroicons-arrow-left" class="text-3xl" />
           </button>
@@ -526,7 +530,7 @@
         </div>
       </div>
 
-      <div v-else-if="currentScreen === 'cart'" key="cart" class="fixed inset-0 z-[110] bg-black/95 backdrop-blur-xl flex flex-col items-center p-6">
+      <div v-else-if="currentScreen === 'cart'" key="cart" class="fixed inset-0 z-[110] backdrop-blur-2xl flex flex-col items-center p-6">
         <div class="w-full max-w-3xl bg-[#111111] rounded-[40px] border border-white/10 flex flex-col h-full overflow-hidden">
           <div class="p-8 flex justify-between items-center border-b border-white/5 bg-black/50">
             <div class="flex items-center gap-6">
