@@ -88,7 +88,7 @@
             <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-[var(--accent-from)] to-[var(--accent-to)] p-[2px]">
               <div class="w-full h-full rounded-full overflow-hidden flex items-center justify-center" :style="{ backgroundColor: theme.bg }">
                 <img v-if="f.profile?.avatar_url" :src="f.profile.avatar_url" class="w-full h-full object-cover" />
-                <span v-else class="text-white font-black">{{ f.profile?.username?.charAt(0).toUpperCase() }}</span>
+                <span v-else class="text-white font-black">{{ (f.profile?.username?.charAt(0) || '?').toUpperCase() }}</span>
               </div>
             </div>
             <div class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2"
@@ -97,7 +97,7 @@
             </div>
           </div>
           <div class="flex-1 min-w-0 cursor-pointer" @click="openFriendProfile(f)">
-            <p class="text-white font-black truncate">{{ f.profile?.username }}</p>
+            <p class="text-white font-black truncate">{{ f.profile?.username || 'Utilisateur' }}</p>
             <p class="text-xs mt-0.5" :class="isOnline(f.friendId) ? 'text-emerald-400 font-black' : 'text-slate-500'">
               {{ isOnline(f.friendId) ? 'En ligne' : (f.lastSeen ? formatLastSeen(f.lastSeen) : 'Hors ligne') }}
             </p>
@@ -456,7 +456,8 @@ async function fetchFriends() {
 
   if (!allFriendIds.length) { friends.value = []; return }
 
-  const { data: profiles } = await supabase.from('profiles').select('id, username, avatar_url, last_seen').in('id', allFriendIds)
+  const { data: profiles, error: profilesError } = await supabase.from('profiles').select('id, username, avatar_url, last_seen').in('id', allFriendIds)
+  if (profilesError) console.error('[amis] profiles batch error:', profilesError)
 
   const { data: unreadMsgs } = await supabase.from('messages')
     .select('sender_id').eq('receiver_id', currentUserId).eq('read', false).in('sender_id', allFriendIds)
@@ -467,7 +468,11 @@ async function fetchFriends() {
 
   const enriched = await Promise.all(allFriendIds.map(async friendId => {
     const { data: sessions } = await supabase.from('sport_sessions').select('id').eq('user_id', friendId).gte('date', firstOfMonth)
-    const profile = profiles?.find(p => p.id === friendId) || null
+    let profile = profiles?.find(p => p.id === friendId) ?? null
+    if (!profile) {
+      const { data: p } = await supabase.from('profiles').select('id, username, avatar_url, last_seen').eq('id', friendId).maybeSingle()
+      profile = p ?? { id: friendId, username: null, avatar_url: null, last_seen: null }
+    }
     return { friendId, profile, sessionCount: sessions?.length || 0, unreadCount: unreadBySender[friendId] || 0, lastSeen: profile?.last_seen || null }
   }))
 
