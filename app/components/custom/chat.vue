@@ -6,18 +6,21 @@
       <button @click="$emit('close')" class="p-2 rounded-xl bg-white/[0.06] text-slate-400 hover:text-white transition shrink-0">
         <UIcon name="i-heroicons-arrow-left" class="text-xl" />
       </button>
-      <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-[var(--accent-from)] to-[var(--accent-to)] p-[2px] shrink-0">
-        <div class="w-full h-full rounded-full overflow-hidden flex items-center justify-center" :style="{ backgroundColor: theme.bg }">
-          <img v-if="friend.avatar_url" :src="friend.avatar_url" class="w-full h-full object-cover" />
-          <span v-else class="text-white font-black">{{ friend.username?.charAt(0).toUpperCase() }}</span>
+      <button @click="$emit('open-profile')" class="flex items-center gap-3 flex-1 min-w-0 text-left active:opacity-70 transition-opacity">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-[var(--accent-from)] to-[var(--accent-to)] p-[2px] shrink-0">
+          <div class="w-full h-full rounded-full overflow-hidden flex items-center justify-center" :style="{ backgroundColor: theme.bg }">
+            <img v-if="friend.avatar_url" :src="friend.avatar_url" class="w-full h-full object-cover" />
+            <span v-else class="text-white font-black">{{ friend.username?.charAt(0).toUpperCase() }}</span>
+          </div>
         </div>
-      </div>
-      <div class="flex-1 min-w-0">
-        <p class="text-white font-black truncate">{{ friend.username }}</p>
-        <p class="text-xs font-bold" :class="isOnline(props.friendId) ? 'text-emerald-400' : 'text-slate-500'">
-          {{ isOnline(props.friendId) ? 'En ligne' : (lastSeen ? `Vu ${lastSeen}` : 'Hors ligne') }}
-        </p>
-      </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-white font-black truncate">{{ friend.username }}</p>
+          <p class="text-xs font-bold" :class="isOnline(props.friendId) ? 'text-emerald-400' : 'text-slate-500'">
+            {{ isOnline(props.friendId) ? 'En ligne' : (lastSeen ? `Vu ${lastSeen}` : 'Hors ligne') }}
+          </p>
+        </div>
+        <UIcon name="i-heroicons-chevron-right" class="text-slate-700 text-sm shrink-0" />
+      </button>
     </div>
 
     <!-- Messages -->
@@ -51,8 +54,15 @@
             </div>
 
             <div class="max-w-[75%] flex flex-col gap-0.5" :class="isMine(msg) ? 'items-end' : 'items-start'">
+              <!-- Audio -->
+              <div v-if="msg.media_url && isAudioMsg(msg.media_url)"
+                class="rounded-[18px] overflow-hidden border border-white/[0.08] p-2"
+                :class="isMine(msg) ? 'rounded-tr-sm' : 'rounded-tl-sm'">
+                <audio :src="msg.media_url" controls class="h-9 max-w-[220px]" style="filter: invert(0.8)" />
+              </div>
+
               <!-- Image -->
-              <div v-if="msg.media_url" class="rounded-[18px] overflow-hidden border border-white/[0.08] cursor-pointer"
+              <div v-else-if="msg.media_url" class="rounded-[18px] overflow-hidden border border-white/[0.08] cursor-pointer"
                 :class="isMine(msg) ? 'rounded-tr-sm' : 'rounded-tl-sm'"
                 @click="viewImage = msg.media_url">
                 <img :src="msg.media_url" class="max-w-[220px] max-h-[300px] object-cover block" loading="lazy" />
@@ -93,8 +103,22 @@
       </div>
     </div>
 
+    <!-- Indicateur enregistrement vocal -->
+    <Transition name="fade">
+      <div v-if="isRecording" class="shrink-0 px-4 py-3 border-t border-white/[0.08] flex items-center gap-3" :style="{ backgroundColor: bgAlpha(theme.bg, 0.92) }">
+        <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+        <span class="text-red-400 font-black text-sm flex-1">Enregistrement... {{ recordingDuration }}s</span>
+        <button @click="cancelRecording" class="p-2 text-slate-500 hover:text-white transition">
+          <UIcon name="i-heroicons-x-mark" class="text-lg" />
+        </button>
+        <button @click="stopRecording" class="w-10 h-10 rounded-2xl bg-red-500/20 border border-red-500/30 flex items-center justify-center active:scale-90 transition-all">
+          <UIcon name="i-heroicons-stop" class="text-red-400 text-lg" />
+        </button>
+      </div>
+    </Transition>
+
     <!-- Input -->
-    <div class="shrink-0 px-3 py-3 border-t border-white/[0.08] backdrop-blur-xl" :style="{ backgroundColor: bgAlpha(theme.bg, 0.92) }">
+    <div v-if="!isRecording" class="shrink-0 px-3 py-3 border-t border-white/[0.08] backdrop-blur-xl" :style="{ backgroundColor: bgAlpha(theme.bg, 0.92) }">
       <div class="flex items-end gap-2">
         <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="sendPhoto" />
         <button @click="fileInput?.click()"
@@ -107,10 +131,14 @@
             class="flex-1 bg-transparent text-white text-sm outline-none resize-none placeholder:text-slate-700 leading-relaxed max-h-32"
             @input="autoResize" />
         </div>
-        <button @click="sendMessage" :disabled="!newMessage.trim() || sending"
-          class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 active:scale-90 transition-all"
-          :class="newMessage.trim() ? 'bg-gradient-to-br from-[var(--accent-from)] to-[var(--accent-to)] shadow-lg shadow-[color:var(--accent-solid)]/15' : 'bg-white/[0.04] border border-white/[0.06]'">
-          <UIcon name="i-heroicons-paper-airplane" class="text-lg" :class="newMessage.trim() ? 'text-white' : 'text-slate-700'" />
+        <!-- Envoyer ou micro -->
+        <button v-if="newMessage.trim()" @click="sendMessage" :disabled="sending"
+          class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 active:scale-90 transition-all bg-gradient-to-br from-[var(--accent-from)] to-[var(--accent-to)] shadow-lg shadow-[color:var(--accent-solid)]/15">
+          <UIcon name="i-heroicons-paper-airplane" class="text-white text-lg" />
+        </button>
+        <button v-else @click="startRecording"
+          class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 active:scale-90 transition-all bg-white/[0.06] border border-white/[0.08]">
+          <UIcon name="i-heroicons-microphone" class="text-slate-400 text-lg" />
         </button>
       </div>
     </div>
@@ -140,7 +168,7 @@ const props = defineProps({
   friend: { type: Object, required: true },
   friendId: { type: String, required: true }
 })
-defineEmits(['close'])
+defineEmits(['close', 'open-profile'])
 
 const supabase = useSupabaseClient()
 const { isOnline } = usePresence()
@@ -155,9 +183,15 @@ const viewImage = ref(null)
 const messagesEl = ref(null)
 const fileInput = ref(null)
 const textareaEl = ref(null)
+const isRecording = ref(false)
+const recordingDuration = ref(0)
 let currentUserId = null
 let currentUsername = ''
 let channel = null
+let mediaRecorder = null
+let audioChunks = []
+let recordingTimer = null
+let recordingMimeType = 'audio/webm'
 
 onMounted(async () => {
   const { data: { user } } = await supabase.auth.getUser()
@@ -178,7 +212,10 @@ onMounted(async () => {
   scrollToBottom()
 })
 
-onUnmounted(() => { channel?.unsubscribe() })
+onUnmounted(() => {
+  channel?.unsubscribe()
+  cancelRecording()
+})
 
 async function fetchMessages() {
   loading.value = true
@@ -277,6 +314,87 @@ function scrollToBottom() {
 }
 
 function isMine(msg) { return msg.sender_id === currentUserId }
+
+function isAudioMsg(url) {
+  return url?.includes('chat-audio') || url?.endsWith('.webm') || url?.endsWith('.m4a') || url?.endsWith('.ogg')
+}
+
+function getSupportedMimeType() {
+  const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus', 'audio/ogg']
+  for (const t of candidates) { if (MediaRecorder.isTypeSupported(t)) return t }
+  return ''
+}
+
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    audioChunks = []
+    const mimeType = getSupportedMimeType()
+    recordingMimeType = mimeType || 'audio/webm'
+    const mr = new MediaRecorder(stream, mimeType ? { mimeType } : {})
+    mr.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data) }
+    mr.onstop = () => {
+      stream.getTracks().forEach(t => t.stop())
+      uploadAudio()
+    }
+    mediaRecorder = mr
+    mr.start(100)
+    isRecording.value = true
+    recordingDuration.value = 0
+    recordingTimer = setInterval(() => recordingDuration.value++, 1000)
+  } catch {
+    alert('Microphone non disponible ou refusé.')
+  }
+}
+
+function stopRecording() {
+  if (mediaRecorder && isRecording.value) {
+    if (recordingTimer) clearInterval(recordingTimer)
+    isRecording.value = false
+    mediaRecorder.stop()
+    mediaRecorder = null
+  }
+}
+
+function cancelRecording() {
+  if (mediaRecorder) {
+    mediaRecorder.ondataavailable = null
+    mediaRecorder.onstop = null
+    mediaRecorder.stop()
+    mediaRecorder = null
+  }
+  if (recordingTimer) clearInterval(recordingTimer)
+  isRecording.value = false
+  audioChunks = []
+}
+
+async function uploadAudio() {
+  if (audioChunks.length === 0) return
+  const blob = new Blob(audioChunks, { type: recordingMimeType })
+  if (blob.size < 100) return
+  sendingPhoto.value = true
+  const ext = recordingMimeType.includes('mp4') ? 'm4a' : recordingMimeType.includes('ogg') ? 'ogg' : 'webm'
+  const path = `${currentUserId}/${Date.now()}.${ext}`
+  const { error } = await supabase.storage.from('chat-audio').upload(path, blob, { contentType: recordingMimeType })
+  if (error) {
+    sendingPhoto.value = false
+    alert(`Vocal non envoyé : ${error.message}`)
+    return
+  }
+  const { data: { publicUrl } } = supabase.storage.from('chat-audio').getPublicUrl(path)
+  const { data } = await supabase.from('messages').insert({
+    sender_id: currentUserId,
+    receiver_id: props.friendId,
+    media_url: publicUrl,
+    read: false
+  }).select().single()
+  if (data) {
+    messages.value.push(data)
+    scrollToBottom()
+    triggerPush({ receiver_id: props.friendId, content: '🎤 Message vocal', media_url: publicUrl })
+  }
+  sendingPhoto.value = false
+}
 
 function autoResize(e) {
   e.target.style.height = 'auto'

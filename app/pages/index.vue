@@ -68,11 +68,44 @@
               <h1 class="text-3xl md:text-5xl font-[1000] tracking-tighter leading-none mb-2 md:mb-4 text-white">
                 Salut, <span class="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent">{{ userName }}</span> !
               </h1>
-              <p class="text-slate-400 font-medium italic text-sm md:text-base">Ta rigueur est ta seule limite.</p>
+              <p class="text-slate-400 font-medium italic text-sm md:text-base">{{ dailyMessage }}</p>
             </div>
           </div>
         </div>
-        <ProgrammeWidget :today-session="todaySession" @open-today="openToday" />
+        <ProgrammeWidget :today-session="todaySession" @open-today="openToday" @edit-today="openToday" />
+
+        <!-- Créer un programme -->
+        <button @click="createProgrammeOpen = true"
+          class="w-full flex items-center gap-4 bg-white/[0.04] backdrop-blur-2xl rounded-[24px] border border-white/[0.08] p-4 active:scale-[0.98] transition-all hover:bg-white/[0.07]">
+          <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 bg-gradient-to-br from-[var(--accent-from)] to-[var(--accent-to)] shadow-lg">
+            <UIcon name="i-heroicons-plus" class="text-white text-xl" />
+          </div>
+          <div class="text-left">
+            <p class="text-white font-black text-sm">Créer un programme</p>
+            <p class="text-slate-500 text-xs mt-0.5">Choisis tes exercices et enregistre en modèle</p>
+          </div>
+          <UIcon name="i-heroicons-chevron-right" class="text-slate-600 ml-auto" />
+        </button>
+
+        <!-- Mes modèles -->
+        <button @click="manageSessionsOpen = true"
+          class="w-full flex items-center gap-4 bg-white/[0.04] backdrop-blur-2xl rounded-[24px] border border-white/[0.08] p-4 active:scale-[0.98] transition-all hover:bg-white/[0.07]">
+          <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 bg-white/[0.08] border border-white/[0.12]">
+            <UIcon name="i-heroicons-rectangle-stack" class="text-white text-xl" />
+          </div>
+          <div class="text-left">
+            <p class="text-white font-black text-sm">Mes modèles</p>
+            <p class="text-slate-500 text-xs mt-0.5">{{ savedTemplates.length ? `${savedTemplates.length} programme${savedTemplates.length > 1 ? 's' : ''} enregistré${savedTemplates.length > 1 ? 's' : ''}` : 'Aucun modèle pour l\'instant' }}</p>
+          </div>
+          <UIcon name="i-heroicons-chevron-right" class="text-slate-600 ml-auto" />
+        </button>
+
+        <!-- Modal créer programme -->
+        <Transition name="slide-up">
+          <div v-if="createProgrammeOpen" class="fixed inset-0 z-[350]">
+            <ModalSeance mode="programme" @close="createProgrammeOpen = false" @saved-programme="createProgrammeOpen = false" />
+          </div>
+        </Transition>
       </section>
 
       <!-- Agenda — monté à la première visite -->
@@ -82,7 +115,7 @@
           <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Ton Planning</h2>
         </div>
         <div class="bg-white/[0.04] backdrop-blur-2xl p-2 rounded-[30px] md:rounded-[40px] border border-white/[0.08] shadow-inner">
-          <Calendrier :db-sessions="sessions" @select-date="onDateSelected" @delete-session="handleDeleteSession" />
+          <Calendrier :db-sessions="sessions" :templates="savedTemplates" @select-date="onDateSelected" @delete-session="handleDeleteSession" />
         </div>
         <Records />
       </section>
@@ -164,6 +197,19 @@
             </div>
           </div>
 
+          <!-- Suivi du poids -->
+          <div class="mb-6">
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Suivi du poids</p>
+            <button @click="weightPopupOpen = true"
+              class="w-full flex items-center justify-between bg-white/[0.04] rounded-[20px] border border-white/[0.08] p-4 active:scale-95 transition-all">
+              <div class="text-left">
+                <p class="text-3xl font-[1000] tracking-tighter text-white">{{ profileWeight ? `${profileWeight}` : '--' }}<span class="text-base font-black ml-1" :style="{ color: 'var(--accent-solid)' }">kg</span></p>
+                <p class="text-slate-500 text-xs mt-0.5">Voir l'évolution →</p>
+              </div>
+              <UIcon name="i-heroicons-presentation-chart-line" class="text-2xl text-slate-600" />
+            </button>
+          </div>
+
           <button
             @click="handleLogout"
             class="relative w-full md:max-w-xs border border-red-500/30 bg-red-500/5 px-4 py-3 rounded-2xl text-red-400 font-bold text-sm uppercase tracking-widest active:scale-95 transition-all duration-150 hover:bg-red-500/10"
@@ -171,6 +217,9 @@
             Se déconnecter
           </button>
         </div>
+
+        <!-- Médailles -->
+        <Medailles />
       </section>
     </main>
 
@@ -292,7 +341,9 @@
               <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
                 <button v-for="t in savedTemplates" :key="t.id" @click="assignTemplate(t)"
                   class="w-full flex items-center gap-4 bg-white/[0.04] border border-white/[0.08] rounded-[18px] p-3.5 active:scale-95 transition-all text-left hover:bg-white/[0.07]">
-                  <div class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 font-black text-base" :class="templateBg(t.category)">
+                  <div class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 font-black text-base text-white"
+                    :style="t.color ? { backgroundColor: t.color, boxShadow: `0 2px 8px ${t.color}55` } : {}"
+                    :class="!t.color ? templateBg(t.category) : ''">
                     {{ t.name.charAt(0).toUpperCase() }}
                   </div>
                   <div class="flex-1 min-w-0">
@@ -333,6 +384,21 @@
         </div>
       </div>
     </Transition>
+
+    <!-- ── Popup suivi du poids ── -->
+    <Transition name="slide-up">
+      <div v-if="weightPopupOpen" class="fixed inset-0 z-[300] backdrop-blur-2xl flex flex-col transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.98) }">
+        <div class="flex items-center gap-4 px-5 py-5 border-b border-white/[0.08]">
+          <button @click="closeWeightPopup" class="p-2 rounded-xl bg-white/[0.06] text-slate-400 hover:text-white transition">
+            <UIcon name="i-heroicons-arrow-left" class="text-xl" />
+          </button>
+          <h2 class="text-xl font-black">Suivi du poids</h2>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4">
+          <Dashboard @weight-updated="w => profileWeight = w" />
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -347,6 +413,8 @@ import TimerRepos from '~/components/custom/timer.vue'
 import ProgrammeWidget from '~/components/custom/programme-widget.vue'
 import Programmes from '~/components/custom/programmes.vue'
 import Amis from '~/components/custom/amis.vue'
+import Dashboard from '~/components/custom/dashboard.vue'
+import Medailles from '~/components/custom/medailles.vue'
 
 const router = useRouter()
 const supabase = useSupabaseClient()
@@ -388,6 +456,32 @@ const pickerDate = ref(null)
 const savedTemplates = ref([])
 const loadingPicker = ref(false)
 const manageSessionsOpen = ref(false)
+const createProgrammeOpen = ref(false)
+
+const DAILY_MESSAGES = [
+  'Ta rigueur est ta seule limite.',
+  'Chaque séance te rapproche de ta meilleure version.',
+  'La douleur est temporaire. La fierté est éternelle.',
+  'Pas d\'excuses, que des résultats.',
+  'Le plus dur, c\'est de commencer. Tu l\'as fait.',
+  'Discipline = liberté.',
+  'Ce que tu fais aujourd\'hui, tu le ressentiras demain.',
+  'Sois la meilleure version de toi-même.',
+  'La régularité bat l\'intensité sur le long terme.',
+  'Ton corps peut tout. C\'est ton esprit qu\'il faut convaincre.',
+  'Progresse, même lentement. L\'important c\'est de ne pas s\'arrêter.',
+  'Chaque rep compte. Chaque effort paie.',
+  'Fais-le pour toi, personne d\'autre.',
+  'Le champion en toi s\'entraîne même quand il n\'en a pas envie.',
+  'Aujourd\'hui, bats ton record d\'hier.',
+]
+const dailyMessage = computed(() => {
+  const day = Math.floor(Date.now() / 86400000)
+  return DAILY_MESSAGES[day % DAILY_MESSAGES.length]
+})
+const profileWeight = ref(null)
+const weightPopupOpen = ref(false)
+
 const pendingCount = ref(0)
 const notifOpen = ref(false)
 const notifRequests = ref([])
@@ -434,12 +528,28 @@ onMounted(async () => {
   avatarUrl.value = profile?.avatar_url || ''
   initTheme()
   await fetchSessions()
+  refreshTemplates()
   fetchPendingCount(user.id)
   fetchNotifications(user.id)
   joinPresence(user.id)
+  fetchProfileWeight(user.id)
   // Demander permission push après 3s (laisse l'app charger)
   setTimeout(() => requestAndSubscribe(user.id), 3000)
 })
+
+async function fetchProfileWeight(userId) {
+  const id = userId || currentUserId
+  if (!id) return
+  const { data } = await supabase.from('measurements')
+    .select('weight').eq('user_id', id)
+    .order('created_at', { ascending: false }).limit(1).maybeSingle()
+  if (data) profileWeight.value = data.weight
+}
+
+function closeWeightPopup() {
+  weightPopupOpen.value = false
+  fetchProfileWeight()
+}
 
 function triggerAvatarUpload() {
   avatarInput.value?.click()
@@ -516,7 +626,12 @@ async function onDateSelected(date) {
   const { data: { user } } = await supabase.auth.getUser()
   if (user) {
     const { data } = await supabase.from('workout_templates').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
-    savedTemplates.value = data || []
+    try {
+      const localColors = JSON.parse(localStorage.getItem('fittrack_tpl_colors') || '{}')
+      savedTemplates.value = (data || []).map(t => ({ ...t, color: t.color || localColors[t.id] || '' }))
+    } catch {
+      savedTemplates.value = data || []
+    }
   }
   loadingPicker.value = false
 }
@@ -536,7 +651,9 @@ async function assignTemplate(template) {
     title: template.name,
     category: template.category || '',
     notes: template.notes || '',
-    exercises: template.exercises || []
+    exercises: template.exercises || [],
+    color: template.color || '',
+    templateId: template.id
   }
   await supabase.from('sport_sessions').insert({ user_id: user.id, date: pickerDate.value, data: sessionData })
   await fetchSessions()
@@ -594,7 +711,12 @@ async function refreshTemplates() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
   const { data } = await supabase.from('workout_templates').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
-  savedTemplates.value = data || []
+  try {
+    const localColors = JSON.parse(localStorage.getItem('fittrack_tpl_colors') || '{}')
+    savedTemplates.value = (data || []).map(t => ({ ...t, color: t.color || localColors[t.id] || '' }))
+  } catch {
+    savedTemplates.value = data || []
+  }
 }
 
 function templateBg(cat) {

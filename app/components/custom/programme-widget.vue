@@ -99,10 +99,15 @@
           </div>
         </div>
 
-        <div class="p-4 border-t border-white/[0.08]">
+        <div class="p-4 border-t border-white/[0.08] flex gap-3">
+          <button @click="$emit('edit-today'); showFull = false"
+            class="flex-1 bg-white/[0.08] border border-white/[0.12] text-white font-black py-4 rounded-[20px] text-base active:scale-95 transition-all flex items-center justify-center gap-2">
+            <UIcon name="i-heroicons-pencil-square" class="text-lg" />
+            Modifier
+          </button>
           <button @click="showFull = false"
-            class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-4 rounded-[20px] text-base shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2">
-            <UIcon name="i-heroicons-check-circle" class="text-xl" />
+            class="flex-1 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-4 rounded-[20px] text-base shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2">
+            <UIcon name="i-heroicons-play" />
             C'est parti !
           </button>
         </div>
@@ -125,7 +130,7 @@ const props = defineProps({
   todaySession: { type: Object, default: null }
 })
 
-defineEmits(['open-today'])
+defineEmits(['open-today', 'edit-today'])
 
 const showFull = ref(false)
 

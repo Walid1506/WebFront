@@ -71,9 +71,9 @@ import { Line } from 'vue-chartjs'
 const { theme } = useTheme()
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip } from 'chart.js'
 
-// On enregistre les modules du graphique
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip)
 
+const emit = defineEmits(['weight-updated'])
 const supabase = useSupabaseClient()
 
 // Variables réactives
@@ -127,6 +127,7 @@ async function saveWeight() {
 
   if (!error) {
     await fetchWeightHistory()
+    emit('weight-updated', newWeight.value)
     closeModal()
   } else {
     alert("Erreur lors de la sauvegarde : " + error.message)

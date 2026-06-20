@@ -58,9 +58,6 @@
           </div>
         </div>
 
-        <!-- Suivi du poids -->
-        <Dashboard />
-
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div class="lg:col-span-5 space-y-8">
             <div class="bg-white/[0.04] backdrop-blur-2xl rounded-[35px] p-6 border border-white/[0.08] shadow-2xl relative overflow-hidden">
@@ -531,55 +528,52 @@
         </div>
       </div>
 
-      <div v-else-if="currentScreen === 'cart'" key="cart" class="fixed inset-0 z-[110] backdrop-blur-2xl flex flex-col items-center p-6">
-        <div class="w-full max-w-3xl bg-[#111111] rounded-[40px] border border-white/10 flex flex-col h-full overflow-hidden">
-          <div class="p-8 flex justify-between items-center border-b border-white/5 bg-black/50">
-            <div class="flex items-center gap-6">
-              <button @click="currentScreen = 'main'" class="text-slate-400 hover:text-white transition">
-                <UIcon name="i-heroicons-arrow-left" class="text-3xl" />
+      <div v-else-if="currentScreen === 'cart'" key="cart" class="fixed inset-0 z-[110] backdrop-blur-2xl flex flex-col items-center p-2 sm:p-6">
+        <div class="w-full max-w-3xl bg-[#111111] rounded-[28px] sm:rounded-[40px] border border-white/10 flex flex-col h-full overflow-hidden">
+          <div class="px-4 py-4 sm:p-8 flex justify-between items-center border-b border-white/5 bg-black/50">
+            <div class="flex items-center gap-3 sm:gap-6">
+              <button @click="currentScreen = 'main'" class="text-slate-400 hover:text-white transition p-1">
+                <UIcon name="i-heroicons-arrow-left" class="text-2xl sm:text-3xl" />
               </button>
-              <h2 class="text-3xl font-[1000] text-white">Courses</h2>
+              <h2 class="text-2xl sm:text-3xl font-[1000] text-white">Courses</h2>
             </div>
-
-            <button v-if="shoppingList.length > 0" @click="clearCart" class="text-red-500 font-bold bg-red-500/10 px-4 py-2 rounded-xl">
+            <button v-if="shoppingList.length > 0" @click="clearCart" class="text-red-500 font-bold bg-red-500/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-sm sm:text-base">
               Vider tout
             </button>
           </div>
 
-          <div class="p-8 flex gap-4 border-b border-white/5">
+          <div class="px-3 py-3 sm:p-8 flex gap-2 sm:gap-4 border-b border-white/5">
             <input
               v-model="newCartItem"
               @keyup.enter="addCustomCartItem"
               type="text"
               placeholder="Ajouter produit..."
-              class="flex-1 bg-slate-900 border border-white/10 text-white font-bold py-4 px-6 rounded-2xl outline-none focus:border-[color:var(--accent-solid)]"
+              class="flex-1 bg-slate-900 border border-white/10 text-white font-bold py-3 px-4 sm:py-4 sm:px-6 rounded-2xl outline-none focus:border-[color:var(--accent-solid)] text-sm sm:text-base"
             />
-            <button @click="addCustomCartItem" class="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black px-8 rounded-2xl active:scale-95 transition-all">Ajouter</button>
+            <button @click="addCustomCartItem" class="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black px-4 sm:px-8 rounded-2xl active:scale-95 transition-all text-sm sm:text-base whitespace-nowrap">Ajouter</button>
           </div>
 
-          <div class="flex-1 overflow-y-auto p-8 space-y-3 custom-scrollbar">
+          <div class="flex-1 overflow-y-auto p-3 sm:p-8 space-y-2 sm:space-y-3 custom-scrollbar">
             <div
               v-for="(item, index) in shoppingList"
               :key="index"
-              class="flex justify-between items-center p-5 bg-[#0a0a0a] rounded-3xl border border-white/5"
+              class="flex justify-between items-center p-3 sm:p-5 bg-[#0a0a0a] rounded-2xl sm:rounded-3xl border border-white/5"
               :class="item.checked ? 'opacity-40' : ''"
             >
-              <div class="flex items-center gap-4 flex-1">
+              <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
                 <button
                   @click="toggleCheck(index)"
-                  class="w-8 h-8 rounded-full border-2 flex items-center justify-center"
+                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center shrink-0"
                   :class="item.checked ? 'bg-green-500 border-green-500 text-black' : 'border-slate-600'"
                 >
-                  <UIcon v-if="item.checked" name="i-heroicons-check" class="font-black" />
+                  <UIcon v-if="item.checked" name="i-heroicons-check" class="font-black text-sm" />
                 </button>
-
-                <h4 class="font-black text-xl flex-1" :class="item.checked ? 'line-through' : ''">
+                <h4 class="font-black text-base sm:text-xl flex-1 truncate" :class="item.checked ? 'line-through' : ''">
                   {{ item.name }}
                 </h4>
               </div>
-
-              <button @click="removeCartItem(index)" class="text-red-500/50 hover:text-red-500 ml-4">
-                <UIcon name="i-heroicons-trash" class="text-2xl" />
+              <button @click="removeCartItem(index)" class="text-red-500/50 hover:text-red-500 ml-2 sm:ml-4 shrink-0">
+                <UIcon name="i-heroicons-trash" class="text-xl sm:text-2xl" />
               </button>
             </div>
           </div>

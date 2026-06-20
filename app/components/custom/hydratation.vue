@@ -65,6 +65,45 @@ onMounted(() => {
   count.value = saved ? parseInt(saved) : 0
 })
 
+function playWaterSound() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext
+    const ctx = new AudioCtx()
+    const now = ctx.currentTime
+    const dur = 0.58
+
+    // White noise buffer
+    const samples = Math.ceil(ctx.sampleRate * dur)
+    const buf = ctx.createBuffer(1, samples, ctx.sampleRate)
+    const d = buf.getChannelData(0)
+    for (let i = 0; i < samples; i++) d[i] = Math.random() * 2 - 1
+
+    const src = ctx.createBufferSource()
+    src.buffer = buf
+
+    // Bandpass sweeping up: simulates glass filling (air column shortens → pitch rises)
+    const bp = ctx.createBiquadFilter()
+    bp.type = 'bandpass'
+    bp.frequency.setValueAtTime(380, now)
+    bp.frequency.exponentialRampToValueAtTime(1350, now + dur)
+    bp.Q.setValueAtTime(2.5, now)
+    bp.Q.linearRampToValueAtTime(5, now + dur)
+
+    // Smooth envelope: quick attack, sustain, fade out
+    const gain = ctx.createGain()
+    gain.gain.setValueAtTime(0.001, now)
+    gain.gain.exponentialRampToValueAtTime(0.52, now + 0.05)
+    gain.gain.setValueAtTime(0.52, now + dur * 0.6)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + dur)
+
+    src.connect(bp)
+    bp.connect(gain)
+    gain.connect(ctx.destination)
+    src.start(now)
+    src.stop(now + dur)
+  } catch {}
+}
+
 function toggle(i) {
   if (i === count.value) {
     count.value = i - 1
@@ -72,6 +111,7 @@ function toggle(i) {
     count.value = i
   }
   localStorage.setItem(storageKey.value, count.value)
+  playWaterSound()
 }
 
 function reset() {

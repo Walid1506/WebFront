@@ -195,9 +195,10 @@
 
             <button
               @click="saveSession"
-              class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-lg py-4 rounded-2xl shadow-[0_10px_30px_color-mix(in_srgb,var(--accent-solid)_40%,transparent)] hover:scale-[1.02] active:scale-95 transition-all"
+              :disabled="savingTemplate"
+              class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-lg py-4 rounded-2xl shadow-[0_10px_30px_color-mix(in_srgb,var(--accent-solid)_40%,transparent)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60"
             >
-              Terminer la séance
+              {{ savingTemplate ? 'Enregistrement...' : (mode === 'programme' ? 'Enregistrer le programme' : 'Terminer la séance') }}
             </button>
           </div>
 
@@ -458,10 +459,11 @@ function bgAlpha(hex: string, alpha: number) {
 
 const props = defineProps({
   date: String,
-  initialData: Object
+  initialData: Object,
+  mode: { type: String, default: 'session' }
 })
 
-const emit = defineEmits(['close', 'save'])
+const emit = defineEmits(['close', 'save', 'saved-programme'])
 
 const supabase = useSupabaseClient()
 const saveAsTemplateOpen = ref(false)
@@ -648,9 +650,26 @@ function removeExercise(index: number) {
   sessionData.value.exercises.splice(index, 1)
 }
 
-function saveSession() {
+async function saveSession() {
   if (!sessionData.value.title?.trim()) {
-    sessionData.value.title = 'Nouvelle séance'
+    sessionData.value.title = props.mode === 'programme' ? 'Mon programme' : 'Nouvelle séance'
+  }
+
+  if (props.mode === 'programme') {
+    savingTemplate.value = true
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      await supabase.from('workout_templates').insert({
+        user_id: user.id,
+        name: sessionData.value.title,
+        category: sessionData.value.category,
+        notes: sessionData.value.notes || '',
+        exercises: JSON.parse(JSON.stringify(sessionData.value.exercises))
+      })
+    }
+    savingTemplate.value = false
+    emit('saved-programme')
+    return
   }
 
   if (props.date) {

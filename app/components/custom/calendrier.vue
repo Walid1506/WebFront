@@ -5,7 +5,13 @@
       <button @click="changeMonth(-1)" class="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center active:scale-90 transition-all">
         <UIcon name="i-heroicons-chevron-left" class="text-white text-lg" />
       </button>
-      <h2 class="text-xl font-black text-white capitalize tracking-tight">{{ formattedMonth }}</h2>
+      <div class="flex items-center gap-2">
+        <h2 class="text-xl font-black text-white capitalize tracking-tight">{{ formattedMonth }}</h2>
+        <div class="flex rounded-xl overflow-hidden border border-white/[0.10] text-xs font-black">
+          <button @click="setDotStyle('dot')" class="px-2.5 py-1.5 transition-colors" :class="dotStyle === 'dot' ? 'bg-white/[0.18] text-white' : 'bg-white/[0.03] text-slate-600'">●</button>
+          <button @click="setDotStyle('ring')" class="px-2.5 py-1.5 transition-colors border-l border-white/[0.10]" :class="dotStyle === 'ring' ? 'bg-white/[0.18] text-white' : 'bg-white/[0.03] text-slate-600'">○</button>
+        </div>
+      </div>
       <button @click="changeMonth(1)" class="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center active:scale-90 transition-all">
         <UIcon name="i-heroicons-chevron-right" class="text-white text-lg" />
       </button>
@@ -27,26 +33,19 @@
 
         <template v-if="dateStr">
           <!-- Numéro du jour -->
-          <div class="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
-            :class="[
-              isToday(dateStr) ? 'bg-gradient-to-br from-[var(--accent-from)] to-[var(--accent-to)] shadow-lg shadow-[color:var(--accent-solid)]/20' : '',
-              selectedDay === dateStr && !isToday(dateStr) ? 'bg-white/[0.10] border border-white/20' : '',
-            ]">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90"
+            :style="dayCircleStyle(dateStr)">
             <span class="text-sm font-black leading-none"
-              :class="[
-                isToday(dateStr) ? 'text-black' : '',
-                isPast(dateStr) && !isToday(dateStr) ? 'text-slate-600' : 'text-white',
-              ]">
+              :style="(isSessionDone(dateStr) && dotStyle === 'dot') ? { color: 'white' } : (isToday(dateStr) ? { color: 'var(--accent-solid)' } : {})"
+              :class="!(isSessionDone(dateStr) && dotStyle === 'dot') && !isToday(dateStr) ? (isPast(dateStr) ? 'text-slate-600' : 'text-white') : ''">
               {{ getDayNumber(dateStr) }}
             </span>
           </div>
-
-          <!-- Indicateur session -->
+          <!-- Marqueur aujourd'hui (quand pas de séance) -->
           <div class="mt-1 h-1.5 flex items-center justify-center">
-            <div v-if="isSessionDone(dateStr)"
-              class="w-1.5 h-1.5 rounded-full"
-              :class="getCategoryDot(getSessionCategory(dateStr))">
-            </div>
+            <div v-if="isToday(dateStr) && !isSessionDone(dateStr)"
+              class="w-1 h-1 rounded-full"
+              style="background: var(--accent-solid)" />
           </div>
         </template>
       </div>
@@ -91,7 +90,8 @@
 
 <script setup>
 const props = defineProps({
-  dbSessions: { type: Array, default: () => [] }
+  dbSessions: { type: Array, default: () => [] },
+  templates: { type: Array, default: () => [] }
 })
 
 const emit = defineEmits(['select-date', 'delete-session'])
@@ -99,6 +99,10 @@ const emit = defineEmits(['select-date', 'delete-session'])
 const currentMonth = ref(new Date())
 const selectedDay = ref(null)
 const weekDays = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
+const dotStyle = ref('dot')
+
+onMounted(() => { dotStyle.value = localStorage.getItem('fittrack_cal_style') || 'dot' })
+function setDotStyle(s) { dotStyle.value = s; localStorage.setItem('fittrack_cal_style', s) }
 
 const formattedMonth = computed(() => {
   const s = currentMonth.value.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
@@ -171,13 +175,48 @@ function formatCategoryLabel(cat) {
   return map[cat] || cat
 }
 
-function getCategoryDot(cat) {
-  const map = {
-    push: 'bg-orange-400', pull: 'bg-blue-400', jambes: 'bg-emerald-400',
-    'full-body': 'bg-purple-400', cardio: 'bg-red-400', haut: 'bg-cyan-400',
-    bas: 'bg-yellow-400', mobilite: 'bg-teal-400', repos: 'bg-slate-400',
+function getSessionColor(dateStr) {
+  const s = getSessionByDate(dateStr)
+  // 1. Couleur live depuis le template (priorité absolue)
+  if (s?.data?.templateId) {
+    const tpl = props.templates.find(t => t.id === s.data.templateId)
+    if (tpl?.color) return tpl.color
+    // Fallback localStorage direct
+    try {
+      const lc = JSON.parse(localStorage.getItem('fittrack_tpl_colors') || '{}')
+      if (lc[s.data.templateId]) return lc[s.data.templateId]
+    } catch {}
   }
-  return map[cat] || 'bg-cyan-400'
+  // 2. Couleur stockée dans la session au moment de l'assignation
+  if (s?.data?.color) return s.data.color
+  // 3. Couleur par catégorie
+  const catColors = {
+    push: '#f97316', pull: '#3b82f6', jambes: '#22c55e',
+    'full-body': '#a855f7', cardio: '#ef4444', haut: '#22d3ee',
+    bas: '#eab308', mobilite: '#14b8a6', repos: '#94a3b8',
+  }
+  return catColors[s?.data?.category] || '#22d3ee'
+}
+
+function dayCircleStyle(dateStr) {
+  const style = {}
+  if (isSessionDone(dateStr)) {
+    const color = getSessionColor(dateStr)
+    if (dotStyle.value === 'dot') {
+      style.backgroundColor = color
+      style.boxShadow = `0 2px 8px ${color}55`
+    } else {
+      // Anneau : juste le contour coloré
+      style.boxShadow = `0 0 0 2.5px ${color}`
+    }
+  } else if (selectedDay.value === dateStr) {
+    style.backgroundColor = 'rgba(255,255,255,0.10)'
+  }
+  if (selectedDay.value === dateStr) {
+    style.outline = '2px solid rgba(255,255,255,0.30)'
+    style.outlineOffset = '2px'
+  }
+  return style
 }
 
 function getCategoryClass(cat) {

@@ -30,8 +30,9 @@
       <div v-for="s in sessions" :key="s.id"
         class="bg-white/[0.04] backdrop-blur-2xl rounded-[24px] border border-white/[0.08] overflow-hidden group">
         <div class="flex items-center gap-4 p-4">
-          <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 text-lg font-black"
-            :class="categoryBg(s.category)">
+          <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 text-lg font-black text-white"
+            :style="s.color ? { backgroundColor: s.color, boxShadow: `0 2px 10px ${s.color}66` } : {}"
+            :class="!s.color ? categoryBg(s.category) : ''">
             {{ s.name.charAt(0).toUpperCase() }}
           </div>
           <div class="flex-1 min-w-0">
@@ -84,6 +85,16 @@
             </div>
           </div>
 
+          <!-- Couleur -->
+          <div class="bg-white/[0.04] rounded-[24px] border border-white/[0.08] p-5">
+            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-3">Couleur dans l'agenda</label>
+            <div class="flex flex-wrap gap-3">
+              <button v-for="c in PRESET_COLORS" :key="c" @click="form.color = c"
+                class="w-8 h-8 rounded-full transition-all active:scale-90"
+                :style="{ backgroundColor: c, boxShadow: form.color === c ? `0 0 0 3px white, 0 0 0 5px ${c}` : 'none' }" />
+            </div>
+          </div>
+
           <!-- Notes -->
           <div class="bg-white/[0.04] rounded-[24px] border border-white/[0.08] p-5">
             <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Notes / Exercices</label>
@@ -118,7 +129,13 @@ const sessions = ref([])
 const modalOpen = ref(false)
 const saving = ref(false)
 const editingId = ref(null)
-const form = ref({ name: '', category: '', notes: '' })
+const form = ref({ name: '', category: '', notes: '', color: '#22d3ee' })
+
+const PRESET_COLORS = [
+  '#22d3ee', '#3b82f6', '#8b5cf6', '#ec4899',
+  '#ef4444', '#f97316', '#eab308', '#22c55e',
+  '#14b8a6', '#94a3b8',
+]
 
 const categories = [
   { value: 'push', label: 'Push', activeClass: 'bg-orange-500/20 border-orange-500/30 text-orange-300' },
@@ -130,24 +147,35 @@ const categories = [
   { value: 'bas', label: 'Bas', activeClass: 'bg-yellow-500/20 border-yellow-500/30 text-yellow-300' },
 ]
 
+// Couleurs stockées en localStorage (pas besoin de colonne DB)
+function getLocalColors() {
+  try { return JSON.parse(localStorage.getItem('fittrack_tpl_colors') || '{}') } catch { return {} }
+}
+function setLocalColor(id, color) {
+  const c = getLocalColors()
+  if (color) c[id] = color; else delete c[id]
+  localStorage.setItem('fittrack_tpl_colors', JSON.stringify(c))
+}
+
 onMounted(fetchSessions)
 
 async function fetchSessions() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
   const { data } = await supabase.from('workout_templates').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
-  sessions.value = data || []
+  const localColors = getLocalColors()
+  sessions.value = (data || []).map(s => ({ ...s, color: s.color || localColors[s.id] || '' }))
 }
 
 function openCreate() {
   editingId.value = null
-  form.value = { name: '', category: '', notes: '' }
+  form.value = { name: '', category: '', notes: '', color: '#22d3ee' }
   modalOpen.value = true
 }
 
 function openEdit(s) {
   editingId.value = s.id
-  form.value = { name: s.name, category: s.category || '', notes: s.notes || '' }
+  form.value = { name: s.name, category: s.category || '', notes: s.notes || '', color: s.color || '#22d3ee' }
   modalOpen.value = true
 }
 
@@ -163,9 +191,19 @@ async function save() {
   if (!user) { saving.value = false; return }
 
   if (editingId.value) {
+    // Sauvegarde des champs de base (toujours fiable)
     await supabase.from('workout_templates').update({ name: form.value.name, category: form.value.category, notes: form.value.notes }).eq('id', editingId.value)
+    // Tentative couleur DB (si la colonne existe) + toujours en localStorage
+    await supabase.from('workout_templates').update({ color: form.value.color }).eq('id', editingId.value)
+    setLocalColor(editingId.value, form.value.color)
   } else {
-    await supabase.from('workout_templates').insert({ user_id: user.id, name: form.value.name, category: form.value.category, notes: form.value.notes, exercises: [] })
+    const { data: inserted } = await supabase.from('workout_templates')
+      .insert({ user_id: user.id, name: form.value.name, category: form.value.category, notes: form.value.notes, exercises: [] })
+      .select()
+    if (inserted?.[0]?.id) {
+      await supabase.from('workout_templates').update({ color: form.value.color }).eq('id', inserted[0].id)
+      setLocalColor(inserted[0].id, form.value.color)
+    }
   }
 
   await fetchSessions()
