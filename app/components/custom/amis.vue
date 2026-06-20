@@ -105,12 +105,9 @@
           <button
             type="button"
             @click.stop="openChat(f)"
-            @touchend.stop.prevent="openChat(f)"
-            class="relative w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
+            class="relative w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 cursor-pointer active:scale-90 transition-all"
             :style="{
               touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent',
-              userSelect: 'none',
               backgroundColor: `color-mix(in srgb, var(--accent-solid) 15%, transparent)`,
               border: `1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent)`
             }">
@@ -125,7 +122,7 @@
 
     <!-- Chat -->
     <Transition name="slide-up">
-      <Chat v-if="chatFriend" :friend="chatFriend.profile" :friend-id="chatFriend.friendId" @close="chatFriend = null" />
+      <Chat v-if="chatFriend && chatFriend.profile" :friend="chatFriend.profile" :friend-id="chatFriend.friendId" @close="chatFriend = null" />
     </Transition>
 
     <!-- ── Overlay profil ami ── -->
@@ -329,10 +326,9 @@
             <!-- Actions -->
             <button
               type="button"
-              @click.stop="openChatFromProfile()"
-              @touchend.stop.prevent="openChatFromProfile()"
-              class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 shadow-lg"
-              style="touch-action: manipulation; -webkit-tap-highlight-color: transparent">
+              @click="openChatFromProfile"
+              class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-3.5 rounded-2xl text-sm active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer"
+              style="touch-action: manipulation">
               <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="pointer-events-none" />
               <span class="pointer-events-none">Envoyer un message</span>
             </button>
@@ -493,16 +489,16 @@ function resetUnread(f) {
 }
 
 function openChat(f) {
-  chatFriend.value = f
+  chatFriend.value = { friendId: f.friendId, profile: f.profile }
   resetUnread(f)
 }
 
 function openChatFromProfile() {
   if (!friendProfile.value) return
-  const f = friendProfile.value
+  const snap = { friendId: friendProfile.value.friendId, profile: friendProfile.value.profile }
   friendProfile.value = null
   showComparison.value = false
-  chatFriend.value = f
+  chatFriend.value = snap
 }
 
 function calcVolume(sessions) {
