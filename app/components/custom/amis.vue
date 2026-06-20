@@ -105,9 +105,15 @@
           <button
             type="button"
             @click.stop="openChat(f)"
-            class="relative w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 active:scale-90 transition-all"
-            style="touch-action: manipulation"
-            :style="{ backgroundColor: `color-mix(in srgb, var(--accent-solid) 15%, transparent)`, border: `1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent)` }">
+            @touchend.stop.prevent="openChat(f)"
+            class="relative w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
+            :style="{
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+              userSelect: 'none',
+              backgroundColor: `color-mix(in srgb, var(--accent-solid) 15%, transparent)`,
+              border: `1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent)`
+            }">
             <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="text-lg pointer-events-none" :style="{ color: 'var(--accent-solid)' }" />
             <span v-if="f.unreadCount > 0" class="pointer-events-none absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
               <span class="text-white text-[9px] font-black">{{ f.unreadCount > 9 ? '9+' : f.unreadCount }}</span>
@@ -321,10 +327,14 @@
             </div>
 
             <!-- Actions -->
-            <button @click="chatFriend = friendProfile; friendProfile = null; showComparison = false"
-              class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-3.5 rounded-2xl text-sm active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg shadow-[color:var(--accent-solid)]/15">
-              <UIcon name="i-heroicons-chat-bubble-left-ellipsis" />
-              Envoyer un message
+            <button
+              type="button"
+              @click.stop="openChatFromProfile()"
+              @touchend.stop.prevent="openChatFromProfile()"
+              class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 shadow-lg"
+              style="touch-action: manipulation; -webkit-tap-highlight-color: transparent">
+              <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="pointer-events-none" />
+              <span class="pointer-events-none">Envoyer un message</span>
             </button>
             <button @click="removeFriend(friendProfile)" class="w-full border border-red-500/20 text-red-400 font-black py-3 rounded-2xl text-sm active:scale-95 transition-all hover:bg-red-500/5">
               Retirer de mes amis
@@ -485,6 +495,14 @@ function resetUnread(f) {
 function openChat(f) {
   chatFriend.value = f
   resetUnread(f)
+}
+
+function openChatFromProfile() {
+  if (!friendProfile.value) return
+  const f = friendProfile.value
+  friendProfile.value = null
+  showComparison.value = false
+  chatFriend.value = f
 }
 
 function calcVolume(sessions) {
