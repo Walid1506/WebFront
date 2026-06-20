@@ -288,7 +288,7 @@ async function sendPhoto(event) {
   const path = `${currentUserId}/${Date.now()}.${ext}`
 
   const { error: uploadError } = await supabase.storage.from('chat-photos').upload(path, file)
-  if (uploadError) { sendingPhoto.value = false; return }
+  if (uploadError) { sendingPhoto.value = false; alert(`Photo non envoyée : ${uploadError.message}`); return }
 
   const { data: { publicUrl } } = supabase.storage.from('chat-photos').getPublicUrl(path)
 
