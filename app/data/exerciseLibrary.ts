@@ -203,7 +203,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: "Bon exercice d'isolation pour sentir les dorsaux.",
     mediaType: 'image',
-    mediaUrl: `${CDN}/Elevated_Cable_Rows/0.jpg`
+    mediaUrl: `${CDN}/Straight-Arm_Pulldown/0.jpg`
   },
   {
     id: 21,
@@ -759,7 +759,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Isolation pure des dorsaux, bras tendus. Parfait pour sentir et activer les dorsaux.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Elevated_Cable_Rows/0.jpg`
+    mediaUrl: `${CDN}/Straight-Arm_Pulldown/0.jpg`
   },
   {
     id: 75,
@@ -779,7 +779,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Tirage diagonal avec corde depuis la poulie haute. Très bon pour la partie basse des dorsaux.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Elevated_Cable_Rows/0.jpg`
+    mediaUrl: `${CDN}/Straight-Arm_Pulldown/0.jpg`
   },
   {
     id: 77,
@@ -863,7 +863,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Curl marteau avec corde à la poulie. Travaille le brachial et le brachioradial.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Alternate_Incline_Dumbbell_Curl/0.jpg`
+    mediaUrl: `${CDN}/Hammer_Curls/0.jpg`
   },
   {
     id: 85,
@@ -883,7 +883,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Curl unilatéral pour corriger les asymétries et mieux contrôler la supination.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Cable_Preacher_Curl/0.jpg`
+    mediaUrl: `${CDN}/Overhead_Cable_Curl/0.jpg`
   },
   {
     id: 87,
@@ -956,8 +956,8 @@ export const exerciseLibrary = [
     category: 'Jambes',
     equipment: 'Câbles',
     description: 'Écartement de la jambe en dehors pour cibler le fessier moyen et le TFL.',
-    mediaType: 'image',
-    mediaUrl: `${CDN}/Cable_Hip_Adduction/0.jpg`
+    mediaType: 'gif',
+    mediaUrl: `${FP}/Cable-Hip-Abduction.gif`
   },
   {
     id: 94,
@@ -997,7 +997,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Charnière de hanche avec câble entre les jambes. Excellent pour ischios et fessiers.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Romanian_Deadlift/0.jpg`
+    mediaUrl: `${CDN}/Pull_Through/0.jpg`
   },
   {
     id: 98,
@@ -1007,7 +1007,7 @@ export const exerciseLibrary = [
     equipment: 'Câbles',
     description: 'Squat avec résistance câble. Maintient la tension sur les quads tout au long du mouvement.',
     mediaType: 'image',
-    mediaUrl: `${CDN}/Split_Squat_with_Dumbbells/0.jpg`
+    mediaUrl: `${CDN}/Goblet_Squat/0.jpg`
   },
 
   // ─── POULIE - ABDOS & CORE ────────────────────────────────────────────────
