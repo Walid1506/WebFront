@@ -2,22 +2,22 @@
   <div class="relative group">
     <div class="bg-white/[0.04] backdrop-blur-2xl rounded-[28px] md:rounded-[40px] p-5 md:p-8 border border-white/[0.08] shadow-2xl overflow-hidden relative">
 
-      <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-cyan-500/10 blur-[100px] pointer-events-none"></div>
-      <div class="absolute -top-10 -right-10 w-48 h-48 bg-emerald-500/10 blur-[80px] pointer-events-none"></div>
+      <div class="absolute -bottom-20 -left-20 w-64 h-64 blur-[100px] pointer-events-none opacity-30" :style="{ backgroundColor: theme.blobs[0] }"></div>
+      <div class="absolute -top-10 -right-10 w-48 h-48 blur-[80px] pointer-events-none opacity-25" :style="{ backgroundColor: theme.blobs[2] }"></div>
 
       <div class="flex justify-between items-start mb-8 relative z-10">
         <div>
           <div class="flex items-center gap-2 mb-1">
-            <div class="w-2 h-2 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,211,238,0.8)]"></div>
+            <div class="w-2 h-2 rounded-full animate-pulse" :style="{ backgroundColor: 'var(--accent-solid)', boxShadow: '0 0 10px var(--accent-solid)' }"></div>
             <h2 class="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Suivi du Poids</h2>
           </div>
           <div class="flex items-baseline gap-2">
             <span class="text-5xl font-[1000] tracking-tighter text-white">{{ currentWeight || '--' }}</span>
-            <span class="text-xl font-black bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent italic">kg</span>
+            <span class="text-xl font-black bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent italic">kg</span>
           </div>
         </div>
 
-        <button @click="openModal" class="p-4 bg-gradient-to-br from-cyan-500 to-emerald-500 rounded-3xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-cyan-500/20 group/btn">
+        <button @click="openModal" class="p-4 bg-gradient-to-br from-[var(--accent-from)] to-[var(--accent-to)] rounded-3xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[color:var(--accent-solid)]/15 group/btn">
           <UIcon name="i-heroicons-plus-16-solid" class="text-white text-xl group-hover/btn:rotate-90 transition-transform duration-300" />
         </button>
       </div>
@@ -67,8 +67,8 @@
 </template>
 
 <script setup>
-// Imports de Chart.js pour un graphique réel et précis
 import { Line } from 'vue-chartjs'
+const { theme } = useTheme()
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip } from 'chart.js'
 
 // On enregistre les modules du graphique

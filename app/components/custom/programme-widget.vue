@@ -92,7 +92,7 @@
               <div class="flex items-center gap-2 mt-2">
                 <span class="bg-violet-500/10 border border-violet-500/20 text-violet-300 text-xs font-black px-3 py-1 rounded-full">{{ ex.sets }} séries</span>
                 <span class="bg-white/[0.06] border border-white/[0.08] text-white text-xs font-black px-3 py-1 rounded-full">{{ ex.reps }} rép.</span>
-                <span v-if="ex.weight" class="bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-black px-3 py-1 rounded-full">{{ ex.weight }} kg</span>
+                <span v-if="ex.weight" class="text-xs font-black px-3 py-1 rounded-full" style="background: color-mix(in srgb, var(--accent-solid) 12%, transparent); border: 1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent); color: var(--accent-solid)">{{ ex.weight }} kg</span>
               </div>
             </div>
             <span class="text-3xl font-black text-slate-800">{{ i + 1 }}</span>

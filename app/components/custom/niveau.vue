@@ -75,13 +75,13 @@
         </div>
 
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
-            <UIcon name="i-heroicons-bookmark" class="text-cyan-400" />
+          <div class="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0" :style="{ backgroundColor: `color-mix(in srgb, var(--accent-solid) 12%, transparent)`, border: `1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent)` }">
+            <UIcon name="i-heroicons-bookmark" :style="{ color: 'var(--accent-solid)' }" />
           </div>
           <div class="flex-1">
             <div class="flex justify-between items-center mb-1">
               <p class="text-white font-black text-sm">Séances sauvegardées</p>
-              <span class="text-cyan-400 font-black text-sm">+{{ breakdown.templates }} XP</span>
+              <span class="font-black text-sm" :style="{ color: 'var(--accent-solid)' }">+{{ breakdown.templates }} XP</span>
             </div>
             <p class="text-slate-600 text-xs">{{ breakdown.templates / 30 }} modèle{{ breakdown.templates / 30 > 1 ? 's' : '' }} × 30 XP</p>
           </div>

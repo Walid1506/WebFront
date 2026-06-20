@@ -1,13 +1,13 @@
 <template>
-  <div class="fixed inset-0 z-[400] bg-[#060d1a] flex flex-col">
+  <div class="fixed inset-0 z-[400] flex flex-col" :style="{ backgroundColor: theme.bg }">
 
     <!-- Header -->
-    <div class="flex items-center gap-3 px-4 py-4 border-b border-white/[0.08] bg-[#060d1a]/90 backdrop-blur-xl shrink-0">
+    <div class="flex items-center gap-3 px-4 py-4 border-b border-white/[0.08] backdrop-blur-xl shrink-0" :style="{ backgroundColor: bgAlpha(theme.bg, 0.92) }">
       <button @click="$emit('close')" class="p-2 rounded-xl bg-white/[0.06] text-slate-400 hover:text-white transition shrink-0">
         <UIcon name="i-heroicons-arrow-left" class="text-xl" />
       </button>
-      <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-400 to-emerald-400 p-[2px] shrink-0">
-        <div class="w-full h-full bg-[#060d1a] rounded-full overflow-hidden flex items-center justify-center">
+      <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-[var(--accent-from)] to-[var(--accent-to)] p-[2px] shrink-0">
+        <div class="w-full h-full rounded-full overflow-hidden flex items-center justify-center" :style="{ backgroundColor: theme.bg }">
           <img v-if="friend.avatar_url" :src="friend.avatar_url" class="w-full h-full object-cover" />
           <span v-else class="text-white font-black">{{ friend.username?.charAt(0).toUpperCase() }}</span>
         </div>
@@ -23,7 +23,7 @@
     <!-- Messages -->
     <div ref="messagesEl" class="flex-1 overflow-y-auto p-4 space-y-2">
       <div v-if="loading" class="flex justify-center pt-8">
-        <div class="w-6 h-6 rounded-full border-2 border-cyan-400/30 border-t-cyan-400 animate-spin"></div>
+        <div class="w-6 h-6 rounded-full border-2 animate-spin" style="border-color: color-mix(in srgb, var(--accent-solid) 25%, transparent); border-top-color: var(--accent-solid)"></div>
       </div>
 
       <div v-else-if="messages.length === 0" class="flex flex-col items-center justify-center h-full gap-3 opacity-40">
@@ -43,8 +43,8 @@
           <!-- Bulle -->
           <div class="flex gap-2" :class="isMine(msg) ? 'flex-row-reverse' : 'flex-row'">
             <!-- Avatar (messages reçus) -->
-            <div v-if="!isMine(msg)" class="w-7 h-7 rounded-full bg-gradient-to-tr from-cyan-400 to-emerald-400 p-[1.5px] shrink-0 self-end">
-              <div class="w-full h-full bg-[#060d1a] rounded-full overflow-hidden flex items-center justify-center">
+            <div v-if="!isMine(msg)" class="w-7 h-7 rounded-full bg-gradient-to-tr from-[var(--accent-from)] to-[var(--accent-to)] p-[1.5px] shrink-0 self-end">
+              <div class="w-full h-full rounded-full overflow-hidden flex items-center justify-center" :style="{ backgroundColor: theme.bg }">
                 <img v-if="friend.avatar_url" :src="friend.avatar_url" class="w-full h-full object-cover" />
                 <span v-else class="text-white font-black text-[9px]">{{ friend.username?.charAt(0).toUpperCase() }}</span>
               </div>
@@ -62,7 +62,7 @@
               <div v-if="msg.content" class="px-4 py-2.5 rounded-[18px] text-sm font-medium leading-relaxed"
                 :class="[
                   isMine(msg)
-                    ? 'bg-gradient-to-br from-cyan-500 to-emerald-500 text-white rounded-tr-sm'
+                    ? 'bg-gradient-to-br from-[var(--accent-from)] to-[var(--accent-to)] text-white rounded-tr-sm'
                     : 'bg-white/[0.08] border border-white/[0.08] text-white rounded-tl-sm'
                 ]">
                 {{ msg.content }}
@@ -77,14 +77,14 @@
       <!-- Indicateur envoi photo -->
       <div v-if="sendingPhoto" class="flex flex-row-reverse gap-2">
         <div class="bg-white/[0.06] rounded-[18px] rounded-tr-sm p-3 flex items-center gap-2">
-          <div class="w-4 h-4 rounded-full border-2 border-cyan-400/30 border-t-cyan-400 animate-spin"></div>
+          <div class="w-4 h-4 rounded-full border-2 animate-spin" style="border-color: color-mix(in srgb, var(--accent-solid) 25%, transparent); border-top-color: var(--accent-solid)"></div>
           <span class="text-slate-500 text-xs font-black">Envoi...</span>
         </div>
       </div>
     </div>
 
     <!-- Input -->
-    <div class="shrink-0 px-3 py-3 border-t border-white/[0.08] bg-[#060d1a]/90 backdrop-blur-xl">
+    <div class="shrink-0 px-3 py-3 border-t border-white/[0.08] backdrop-blur-xl" :style="{ backgroundColor: bgAlpha(theme.bg, 0.92) }">
       <div class="flex items-end gap-2">
         <!-- Photo -->
         <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="sendPhoto" />
@@ -104,7 +104,7 @@
         <!-- Envoyer -->
         <button @click="sendMessage" :disabled="!newMessage.trim() || sending"
           class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 active:scale-90 transition-all"
-          :class="newMessage.trim() ? 'bg-gradient-to-br from-cyan-500 to-emerald-500 shadow-lg shadow-cyan-500/20' : 'bg-white/[0.04] border border-white/[0.06]'">
+          :class="newMessage.trim() ? 'bg-gradient-to-br from-[var(--accent-from)] to-[var(--accent-to)] shadow-lg shadow-[color:var(--accent-solid)]/15' : 'bg-white/[0.04] border border-white/[0.06]'">
           <UIcon name="i-heroicons-paper-airplane" class="text-white text-lg" :class="newMessage.trim() ? '' : 'text-slate-700'" />
         </button>
       </div>
@@ -123,6 +123,14 @@
 </template>
 
 <script setup>
+const { theme } = useTheme()
+function bgAlpha(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r},${g},${b},${alpha})`
+}
+
 const props = defineProps({
   friend: { type: Object, required: true },
   friendId: { type: String, required: true }

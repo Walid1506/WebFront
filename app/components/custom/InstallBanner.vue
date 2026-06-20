@@ -23,7 +23,7 @@
       </div>
       <!-- Flèche animée pointant vers le bas (bouton partage Safari) -->
       <div class="flex justify-center mt-3 mb-1">
-        <div class="flex flex-col items-center gap-1 text-cyan-400 animate-bounce">
+        <div class="flex flex-col items-center gap-1 animate-bounce" :style="{ color: 'var(--accent-solid)' }">
           <UIcon name="i-heroicons-chevron-down" class="text-xl" />
           <UIcon name="i-heroicons-chevron-down" class="text-base opacity-60" />
         </div>

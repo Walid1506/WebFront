@@ -4,7 +4,7 @@
     <button
       v-if="!isOpen"
       @click="isOpen = true"
-      class="fixed bottom-24 right-4 md:bottom-8 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-cyan-500 to-emerald-500 shadow-2xl shadow-cyan-500/40 flex items-center justify-center active:scale-95 transition-all duration-200"
+      class="fixed bottom-24 right-4 md:bottom-8 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-[var(--accent-from)] to-[var(--accent-to)] shadow-2xl shadow-[color:var(--accent-solid)]/30 flex items-center justify-center active:scale-95 transition-all duration-200"
       :class="isRunning ? 'animate-pulse' : ''"
     >
       <UIcon name="i-heroicons-clock" class="text-black text-2xl" />
@@ -15,9 +15,9 @@
 
     <!-- Overlay timer -->
     <Transition name="slide-up">
-      <div v-if="isOpen" class="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#060d1a]/95 backdrop-blur-2xl">
-        <div class="absolute -top-20 left-1/4 w-72 h-72 bg-cyan-500/20 rounded-full blur-[100px] pointer-events-none"></div>
-        <div class="absolute bottom-0 right-1/4 w-72 h-72 bg-violet-500/15 rounded-full blur-[100px] pointer-events-none"></div>
+      <div v-if="isOpen" class="fixed inset-0 z-[200] flex flex-col items-center justify-center backdrop-blur-2xl" :style="{ backgroundColor: bgAlpha(theme.bg, 0.96) }">
+        <div class="absolute -top-20 left-1/4 w-72 h-72 rounded-full blur-[100px] pointer-events-none" :style="{ backgroundColor: theme.blobs[0] }"></div>
+        <div class="absolute bottom-0 right-1/4 w-72 h-72 rounded-full blur-[100px] pointer-events-none" :style="{ backgroundColor: theme.blobs[1] }"></div>
         <!-- Header -->
         <div class="absolute top-0 left-0 right-0 flex justify-between items-center p-6">
           <p class="text-xs font-black uppercase tracking-widest text-slate-500">Timer de repos</p>
@@ -32,7 +32,7 @@
             <circle cx="50" cy="50" r="45" fill="none" stroke="#1e293b" stroke-width="6" />
             <circle
               cx="50" cy="50" r="45" fill="none"
-              :stroke="isFinished ? '#ef4444' : '#22d3ee'"
+              :stroke="isFinished ? '#ef4444' : theme.accentSolid"
               stroke-width="6"
               stroke-linecap="round"
               :stroke-dasharray="283"
@@ -56,7 +56,7 @@
             :key="p"
             @click="setPreset(p)"
             class="px-4 py-2 rounded-2xl text-sm font-black uppercase tracking-wider transition-all duration-200"
-            :class="duration === p && !isRunning ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white shadow-lg shadow-cyan-500/30' : 'bg-white/[0.06] text-slate-400 hover:bg-white/[0.10] border border-white/[0.08]'"
+            :class="duration === p && !isRunning ? 'bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white shadow-lg shadow-[color:var(--accent-solid)]/20' : 'bg-white/[0.06] text-slate-400 hover:bg-white/[0.10] border border-white/[0.08]'"
           >
             {{ formatTime(p) }}
           </button>
@@ -70,7 +70,7 @@
           <button
             @click="toggleTimer"
             class="w-20 h-20 rounded-full flex items-center justify-center font-black text-2xl shadow-2xl active:scale-95 transition-all duration-200"
-            :class="isRunning ? 'bg-red-500 text-white shadow-red-500/30' : 'bg-gradient-to-br from-cyan-500 to-emerald-500 text-white shadow-cyan-500/30'"
+            :class="isRunning ? 'bg-red-500 text-white shadow-red-500/30' : 'bg-gradient-to-br from-[var(--accent-from)] to-[var(--accent-to)] text-white shadow-[color:var(--accent-solid)]/20'"
           >
             <UIcon :name="isRunning ? 'i-heroicons-pause' : 'i-heroicons-play'" class="text-3xl" />
           </button>
@@ -84,6 +84,13 @@
 </template>
 
 <script setup>
+const { theme } = useTheme()
+function bgAlpha(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r},${g},${b},${alpha})`
+}
 const isOpen = ref(false)
 const presets = [30, 60, 90, 120, 180]
 const duration = ref(90)

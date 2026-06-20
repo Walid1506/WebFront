@@ -29,7 +29,7 @@
           <!-- Numéro du jour -->
           <div class="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
             :class="[
-              isToday(dateStr) ? 'bg-gradient-to-br from-cyan-400 to-emerald-500 shadow-lg shadow-cyan-500/30' : '',
+              isToday(dateStr) ? 'bg-gradient-to-br from-[var(--accent-from)] to-[var(--accent-to)] shadow-lg shadow-[color:var(--accent-solid)]/20' : '',
               selectedDay === dateStr && !isToday(dateStr) ? 'bg-white/[0.10] border border-white/20' : '',
             ]">
             <span class="text-sm font-black leading-none"

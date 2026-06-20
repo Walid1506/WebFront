@@ -8,17 +8,17 @@
         <div class="relative flex-1">
           <UIcon name="i-heroicons-at-symbol" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
           <input v-model="searchQuery" @keyup.enter="searchUser" type="text" placeholder="pseudo exact..."
-            class="w-full h-12 bg-white/[0.06] border border-white/[0.10] rounded-2xl pl-10 pr-4 text-white font-bold outline-none focus:border-cyan-500/50 placeholder:text-slate-700" />
+            class="w-full h-12 bg-white/[0.06] border border-white/[0.10] rounded-2xl pl-10 pr-4 text-white font-bold outline-none placeholder:text-slate-700" style="outline: none" @focus="e => e.target.style.borderColor='var(--accent-solid)'" @blur="e => e.target.style.borderColor=''" />
         </div>
         <button @click="searchUser" :disabled="searching || !searchQuery.trim()"
-          class="h-12 px-5 bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-black rounded-2xl text-sm active:scale-95 transition-all disabled:opacity-40 shrink-0">
+          class="h-12 px-5 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black rounded-2xl text-sm active:scale-95 transition-all disabled:opacity-40 shrink-0">
           {{ searching ? '...' : 'Chercher' }}
         </button>
       </div>
 
       <!-- Résultat de recherche -->
       <div v-if="searchResult" class="mt-3 flex items-center gap-3 bg-white/[0.04] rounded-2xl p-3 border border-white/[0.08]">
-        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-400 to-emerald-400 p-[2px] shrink-0">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-[var(--accent-from)] to-[var(--accent-to)] p-[2px] shrink-0">
           <div class="w-full h-full bg-[#060d1a] rounded-full overflow-hidden flex items-center justify-center">
             <img v-if="searchResult.avatar_url" :src="searchResult.avatar_url" class="w-full h-full object-cover" />
             <span v-else class="text-white font-black text-sm">{{ searchResult.username?.charAt(0).toUpperCase() }}</span>
@@ -29,7 +29,7 @@
           <p class="text-slate-500 text-xs">{{ searchResultStatus }}</p>
         </div>
         <button v-if="searchResultStatus === 'Ajouter'" @click="sendRequest"
-          class="bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-black text-xs px-4 py-2 rounded-xl active:scale-95 transition-all">
+          class="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-xs px-4 py-2 rounded-xl active:scale-95 transition-all">
           + Ajouter
         </button>
       </div>
@@ -67,14 +67,14 @@
     <!-- Liste amis -->
     <div>
       <div class="flex items-center gap-3 mb-3 px-1">
-        <div class="w-2 h-6 bg-gradient-to-b from-cyan-400 to-emerald-400 rounded-full"></div>
+        <div class="w-2 h-6 bg-gradient-to-b from-[var(--accent-from)] to-[var(--accent-to)] rounded-full"></div>
         <h2 class="text-xl font-black uppercase tracking-tighter">Mes amis</h2>
         <span class="text-slate-600 font-black text-sm">{{ friends.length }}</span>
       </div>
 
       <div v-if="friends.length === 0" class="bg-white/[0.04] backdrop-blur-2xl rounded-[28px] border border-white/[0.08] p-8 text-center">
-        <div class="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-3">
-          <UIcon name="i-heroicons-user-group" class="text-2xl text-cyan-400" />
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" :style="{ backgroundColor: `color-mix(in srgb, var(--accent-solid) 12%, transparent)`, border: `1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent)` }">
+          <UIcon name="i-heroicons-user-group" class="text-2xl" :style="{ color: 'var(--accent-solid)' }" />
         </div>
         <p class="text-white font-black">Aucun ami pour l'instant</p>
         <p class="text-slate-500 text-sm mt-1">Cherche un ami par son pseudo ci-dessus</p>
@@ -84,7 +84,7 @@
         <div v-for="f in friends" :key="f.friendId"
           class="bg-white/[0.04] backdrop-blur-2xl rounded-[24px] border border-white/[0.08] p-4 flex items-center gap-3">
           <div class="relative shrink-0 cursor-pointer active:scale-90 transition-all" @click="openFriendProfile(f)">
-            <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-cyan-400 to-emerald-400 p-[2px]">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-[var(--accent-from)] to-[var(--accent-to)] p-[2px]">
               <div class="w-full h-full bg-[#060d1a] rounded-full overflow-hidden flex items-center justify-center">
                 <img v-if="f.profile?.avatar_url" :src="f.profile.avatar_url" class="w-full h-full object-cover" />
                 <span v-else class="text-white font-black">{{ f.profile?.username?.charAt(0).toUpperCase() }}</span>
@@ -106,8 +106,9 @@
             {{ f.level?.level }}
           </div>
           <button @click="chatFriend = f"
-            class="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-emerald-500/20 border border-cyan-500/20 flex items-center justify-center shrink-0 active:scale-90 transition-all">
-            <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="text-cyan-400 text-lg" />
+            class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 active:scale-90 transition-all"
+            :style="{ backgroundColor: `color-mix(in srgb, var(--accent-solid) 15%, transparent)`, border: `1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent)` }">
+            <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="text-lg" :style="{ color: 'var(--accent-solid)' }" />
           </button>
         </div>
       </div>
@@ -131,9 +132,9 @@
         <div class="flex-1 overflow-y-auto p-5 space-y-4">
           <!-- Avatar + stats globales -->
           <div class="relative bg-white/[0.04] rounded-[28px] border border-white/[0.08] p-6 text-center overflow-hidden">
-            <div class="absolute -top-10 -right-10 w-40 h-40 bg-cyan-500/10 rounded-full blur-[60px]"></div>
-            <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-cyan-400 to-emerald-400 p-[2px] mx-auto mb-3">
-              <div class="w-full h-full bg-[#060d1a] rounded-full overflow-hidden flex items-center justify-center">
+            <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[60px]" :style="{ backgroundColor: theme.blobs[0] }"></div>
+            <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-[var(--accent-from)] to-[var(--accent-to)] p-[2px] mx-auto mb-3">
+              <div class="w-full h-full rounded-full overflow-hidden flex items-center justify-center" :style="{ backgroundColor: theme.bg }">
                 <img v-if="friendProfile.profile?.avatar_url" :src="friendProfile.profile.avatar_url" class="w-full h-full object-cover" />
                 <span v-else class="text-white font-black text-2xl">{{ friendProfile.profile?.username?.charAt(0).toUpperCase() }}</span>
               </div>
@@ -141,12 +142,12 @@
             <p class="text-white font-black text-xl">{{ friendProfile.profile?.username }}</p>
             <div class="flex justify-center gap-6 mt-4">
               <div>
-                <p class="text-cyan-400 font-black text-2xl">{{ friendProfile.sessionCount }}</p>
+                <p class="font-black text-2xl" :style="{ color: 'var(--accent-solid)' }">{{ friendProfile.sessionCount }}</p>
                 <p class="text-slate-500 text-xs font-black uppercase">séances/mois</p>
               </div>
               <div class="w-px bg-white/[0.08]"></div>
               <div>
-                <p class="text-emerald-400 font-black text-2xl">{{ friendProfile.totalSessions }}</p>
+                <p class="font-black text-2xl" :style="{ color: 'var(--accent-to, #34d399)' }">{{ friendProfile.totalSessions }}</p>
                 <p class="text-slate-500 text-xs font-black uppercase">total</p>
               </div>
             </div>
@@ -158,7 +159,7 @@
             <div v-if="friendProfile.recentSessions?.length > 0" class="space-y-2">
               <div v-for="s in friendProfile.recentSessions" :key="s.id"
                 class="flex items-center gap-3 bg-white/[0.04] rounded-2xl p-3 border border-white/[0.06]">
-                <div class="w-2 h-2 bg-emerald-400 rounded-full shrink-0"></div>
+                <div class="w-2 h-2 rounded-full shrink-0" :style="{ backgroundColor: 'var(--accent-solid)' }"></div>
                 <div class="flex-1">
                   <p class="text-white font-black text-sm">{{ s.data?.title || 'Séance' }}</p>
                   <p class="text-slate-500 text-xs">{{ formatDate(s.date) }}</p>
@@ -173,7 +174,7 @@
 
           <!-- Envoyer un message -->
           <button @click="chatFriend = friendProfile; friendProfile = null"
-            class="w-full bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-black py-3.5 rounded-2xl text-sm active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20">
+            class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-3.5 rounded-2xl text-sm active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg shadow-[color:var(--accent-solid)]/15">
             <UIcon name="i-heroicons-chat-bubble-left-ellipsis" />
             Envoyer un message
           </button>
@@ -191,6 +192,7 @@
 
 <script setup>
 const emit = defineEmits(['pending-change', 'unread-change'])
+const { theme } = useTheme()
 
 import Chat from '~/components/custom/chat.vue'
 
