@@ -50,7 +50,10 @@
         :class="activeTab === tab.id ? 'border-[var(--accent-solid)]' : 'text-slate-500 border-transparent hover:text-slate-300'"
         :style="activeTab === tab.id ? { color: 'var(--accent-solid)' } : {}"
       >
-        <UIcon :name="tab.icon" class="text-base" />
+        <span class="relative">
+          <UIcon :name="tab.icon" class="text-base" />
+          <span v-if="tab.id === 'amis' && unreadMsgCount > 0" class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
+        </span>
         {{ tab.label }}
       </button>
     </div>
@@ -135,7 +138,7 @@
           <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-[var(--accent-from)] to-[var(--accent-to)] rounded-full"></div>
           <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Amis</h2>
         </div>
-        <Amis @pending-change="pendingCount = $event" />
+        <Amis @pending-change="pendingCount = $event" @unread-change="unreadMsgCount = $event" />
       </section>
 
       <!-- Profil — monté à la première visite -->
@@ -234,7 +237,10 @@
           :style="activeTab === tab.id ? { color: 'var(--accent-solid)' } : {}"
           @click="changeTab(tab.id)"
         >
-          <UIcon :name="tab.icon" class="text-2xl transition-transform duration-200" :class="activeTab === tab.id ? 'scale-110' : 'scale-100'" />
+          <span class="relative">
+            <UIcon :name="tab.icon" class="text-2xl transition-transform duration-200" :class="activeTab === tab.id ? 'scale-110' : 'scale-100'" />
+            <span v-if="tab.id === 'amis' && unreadMsgCount > 0" class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />
+          </span>
           <span class="text-[10px] font-bold uppercase tracking-wider leading-none">{{ tab.label }}</span>
           <div class="h-0.5 rounded-full mt-0.5 transition-all duration-300" :class="activeTab === tab.id ? 'w-5' : 'bg-transparent w-3'" :style="activeTab === tab.id ? { backgroundColor: 'var(--accent-solid)' } : {}" />
         </button>
@@ -273,28 +279,8 @@
             </div>
           </div>
 
-          <!-- Messages non lus -->
-          <div v-if="notifMessages.length" class="p-4">
-            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Messages non lus</p>
-            <div v-for="m in notifMessages" :key="m.senderId"
-              @click="changeTab('amis'); notifOpen = false"
-              class="flex items-center gap-3 mb-2 last:mb-0 cursor-pointer hover:bg-white/[0.04] rounded-2xl p-2 -mx-2 transition">
-              <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[var(--accent-from)] to-[var(--accent-to)] p-[1.5px] shrink-0">
-                <div class="w-full h-full rounded-full overflow-hidden flex items-center justify-center" :style="{ backgroundColor: theme.bg }">
-                  <img v-if="m.profile?.avatar_url" :src="m.profile.avatar_url" class="w-full h-full object-cover" />
-                  <span v-else class="text-white font-black text-xs">{{ m.profile?.username?.charAt(0).toUpperCase() }}</span>
-                </div>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-white font-black text-sm truncate">{{ m.profile?.username }}</p>
-                <p class="text-slate-500 text-xs truncate">{{ m.lastMsg }}</p>
-              </div>
-              <span class="bg-red-500 text-white text-[9px] font-black min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 shrink-0">{{ m.count }}</span>
-            </div>
-          </div>
-
           <!-- Vide -->
-          <div v-if="!notifRequests.length && !notifMessages.length" class="p-8 text-center">
+          <div v-if="!notifRequests.length" class="p-8 text-center">
             <UIcon name="i-heroicons-bell-slash" class="text-3xl text-slate-700 mb-2" />
             <p class="text-slate-600 text-sm font-black">Aucune notification</p>
           </div>
@@ -487,7 +473,7 @@ const notifOpen = ref(false)
 const notifRequests = ref([])
 const notifMessages = ref([])
 const unreadMsgCount = ref(0)
-const totalBadge = computed(() => pendingCount.value + unreadMsgCount.value)
+const totalBadge = computed(() => pendingCount.value)
 
 function localDateStr(d = new Date()) {
   return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-')

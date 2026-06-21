@@ -113,7 +113,7 @@
             }">
             <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="text-lg pointer-events-none" :style="{ color: 'var(--accent-solid)' }" />
             <span v-if="f.unreadCount > 0" class="pointer-events-none absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
-              <span class="text-white text-[9px] font-black">{{ f.unreadCount > 9 ? '9+' : f.unreadCount }}</span>
+              <span class="text-white text-[9px] font-black">{{ f.unreadCount > 5 ? '+5' : f.unreadCount }}</span>
             </span>
           </button>
         </div>
@@ -346,7 +346,7 @@
 </template>
 
 <script setup>
-const emit = defineEmits(['pending-change'])
+const emit = defineEmits(['pending-change', 'unread-change'])
 const { theme } = useTheme()
 
 function bgAlpha(hex, alpha) {
@@ -479,6 +479,8 @@ async function fetchFriends() {
   }))
 
   friends.value = enriched
+  const totalUnread = enriched.reduce((s, f) => s + f.unreadCount, 0)
+  emit('unread-change', totalUnread)
 }
 
 function formatLastSeen(ts) {
