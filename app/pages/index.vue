@@ -227,7 +227,7 @@
     </main>
 
     <!-- Bottom nav mobile -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 backdrop-blur-2xl border-t border-white/[0.08] transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.92) }">
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.08] transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.96), transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }">
       <div class="flex justify-around px-2 pt-2 pb-safe">
         <button
           v-for="tab in tabs"

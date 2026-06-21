@@ -1097,21 +1097,22 @@ function adjustWater(v) {
   saveDaily()
 }
 
+let _waterAudio = null
 function addWater(v) {
   adjustWater(v)
   try {
-    const audio = new Audio('/eau-coule.mp3')
-    audio.play()
+    if (!_waterAudio) { _waterAudio = new Audio('/eau-coule.mp3'); _waterAudio.load() }
+    _waterAudio.currentTime = 0
+    _waterAudio.volume = 1
+    _waterAudio.play()
     setTimeout(() => {
-      const steps = 20
-      const interval = 100 / steps
       let step = 0
       const fade = setInterval(() => {
         step++
-        audio.volume = Math.max(0, 1 - step / steps)
-        if (step >= steps) { clearInterval(fade); audio.pause(); audio.currentTime = 0 }
-      }, interval)
-    }, 90)
+        _waterAudio.volume = Math.max(0, 1 - step / 20)
+        if (step >= 20) { clearInterval(fade); _waterAudio.pause() }
+      }, 5)
+    }, 99)
   } catch {}
 }
 
