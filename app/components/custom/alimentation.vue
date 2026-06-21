@@ -159,21 +159,22 @@
                 </div>
 
                 <div class="flex flex-col items-center">
-                  <div class="relative w-40 h-40 flex items-center justify-center mb-4">
+                  <div
+                    class="relative w-40 h-40 flex items-center justify-center select-none"
+                    style="touch-action: none; cursor: ew-resize"
+                    @pointerdown="eauDragStart"
+                    @pointermove="eauDragMove"
+                    @pointerup="eauDragEnd"
+                    @pointercancel="eauDragEnd"
+                  >
                     <svg viewBox="0 0 36 36" class="absolute inset-0 w-full h-full -rotate-90">
                       <path class="text-slate-800" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                      <path class="text-[#00A3FF] transition-all duration-500" :stroke-dasharray="`${progressEau}, 100`" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      <path class="text-[#00A3FF] transition-all duration-300" :stroke-dasharray="`${progressEau}, 100`" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                     </svg>
-
-                    <div class="text-center z-10">
+                    <div class="text-center z-10 pointer-events-none">
                       <p class="text-white font-[1000] text-2xl leading-none">{{ eau.toFixed(1) }} <span class="text-sm">L</span></p>
+                      <p class="text-slate-600 text-[10px] font-black mt-1 uppercase tracking-wider">↔ glisse</p>
                     </div>
-                  </div>
-
-                  <div class="flex items-center gap-4 bg-slate-900 rounded-full p-2 border border-white/5">
-                    <button @click="adjustWater(-0.1)" class="w-8 h-8 rounded-full bg-slate-800 text-white font-black">-</button>
-                    <UIcon name="i-heroicons-beaker" class="text-blue-500" />
-                    <button @click="adjustWater(0.1)" class="w-8 h-8 rounded-full bg-slate-800 text-white font-black">+</button>
                   </div>
                 </div>
               </div>
@@ -1097,6 +1098,37 @@ function changeDay(d) {
 function adjustWater(v) {
   eau.value = Math.max(0, Math.min(3.0, Number((eau.value + v).toFixed(1))))
   saveDaily()
+}
+
+let eauDragStartX = 0
+let eauDragStartVal = 0
+let eauDragging = false
+
+function eauDragStart(e) {
+  eauDragging = true
+  eauDragStartX = e.clientX
+  eauDragStartVal = eau.value
+  e.currentTarget.setPointerCapture(e.pointerId)
+}
+
+function eauDragMove(e) {
+  if (!eauDragging) return
+  const steps = Math.round((e.clientX - eauDragStartX) / 20) * 0.1
+  const newVal = Math.max(0, Math.min(3.0, Number((eauDragStartVal + steps).toFixed(1))))
+  if (newVal !== eau.value) {
+    if (newVal > eau.value) playWaterSound()
+    eau.value = newVal
+  }
+}
+
+function eauDragEnd() {
+  if (!eauDragging) return
+  eauDragging = false
+  saveDaily()
+}
+
+function playWaterSound() {
+  try { new Audio('/eau-coule.mp3').play() } catch {}
 }
 
 function selectFood(f) {
