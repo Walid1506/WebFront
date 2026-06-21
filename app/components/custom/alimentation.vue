@@ -1111,7 +1111,7 @@ function addWater(v) {
         audio.volume = Math.max(0, 1 - step / steps)
         if (step >= steps) { clearInterval(fade); audio.pause(); audio.currentTime = 0 }
       }, interval)
-    }, 80)
+    }, 90)
   } catch {}
 }
 
