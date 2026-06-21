@@ -1104,14 +1104,14 @@ function addWater(v) {
     audio.play()
     setTimeout(() => {
       const steps = 20
-      const interval = 500 / steps
+      const interval = 100 / steps
       let step = 0
       const fade = setInterval(() => {
         step++
         audio.volume = Math.max(0, 1 - step / steps)
         if (step >= steps) { clearInterval(fade); audio.pause(); audio.currentTime = 0 }
       }, interval)
-    }, 500)
+    }, 80)
   } catch {}
 }
 
