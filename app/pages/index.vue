@@ -200,19 +200,6 @@
             </div>
           </div>
 
-          <!-- Suivi du poids -->
-          <div class="mb-6">
-            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Suivi du poids</p>
-            <button @click="weightPopupOpen = true"
-              class="w-full flex items-center justify-between bg-white/[0.04] rounded-[20px] border border-white/[0.08] p-4 active:scale-95 transition-all">
-              <div class="text-left">
-                <p class="text-3xl font-[1000] tracking-tighter text-white">{{ profileWeight ? `${profileWeight}` : '--' }}<span class="text-base font-black ml-1" :style="{ color: 'var(--accent-solid)' }">kg</span></p>
-                <p class="text-slate-500 text-xs mt-0.5">Voir l'évolution →</p>
-              </div>
-              <UIcon name="i-heroicons-presentation-chart-line" class="text-2xl text-slate-600" />
-            </button>
-          </div>
-
           <button
             @click="handleLogout"
             class="relative w-full md:max-w-xs border border-red-500/30 bg-red-500/5 px-4 py-3 rounded-2xl text-red-400 font-bold text-sm uppercase tracking-widest active:scale-95 transition-all duration-150 hover:bg-red-500/10"
@@ -371,20 +358,6 @@
       </div>
     </Transition>
 
-    <!-- ── Popup suivi du poids ── -->
-    <Transition name="slide-up">
-      <div v-if="weightPopupOpen" class="fixed inset-0 z-[300] backdrop-blur-2xl flex flex-col transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.98) }">
-        <div class="flex items-center gap-4 px-5 py-5 border-b border-white/[0.08]">
-          <button @click="closeWeightPopup" class="p-2 rounded-xl bg-white/[0.06] text-slate-400 hover:text-white transition">
-            <UIcon name="i-heroicons-arrow-left" class="text-xl" />
-          </button>
-          <h2 class="text-xl font-black">Suivi du poids</h2>
-        </div>
-        <div class="flex-1 overflow-y-auto p-4">
-          <Dashboard @weight-updated="w => profileWeight = w" />
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 
@@ -399,7 +372,6 @@ import TimerRepos from '~/components/custom/timer.vue'
 import ProgrammeWidget from '~/components/custom/programme-widget.vue'
 import Programmes from '~/components/custom/programmes.vue'
 import Amis from '~/components/custom/amis.vue'
-import Dashboard from '~/components/custom/dashboard.vue'
 import Medailles from '~/components/custom/medailles.vue'
 
 const router = useRouter()
@@ -465,8 +437,6 @@ const dailyMessage = computed(() => {
   const day = Math.floor(Date.now() / 86400000)
   return DAILY_MESSAGES[day % DAILY_MESSAGES.length]
 })
-const profileWeight = ref(null)
-const weightPopupOpen = ref(false)
 
 const pendingCount = ref(0)
 const notifOpen = ref(false)
@@ -518,24 +488,10 @@ onMounted(async () => {
   fetchPendingCount(user.id)
   fetchNotifications(user.id)
   joinPresence(user.id)
-  fetchProfileWeight(user.id)
   // Demander permission push après 3s (laisse l'app charger)
   setTimeout(() => requestAndSubscribe(user.id), 3000)
 })
 
-async function fetchProfileWeight(userId) {
-  const id = userId || currentUserId
-  if (!id) return
-  const { data } = await supabase.from('measurements')
-    .select('weight').eq('user_id', id)
-    .order('created_at', { ascending: false }).limit(1).maybeSingle()
-  if (data) profileWeight.value = data.weight
-}
-
-function closeWeightPopup() {
-  weightPopupOpen.value = false
-  fetchProfileWeight()
-}
 
 function triggerAvatarUpload() {
   avatarInput.value?.click()

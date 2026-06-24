@@ -140,6 +140,11 @@
                   <p class="text-white font-[1000] text-2xl">{{ activeBesoins.kcal }} <span class="text-sm font-bold text-slate-400">kcal</span></p>
                 </div>
               </div>
+
+              <!-- Suivi du poids -->
+              <div class="mt-6">
+                <Dashboard />
+              </div>
             </div>
 
             <div class="bg-[#111111] rounded-[35px] p-6 border border-white/5">
@@ -583,6 +588,7 @@
 
 <script setup>
 import { foodLibrary } from '~/data/foodLibrary'
+import Dashboard from '~/components/custom/dashboard.vue'
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'
 
 const supabase = useSupabaseClient()
