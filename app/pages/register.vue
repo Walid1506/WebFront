@@ -56,6 +56,7 @@
         </button>
 
         <p v-if="serverError" class="text-red-500 text-xs font-bold text-center mt-2">{{ serverError }}</p>
+        <p v-if="infoMessage" class="text-green-600 text-xs font-bold text-center mt-2">{{ infoMessage }}</p>
 
         <div class="text-center mt-6 pt-4 border-t border-gray-100">
           <NuxtLink to="/login" class="text-sm font-black text-slate-900 hover:text-green-600 transition">Se connecter</NuxtLink>
@@ -74,42 +75,50 @@ const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const serverError = ref('')
+const infoMessage = ref('')
+// Compte déjà créé lors d'un essai précédent (ex. pseudo déjà pris) : on ne refait pas l'inscription
+let createdUserId = null
 
 async function onSubmit() {
   loading.value = true
   serverError.value = ''
-  
-  // 1. Inscription Auth
-  const { data: authData, error: authError } = await supabase.auth.signUp({
-    email: email.value,
-    password: password.value,
-  })
+  infoMessage.value = ''
+  const username = pseudo.value.trim()
 
-  if (authError) {
-    serverError.value = authError.message
+  if (!createdUserId) {
+    // Le pseudo est aussi stocké dans le compte : si le profil ne peut pas être créé maintenant,
+    // il est repris au premier lancement de l'app
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: email.value,
+      password: password.value,
+      options: { data: { username } }
+    })
+
+    if (authError) {
+      serverError.value = authError.message
+      loading.value = false
+      return
+    }
+
+    // Confirmation par e-mail activée : pas encore de session, le profil sera créé à la première connexion
+    if (!authData.session) {
+      infoMessage.value = 'Compte créé ! Confirme ton adresse e-mail puis connecte-toi.'
+      loading.value = false
+      return
+    }
+    createdUserId = authData.user.id
+  }
+
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .upsert({ id: createdUserId, username, xp: 0, level: 1 }, { onConflict: 'id' })
+
+  if (profileError?.code === '23505') {
+    serverError.value = 'Ce pseudo est déjà pris, choisis-en un autre.'
     loading.value = false
     return
   }
-
-  // 2. Création du profil avec le Pseudo
-  if (authData.user) {
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert([
-        { 
-          id: authData.user.id, 
-          username: pseudo.value,
-          xp: 0,
-          level: 1
-        }
-      ])
-
-    if (profileError) {
-      serverError.value = "Erreur profil"
-      loading.value = false
-    } else {
-      router.push("/")
-    }
-  }
+  if (profileError) console.error('Erreur création profil :', profileError)
+  router.push('/')
 }
 </script>

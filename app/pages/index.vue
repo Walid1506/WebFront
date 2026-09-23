@@ -515,8 +515,15 @@ onMounted(async () => {
   const defaultUsername = user.email?.split('@')[0] || 'user'
 
   if (!profile) {
-    await supabase.from('profiles').upsert({ id: user.id, username: defaultUsername }, { onConflict: 'id' })
-    userName.value = defaultUsername
+    // Pseudo choisi à l'inscription (gardé dans le compte), sinon le début de l'e-mail
+    let username = user.user_metadata?.username?.trim() || defaultUsername
+    let { error } = await supabase.from('profiles').upsert({ id: user.id, username }, { onConflict: 'id' })
+    if (error && username !== defaultUsername) {
+      username = defaultUsername
+      ;({ error } = await supabase.from('profiles').upsert({ id: user.id, username }, { onConflict: 'id' }))
+    }
+    if (error) console.error('Erreur création profil :', error)
+    userName.value = username
   } else if (!profile.username) {
     await supabase.from('profiles').update({ username: defaultUsername }).eq('id', user.id)
     userName.value = defaultUsername
