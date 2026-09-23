@@ -185,7 +185,7 @@
 
           <div class="lg:col-span-7 space-y-8">
             <button
-              @click="currentScreen = 'library'"
+              @click="openLibrary"
               class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-xl py-6 rounded-[30px] shadow-lg shadow-[color:var(--accent-solid)]/20 transition-all active:scale-95 flex items-center justify-center gap-3"
             >
               <UIcon name="i-heroicons-plus-circle" class="text-3xl" />
@@ -297,9 +297,23 @@
                 <input
                   v-model="searchQuery"
                   type="text"
+                  inputmode="search"
+                  enterkeyhint="search"
+                  autocomplete="off"
+                  autocorrect="off"
+                  autocapitalize="off"
+                  spellcheck="false"
                   placeholder="Rechercher un aliment..."
-                  class="w-full bg-[#1A1A1A] text-white font-bold text-lg rounded-2xl py-4 pl-14 pr-6 outline-none focus:ring-2 focus:ring-[color:var(--accent-solid)] transition-all"
+                  class="w-full bg-[#1A1A1A] text-white font-bold text-lg rounded-2xl py-4 pl-14 pr-14 outline-none focus:ring-2 focus:ring-[color:var(--accent-solid)] transition-all"
+                  @keydown.enter="$event.target.blur()"
                 />
+                <button
+                  v-if="searchQuery"
+                  @click="searchQuery = ''"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-2"
+                >
+                  <UIcon name="i-heroicons-x-circle-solid" class="text-2xl" />
+                </button>
               </div>
             </div>
 
@@ -320,15 +334,18 @@
           </div>
 
           <div class="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
+            <p v-if="filteredDb.length === 0" class="text-center text-slate-500 font-bold py-16">
+              Aucun aliment trouvé pour « {{ searchQuery }} »
+            </p>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-20">
               <div
                 v-for="food in filteredDb"
-                :key="food.id"
+                :key="food.key"
                 @click="selectFood(food)"
                 class="bg-[#111111] p-5 rounded-[30px] flex flex-col cursor-pointer border border-white/5 hover:border-white/15 transition-all group"
               >
                 <div class="flex items-start gap-4 mb-4">
-                  <img :src="food.img" class="w-20 h-20 rounded-2xl object-cover bg-white shrink-0" @error="onImageError" />
+                  <img :src="food.img" loading="lazy" decoding="async" class="w-20 h-20 rounded-2xl object-cover bg-white shrink-0" @error="onImageError" />
                   <div class="flex-1 min-w-0 text-left">
                     <h4 class="food-name text-white font-black text-lg leading-tight transition-colors">{{ food.name }}</h4>
                     <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">{{ food.cat }}</p>
@@ -703,7 +720,40 @@ const mergedFoodLibrary = computed(() => {
   const existingNames = new Set(base.map(f => String(f.name).toLowerCase().trim()))
 
   const extras = sharedFoods.value.filter(f => !existingNames.has(String(f.name).toLowerCase().trim()))
-  return [...extras, ...base]
+  // Les id de la base partagée peuvent recouper ceux de la bibliothèque : clé préfixée pour le v-for
+  return [
+    ...extras.map(f => ({ ...f, key: `s-${f.id}` })),
+    ...base.map(f => ({ ...f, key: `l-${f.id}` }))
+  ]
+})
+
+function normalizeSearch(s) {
+  return String(s || '')
+    .toLowerCase()
+    .replace(/œ/g, 'oe')
+    .replace(/æ/g, 'ae')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+}
+
+function searchWords(s) {
+  return normalizeSearch(s)
+    .split(/[^a-z0-9%]+/)
+    .filter(Boolean)
+    .map(w => (w.length > 3 && w.endsWith('s') ? w.slice(0, -1) : w))
+}
+
+const searchIndex = computed(() =>
+  mergedFoodLibrary.value.map(food => ({ food, words: searchWords(food.name), text: normalizeSearch(food.name) }))
+)
+
+function openLibrary() {
+  searchQuery.value = ''
+  currentScreen.value = 'library'
+}
+
+watch(searchQuery, (q, prev) => {
+  if (q && !prev) activeCatFilter.value = 'Tout'
 })
 
 onMounted(async () => {
@@ -1249,12 +1299,32 @@ function clearCart() {
   }
 }
 
-const filteredDb = computed(() =>
-  mergedFoodLibrary.value.filter(f =>
-    (activeCatFilter.value === 'Tout' || f.cat === activeCatFilter.value) &&
-    f.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
-)
+const filteredDb = computed(() => {
+  const entries = searchIndex.value.filter(e => activeCatFilter.value === 'Tout' || e.food.cat === activeCatFilter.value)
+  const tokens = searchWords(searchQuery.value)
+  if (!tokens.length) return entries.map(e => e.food)
+
+  // Chaque mot tapé doit correspondre au début d'un mot du nom ("oeuf" ne remonte pas "Boeuf"),
+  // sinon on retombe sur une recherche "contient"
+  const rank = (prefixOnly) => entries
+    .map(e => {
+      let score = 0
+      for (const t of tokens) {
+        const i = e.words.findIndex(w => w.startsWith(t))
+        if (i === 0) score += 3
+        else if (i > 0) score += 2
+        else if (!prefixOnly && e.text.includes(t)) score += 1
+        else return null
+      }
+      return { food: e.food, score }
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.score - a.score || a.food.name.length - b.food.name.length)
+    .map(r => r.food)
+
+  const strict = rank(true)
+  return strict.length ? strict : rank(false)
+})
 
 function macrosFor(per100, grams) {
   const r = grams / 100
