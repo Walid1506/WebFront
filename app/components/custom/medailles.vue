@@ -99,7 +99,7 @@ const medals = computed(() => [
     desc: waterDays.value >= 5 ? '8 verres chaque jour !' : waterDays.value >= 3 ? `Plus que ${5 - waterDays.value}j pour l'or` : `3 jours min. pour une médaille`,
     level: getLevel(waterDays.value),
     pct: Math.min(100, (waterDays.value / 5) * 100),
-    progressText: `${waterDays.value} / 5 jours à 8 verres`
+    progressText: `${waterDays.value} / 5 jours à 2 L (8 verres)`
   },
 ])
 
@@ -125,7 +125,7 @@ onMounted(async () => {
 
   // Nutrition : jours où l'objectif kcal et prot est atteint à 85%+
   const { data: days } = await supabase.from('nutrition_daily')
-    .select('repas, cibles')
+    .select('repas, cibles, eau')
     .eq('user_id', user.id)
     .gte('date', monStr)
     .lte('date', sunStr)
@@ -142,17 +142,9 @@ onMounted(async () => {
     }
     calDays.value = cal
     protDays.value = prot
+    // Eau saisie dans l'onglet Nutrition (en litres) : 8 verres = 2 L
+    waterDays.value = days.filter(day => Number(day.eau) >= 2).length
   }
-
-  // Eau : jours où 8 verres atteints (localStorage)
-  let water = 0
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(mon)
-    d.setDate(mon.getDate() + i)
-    const val = parseInt(localStorage.getItem(`fittrack_water_${toDateStr(d)}`) || '0')
-    if (val >= 8) water++
-  }
-  waterDays.value = water
 
   loading.value = false
 })

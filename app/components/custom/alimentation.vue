@@ -56,6 +56,11 @@
               <UIcon name="i-heroicons-chevron-right" class="text-white" />
             </button>
           </div>
+
+          <p v-if="dailyLoadError" class="text-center text-red-400 text-sm font-bold">
+            Impossible de charger ce jour.
+            <button @click="fetchDaily" class="underline text-white ml-1">Réessayer</button>
+          </p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -718,12 +723,26 @@ watch(profil, () => {
   }, 800)
 }, { deep: true })
 
-const selectedDateStr = computed(() => {
-  const d = selectedDateObj.value
+function toLocalDateStr(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-})
+}
 
-const isToday = computed(() => selectedDateStr.value === new Date().toISOString().split('T')[0])
+const selectedDateStr = computed(() => toLocalDateStr(selectedDateObj.value))
+
+// Date locale (et non UTC) du jour, mise à jour quand l'app revient au premier plan
+const todayStr = ref(toLocalDateStr(new Date()))
+const isToday = computed(() => selectedDateStr.value === todayStr.value)
+
+function refreshToday() {
+  const now = toLocalDateStr(new Date())
+  if (now === todayStr.value) return
+  const wasOnToday = selectedDateStr.value === todayStr.value
+  todayStr.value = now
+  if (wasOnToday) {
+    selectedDateObj.value = new Date()
+    fetchDaily()
+  }
+}
 
 const formattedSelectedDate = computed(() =>
   selectedDateObj.value.toLocaleDateString('fr-FR', {
@@ -849,20 +868,43 @@ async function saveScannedFoodToSharedLibrary(barcode, food) {
   await fetchSharedFoods()
 }
 
-async function fetchDaily() {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return
+// Jour dont les données sont réellement chargées : tant que ce n'est pas le cas, on ne sauvegarde pas
+// (sinon une liste vide écraserait les repas du jour en base)
+const dailyLoadedFor = ref(null)
+const dailyLoadError = ref(false)
+let dailySaveChain = Promise.resolve()
 
+async function getUserId() {
+  const { data: { session } } = await supabase.auth.getSession()
+  return session?.user?.id || null
+}
+
+async function fetchDaily() {
+  const date = selectedDateStr.value
+  dailyLoadedFor.value = null
+  dailyLoadError.value = false
   consumed.value = []
   eau.value = 0
   frozenBesoins.value = null
 
-  const { data: dailyList } = await supabase
+  await dailySaveChain
+  const userId = await getUserId()
+  if (!userId || date !== selectedDateStr.value) return
+
+  const { data: dailyList, error } = await supabase
     .from('nutrition_daily')
     .select('*')
-    .eq('user_id', user.id)
-    .eq('date', selectedDateStr.value)
+    .eq('user_id', userId)
+    .eq('date', date)
     .limit(1)
+
+  // L'utilisateur a changé de jour pendant la requête : ce résultat n'est plus le bon
+  if (date !== selectedDateStr.value) return
+  if (error) {
+    console.error('Erreur fetchDaily:', error)
+    dailyLoadError.value = true
+    return
+  }
 
   if (dailyList?.length > 0) {
     const d = dailyList[0]
@@ -870,6 +912,7 @@ async function fetchDaily() {
     consumed.value = d.repas || []
     frozenBesoins.value = d.cibles || null
   }
+  dailyLoadedFor.value = date
 }
 
 async function saveGlobals() {
@@ -892,34 +935,41 @@ async function saveGlobals() {
   else await supabase.from('nutrition_globals').insert(payload)
 }
 
-async function saveDaily() {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return
-
+function saveDaily() {
+  // Instantané pris tout de suite : le jour affiché peut changer pendant les requêtes
+  const date = selectedDateStr.value
+  if (dailyLoadedFor.value !== date) return dailySaveChain
   const payload = {
     eau: Number(eau.value),
     repas: JSON.parse(JSON.stringify(consumed.value)),
     cibles: JSON.parse(JSON.stringify(liveBesoins.value))
   }
 
-  const { data: exists } = await supabase
+  // Sauvegardes en file : deux taps rapides ne créent pas deux lignes pour le même jour
+  dailySaveChain = dailySaveChain
+    .then(() => persistDaily(date, payload))
+    .catch(err => console.error('Erreur saveDaily:', err))
+  return dailySaveChain
+}
+
+async function persistDaily(date, payload) {
+  const userId = await getUserId()
+  if (!userId) return
+
+  const { data: exists, error: selectError } = await supabase
     .from('nutrition_daily')
     .select('id')
-    .eq('user_id', user.id)
-    .eq('date', selectedDateStr.value)
+    .eq('user_id', userId)
+    .eq('date', date)
     .limit(1)
+  if (selectError) throw selectError
 
-  if (exists?.length > 0) {
-    await supabase.from('nutrition_daily').update(payload).eq('id', exists[0].id)
-  } else {
-    await supabase.from('nutrition_daily').insert({
-      user_id: user.id,
-      date: selectedDateStr.value,
-      ...payload
-    })
-  }
+  const { error } = exists?.length > 0
+    ? await supabase.from('nutrition_daily').update(payload).eq('id', exists[0].id)
+    : await supabase.from('nutrition_daily').insert({ user_id: userId, date, ...payload })
+  if (error) throw error
 
-  frozenBesoins.value = liveBesoins.value
+  if (date === selectedDateStr.value) frozenBesoins.value = payload.cibles
 }
 
 const SCAN_FORMATS = [
@@ -1106,6 +1156,7 @@ watch(() => props.active, (active) => {
 })
 
 function onVisibilityChange() {
+  if (!document.hidden) refreshToday()
   if (currentScreen.value !== 'scanner') return
   // iOS coupe la caméra quand l'app passe en arrière-plan : on la relance au retour
   if (document.hidden) stopScanner()
@@ -1207,6 +1258,7 @@ async function submitManualBarcode() {
 
 function addScannedFood() {
   if (scanResult.value?.data) {
+    stopScanner()
     lastScreenBeforeQuantity.value = 'scanner'
     selectedFood.value = scanResult.value.data
     amount.value = 100
@@ -1413,7 +1465,7 @@ const filteredDb = computed(() => {
         const i = e.words.findIndex(w => w.startsWith(t))
         if (i === 0) score += 3
         else if (i > 0) score += 2
-        else if (!prefixOnly && e.text.includes(t)) score += 1
+        else if (!prefixOnly && t.length >= 4 && e.text.includes(t)) score += 1
         else return null
       }
       return { food: e.food, score }
