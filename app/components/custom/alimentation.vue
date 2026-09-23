@@ -227,29 +227,15 @@
                 <div
                   v-for="(item, index) in consumed"
                   :key="index"
-                  class="flex justify-between items-center group p-4 rounded-2xl hover:bg-slate-900 border border-transparent hover:border-white/5 transition-all"
+                  class="flex flex-wrap justify-between items-center group p-4 rounded-2xl hover:bg-slate-900 border border-transparent hover:border-white/5 transition-all"
                 >
-                  <div class="flex items-center gap-4 text-left">
+                  <div class="flex items-center gap-4 text-left min-w-0">
                     <img :src="item.img" class="w-14 h-14 rounded-xl object-cover bg-white shrink-0" @error="onImageError" />
-                    <div>
+                    <div class="min-w-0">
                       <p class="text-white font-bold text-lg leading-tight">{{ item.name }}</p>
-                      <div v-if="editingIndex === index" class="flex items-center gap-2 mt-1">
-                        <input
-                          :ref="el => { if (el) editInputEl = el }"
-                          v-model.number="editAmount"
-                          type="number"
-                          inputmode="decimal"
-                          min="1"
-                          class="w-24 bg-slate-900 text-white font-black text-base rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-[color:var(--accent-solid)]"
-                          @keyup.enter="confirmEdit(index)"
-                          @keyup.esc="cancelEdit"
-                        />
-                        <span class="text-[#2F6BFF] font-black text-xs">g</span>
-                      </div>
                       <button
-                        v-else
-                        @click="startEdit(index)"
-                        class="text-[#2F6BFF] font-black text-xs mt-1 flex items-center gap-1 hover:text-white transition-colors"
+                        @click="editingIndex === index ? cancelEdit() : startEdit(index)"
+                        class="text-[#2F6BFF] font-black text-xs mt-1 -my-2 py-2 pr-3 flex items-center gap-1 hover:text-white transition-colors"
                       >
                         {{ item.amount }} g • {{ item.kcal }} kcal
                         <UIcon name="i-heroicons-pencil-square" class="text-sm" />
@@ -257,16 +243,27 @@
                     </div>
                   </div>
 
-                  <div v-if="editingIndex === index" class="flex gap-2 shrink-0">
+                  <div v-if="editingIndex === index" class="w-full flex items-center gap-2 mt-3">
+                    <input
+                      :ref="el => { if (el) editInputEl = el }"
+                      v-model.number="editAmount"
+                      type="number"
+                      inputmode="decimal"
+                      min="1"
+                      class="min-w-0 flex-1 bg-slate-900 text-white font-black text-base rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[color:var(--accent-solid)]"
+                      @keydown.enter="confirmEdit(index)"
+                      @keydown.esc="cancelEdit"
+                    />
+                    <span class="text-[#2F6BFF] font-black text-sm">g</span>
                     <button
                       @click="cancelEdit"
-                      class="text-slate-400 hover:text-white p-3 bg-slate-800 rounded-xl transition-all"
+                      class="text-slate-400 hover:text-white p-3 bg-slate-800 rounded-xl transition-all shrink-0"
                     >
                       <UIcon name="i-heroicons-x-mark" class="text-xl" />
                     </button>
                     <button
                       @click="confirmEdit(index)"
-                      class="text-white p-3 rounded-xl transition-all"
+                      class="text-white p-3 rounded-xl transition-all shrink-0"
                       style="background: linear-gradient(to right, var(--accent-from), var(--accent-to))"
                     >
                       <UIcon name="i-heroicons-check" class="text-xl" />
@@ -783,7 +780,6 @@ async function fetchDaily() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
 
-  cancelEdit()
   consumed.value = []
   eau.value = 0
   frozenBesoins.value = null
@@ -1129,6 +1125,7 @@ const progressFats = computed(() => Math.min(100, (total.value.fats / activeBeso
 const progressEau = computed(() => Math.min(100, (eau.value / 3.0) * 100) || 0)
 
 function changeDay(d) {
+  cancelEdit()
   const date = new Date(selectedDateObj.value)
   date.setDate(date.getDate() + d)
   selectedDateObj.value = date
@@ -1212,16 +1209,18 @@ function confirmEdit(i) {
   cancelEdit()
   if (!item || !(grams > 0) || grams === item.amount) return
 
-  // Anciennes entrées sans `base` : on retrouve les valeurs pour 100 g à partir des macros stockées
-  const base = item.base || (item.amount > 0 && {
+  // Anciennes entrées sans `base` : valeurs exactes de la bibliothèque, sinon déduites des macros arrondies (non sauvegardées)
+  const libFood = !item.base && mergedFoodLibrary.value.find(f => f.name === item.name)
+  const base = item.base || (libFood && { k: libFood.k, p: libFood.p, c: libFood.c, f: libFood.f })
+  const per100 = base || (item.amount > 0 && {
     k: item.kcal * 100 / item.amount,
     p: item.prot * 100 / item.amount,
     c: item.carbs * 100 / item.amount,
     f: item.fats * 100 / item.amount
   })
-  if (!base) return
+  if (!per100) return
 
-  consumed.value[i] = { ...item, amount: grams, base, ...macrosFor(base, grams) }
+  consumed.value[i] = { ...item, amount: grams, ...(base && { base }), ...macrosFor(per100, grams) }
   saveDaily()
 }
 
