@@ -233,11 +233,47 @@
                     <img :src="item.img" class="w-14 h-14 rounded-xl object-cover bg-white shrink-0" @error="onImageError" />
                     <div>
                       <p class="text-white font-bold text-lg leading-tight">{{ item.name }}</p>
-                      <p class="text-[#2F6BFF] font-black text-xs mt-1">{{ item.amount }} g • {{ item.kcal }} kcal</p>
+                      <div v-if="editingIndex === index" class="flex items-center gap-2 mt-1">
+                        <input
+                          :ref="el => { if (el) editInputEl = el }"
+                          v-model.number="editAmount"
+                          type="number"
+                          inputmode="decimal"
+                          min="1"
+                          class="w-24 bg-slate-900 text-white font-black text-base rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-[color:var(--accent-solid)]"
+                          @keyup.enter="confirmEdit(index)"
+                          @keyup.esc="cancelEdit"
+                        />
+                        <span class="text-[#2F6BFF] font-black text-xs">g</span>
+                      </div>
+                      <button
+                        v-else
+                        @click="startEdit(index)"
+                        class="text-[#2F6BFF] font-black text-xs mt-1 flex items-center gap-1 hover:text-white transition-colors"
+                      >
+                        {{ item.amount }} g • {{ item.kcal }} kcal
+                        <UIcon name="i-heroicons-pencil-square" class="text-sm" />
+                      </button>
                     </div>
                   </div>
 
+                  <div v-if="editingIndex === index" class="flex gap-2 shrink-0">
+                    <button
+                      @click="cancelEdit"
+                      class="text-slate-400 hover:text-white p-3 bg-slate-800 rounded-xl transition-all"
+                    >
+                      <UIcon name="i-heroicons-x-mark" class="text-xl" />
+                    </button>
+                    <button
+                      @click="confirmEdit(index)"
+                      class="text-white p-3 rounded-xl transition-all"
+                      style="background: linear-gradient(to right, var(--accent-from), var(--accent-to))"
+                    >
+                      <UIcon name="i-heroicons-check" class="text-xl" />
+                    </button>
+                  </div>
                   <button
+                    v-else
                     @click="removeItem(index)"
                     class="text-red-400 hover:text-white p-3 bg-red-500/10 hover:bg-red-500 rounded-xl transition-all shrink-0"
                   >
@@ -747,6 +783,7 @@ async function fetchDaily() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
 
+  cancelEdit()
   consumed.value = []
   eau.value = 0
   frozenBesoins.value = null
@@ -1134,10 +1171,12 @@ function goBackFromQuantity() {
 }
 
 function addFood() {
+  const { k, p, c, f } = selectedFood.value
   consumed.value.push({
     name: selectedFood.value.name,
     img: selectedFood.value.img,
     amount: amount.value,
+    base: { k, p, c, f },
     ...calculatedMacros.value
   })
 
@@ -1147,7 +1186,42 @@ function addFood() {
 }
 
 function removeItem(i) {
+  cancelEdit()
   consumed.value.splice(i, 1)
+  saveDaily()
+}
+
+const editingIndex = ref(null)
+const editAmount = ref(0)
+const editInputEl = ref(null)
+
+function startEdit(i) {
+  editingIndex.value = i
+  editAmount.value = consumed.value[i].amount
+  nextTick(() => editInputEl.value?.select())
+}
+
+function cancelEdit() {
+  editingIndex.value = null
+  editInputEl.value = null
+}
+
+function confirmEdit(i) {
+  const item = consumed.value[i]
+  const grams = Number(editAmount.value)
+  cancelEdit()
+  if (!item || !(grams > 0) || grams === item.amount) return
+
+  // Anciennes entrées sans `base` : on retrouve les valeurs pour 100 g à partir des macros stockées
+  const base = item.base || (item.amount > 0 && {
+    k: item.kcal * 100 / item.amount,
+    p: item.prot * 100 / item.amount,
+    c: item.carbs * 100 / item.amount,
+    f: item.fats * 100 / item.amount
+  })
+  if (!base) return
+
+  consumed.value[i] = { ...item, amount: grams, base, ...macrosFor(base, grams) }
   saveDaily()
 }
 
@@ -1183,16 +1257,17 @@ const filteredDb = computed(() =>
   )
 )
 
-const calculatedMacros = computed(() => {
-  if (!selectedFood.value) return {}
-  const r = amount.value / 100
+function macrosFor(per100, grams) {
+  const r = grams / 100
   return {
-    kcal: Math.round(selectedFood.value.k * r),
-    prot: +(selectedFood.value.p * r).toFixed(1),
-    carbs: +(selectedFood.value.c * r).toFixed(1),
-    fats: +(selectedFood.value.f * r).toFixed(1)
+    kcal: Math.round(per100.k * r),
+    prot: +(per100.p * r).toFixed(1),
+    carbs: +(per100.c * r).toFixed(1),
+    fats: +(per100.f * r).toFixed(1)
   }
-})
+}
+
+const calculatedMacros = computed(() => selectedFood.value ? macrosFor(selectedFood.value, amount.value) : {})
 
 function onImageError(e) {
   e.target.src = 'https://placehold.co/600x600/1e293b/94a3b8?text=Aliment'
