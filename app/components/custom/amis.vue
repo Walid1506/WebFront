@@ -281,6 +281,46 @@
               </div>
             </div>
 
+            <!-- Ce que l'ami a mangé aujourd'hui -->
+            <div class="space-y-3">
+              <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Son assiette aujourd'hui</p>
+              <div class="bg-white/[0.04] rounded-[24px] border border-white/[0.08] p-4">
+                <template v-if="friendProfile.todayMeals?.length">
+                  <div class="grid grid-cols-4 gap-2 text-center pb-3">
+                    <div>
+                      <p class="text-white font-black text-lg leading-none">{{ friendProfile.todayTotals.kcal }}</p>
+                      <p class="text-[10px] text-slate-500 font-black uppercase mt-1">kcal</p>
+                    </div>
+                    <div>
+                      <p class="text-blue-400 font-black text-lg leading-none">{{ friendProfile.todayTotals.prot }}g</p>
+                      <p class="text-[10px] text-slate-500 font-black uppercase mt-1">Prot</p>
+                    </div>
+                    <div>
+                      <p class="text-orange-400 font-black text-lg leading-none">{{ friendProfile.todayTotals.carbs }}g</p>
+                      <p class="text-[10px] text-slate-500 font-black uppercase mt-1">Gluc</p>
+                    </div>
+                    <div>
+                      <p class="text-[#9DFF00] font-black text-lg leading-none">{{ friendProfile.todayTotals.fats }}g</p>
+                      <p class="text-[10px] text-slate-500 font-black uppercase mt-1">Lip</p>
+                    </div>
+                  </div>
+                  <div
+                    v-for="(meal, mi) in friendProfile.todayMeals"
+                    :key="mi"
+                    class="flex items-center gap-3 py-2.5 border-t border-white/[0.06]"
+                  >
+                    <img :src="meal.img" class="w-10 h-10 rounded-xl object-cover bg-white shrink-0" loading="lazy" @error="onMealImageError" />
+                    <p class="flex-1 min-w-0 text-white font-bold text-sm truncate">{{ meal.name }}</p>
+                    <p class="text-xs font-black text-slate-400 shrink-0">{{ meal.amount }} g · {{ meal.kcal }} kcal</p>
+                  </div>
+                  <p v-if="friendProfile.todayWater > 0" class="text-xs font-black text-sky-400 pt-3 border-t border-white/[0.06]">
+                    Eau : {{ friendProfile.todayWater }} L
+                  </p>
+                </template>
+                <p v-else class="text-slate-600 text-sm font-black text-center py-2">Rien d'enregistré aujourd'hui</p>
+              </div>
+            </div>
+
             <!-- Dernières séances avec exercices -->
             <div class="space-y-3">
               <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Dernières séances</p>
@@ -514,7 +554,8 @@ function openProfileFromChat() {
   if (!chatFriend.value) return
   const snap = chatFriend.value
   chatFriend.value = null
-  nextTick(() => { friendProfile.value = snap })
+  // Charge le profil complet (séances, repas) et pas seulement le nom affiché dans le chat
+  openFriendProfile(friends.value.find(f => f.friendId === snap.friendId) || snap)
 }
 
 function calcVolume(sessions) {
@@ -536,13 +577,45 @@ function formatVolume(kg) {
 async function openFriendProfile(f) {
   showComparison.value = false
 
-  const [{ data: recentSessions }, { data: allSessions }] = await Promise.all([
+  const [{ data: recentSessions }, { data: allSessions }, { data: todayNutrition }] = await Promise.all([
     supabase.from('sport_sessions').select('*').eq('user_id', f.friendId).order('date', { ascending: false }).limit(8),
     supabase.from('sport_sessions').select('data').eq('user_id', f.friendId),
+    supabase.from('nutrition_daily').select('repas, eau').eq('user_id', f.friendId).eq('date', localDateStr(new Date())).limit(1),
   ])
 
   const totalVolume = calcVolume(allSessions)
-  friendProfile.value = { ...f, recentSessions: recentSessions || [], allSessionsData: allSessions || [], totalSessions: allSessions?.length || 0, totalVolume }
+  const todayMeals = todayNutrition?.[0]?.repas || []
+  friendProfile.value = {
+    ...f,
+    recentSessions: recentSessions || [],
+    allSessionsData: allSessions || [],
+    totalSessions: allSessions?.length || 0,
+    totalVolume,
+    todayMeals,
+    todayTotals: sumMeals(todayMeals),
+    todayWater: Number(todayNutrition?.[0]?.eau) || 0
+  }
+}
+
+function localDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function sumMeals(meals) {
+  const round1 = n => Math.round(n * 10) / 10
+  const t = meals.reduce((a, m) => ({
+    kcal: a.kcal + (Number(m.kcal) || 0),
+    prot: a.prot + (Number(m.prot) || 0),
+    carbs: a.carbs + (Number(m.carbs) || 0),
+    fats: a.fats + (Number(m.fats) || 0)
+  }), { kcal: 0, prot: 0, carbs: 0, fats: 0 })
+  return { kcal: Math.round(t.kcal), prot: round1(t.prot), carbs: round1(t.carbs), fats: round1(t.fats) }
+}
+
+function onMealImageError(e) {
+  if (e.target.dataset.fallback) return
+  e.target.dataset.fallback = '1'
+  e.target.src = 'https://placehold.co/600x600/1e293b/94a3b8?text=Aliment'
 }
 
 
