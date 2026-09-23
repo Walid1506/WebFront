@@ -469,7 +469,7 @@ const todaySession = computed(() => {
 })
 
 const { join: joinPresence, leave: leavePresence } = usePresence()
-const { isSupported: pushSupported, subscribe: subscribePush, requestAndSubscribe } = usePush()
+const { isSupported: pushSupported, subscribe: subscribePush, requestAndSubscribe, unsubscribe: unsubscribePush } = usePush()
 const showPushBanner = ref(false)
 
 let currentUserId = null
@@ -731,6 +731,7 @@ function openToday() {
 
 async function handleLogout() {
   leavePresence()
+  if (currentUserId) await unsubscribePush(currentUserId)
   await supabase.auth.signOut()
   window.location.href = '/login'
 }

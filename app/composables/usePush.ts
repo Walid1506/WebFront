@@ -22,12 +22,26 @@ export function usePush() {
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       })
-      await supabase.from('push_subscriptions').upsert(
-        { user_id: userId, subscription: JSON.parse(JSON.stringify(subscription)) },
+      const { error } = await supabase.from('push_subscriptions').upsert(
+        { user_id: userId, subscription: JSON.parse(JSON.stringify(subscription)), updated_at: new Date().toISOString() },
         { onConflict: 'user_id' }
       )
+      if (error) console.error('Push subscription save failed:', error)
     } catch (e) {
       console.error('Push subscription failed:', e)
+    }
+  }
+
+  // À la déconnexion : sinon le prochain compte connecté sur ce téléphone recevrait les notifications de l'ancien
+  async function unsubscribe(userId: string) {
+    try {
+      await supabase.from('push_subscriptions').delete().eq('user_id', userId)
+      if (!isSupported()) return
+      const reg = await navigator.serviceWorker.getRegistration()
+      const sub = await reg?.pushManager.getSubscription()
+      await sub?.unsubscribe()
+    } catch (e) {
+      console.error('Push unsubscribe failed:', e)
     }
   }
 
@@ -40,5 +54,5 @@ export function usePush() {
     return true
   }
 
-  return { isSupported, subscribe, requestAndSubscribe }
+  return { isSupported, subscribe, requestAndSubscribe, unsubscribe }
 }
