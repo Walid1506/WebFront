@@ -1,0 +1,83 @@
+# Crédits des photos d'aliments
+
+Photos issues de Wikimedia Commons, recadrées et redimensionnées (400×400, WebP).
+
+- 1.webp — Blanc de Poulet : « Raw chicken slices.jpg », kakyusei — CC0 — https://commons.wikimedia.org/wiki/File:Raw_chicken_slices.jpg
+- 2.webp — Boeuf haché 5% : « Фарш.jpg », Pannet — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:%D0%A4%D0%B0%D1%80%D1%88.jpg
+- 3.webp — Saumon : « Salmon fillet.JPG », BrokenSphere — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Salmon_fillet.JPG
+- 4.webp — Oeuf entier : « Eggs Chicken.jpg », safaritravelplus — CC0 — https://commons.wikimedia.org/wiki/File:Eggs_Chicken.jpg
+- 5.webp — Skyr / Fromage blanc : « Turkish strained yogurt.jpg », Takeaway — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Turkish_strained_yogurt.jpg
+- 6.webp — Whey Protein : « Whey Protein Scoop (49935767168).jpg », Ajay Suresh from New York, NY, USA — CC BY 2.0 — https://commons.wikimedia.org/wiki/File:Whey_Protein_Scoop_(49935767168).jpg
+- 7.webp — Escalope de Dinde : « Krůtí prsa.jpg », Dezidor — CC BY 3.0 — https://commons.wikimedia.org/wiki/File:Kr%C5%AFt%C3%AD_prsa.jpg
+- 8.webp — Steak de Boeuf : « Антрекот без кости.jpg », Pannet — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:%D0%90%D0%BD%D1%82%D1%80%D0%B5%D0%BA%D0%BE%D1%82_%D0%B1%D0%B5%D0%B7_%D0%BA%D0%BE%D1%81%D1%82%D0%B8.jpg
+- 9.webp — Thon nature : « Thunfisch (in geöffneter Dose) 1.jpg », IgorCalzone1 — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Thunfisch_(in_ge%C3%B6ffneter_Dose)_1.jpg
+- 10.webp — Cabillaud : « Dos de cabillaud 20190119 1.jpg », Georges Seguin (Okki) — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Dos_de_cabillaud_20190119_1.jpg
+- 11.webp — Crevettes : « Cooked shrimp on a plate.jpg », Leon Brocard — CC BY 2.0 — https://commons.wikimedia.org/wiki/File:Cooked_shrimp_on_a_plate.jpg
+- 12.webp — Tofu ferme : « Tofu 4.jpg », fireworks — CC0 — https://commons.wikimedia.org/wiki/File:Tofu_4.jpg
+- 13.webp — Tempeh : « Tempeh raw.jpg », Christian Franke — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Tempeh_raw.jpg
+- 14.webp — Seitan : « Seitan slices 1.jpg », nclm — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Seitan_slices_1.jpg
+- 15.webp — Jambon blanc découenné : « Jambon blanc de Paris.png », Gundan — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Jambon_blanc_de_Paris.png
+- 16.webp — Bresaola : « Tranches de viande des Grisons.jpg », Thomon — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Tranches_de_viande_des_Grisons.jpg
+- 17.webp — Mozzarella light : « Mozzarella di bufala3.jpg », Popo le Chien — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Mozzarella_di_bufala3.jpg
+- 18.webp — Cottage cheese : « Cottagecheese200px.jpg », FASTILY (TALK) — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Cottagecheese200px.jpg
+- 19.webp — Yaourt grec 0% : « Plain Yogurt.jpg », Alabama Extension — CC0 — https://commons.wikimedia.org/wiki/File:Plain_Yogurt.jpg
+- 20.webp — Sardines : « Canned sardines with lemon.jpg », Pannet — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Canned_sardines_with_lemon.jpg
+- 21.webp — Maquereau : « Maquereaux etal.jpg », Jastrow — Public domain — https://commons.wikimedia.org/wiki/File:Maquereaux_etal.jpg
+- 22.webp — Truite : « Rainbow trouts in ijs.JPG », Peter van der Sluijs — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Rainbow_trouts_in_ijs.JPG
+- 23.webp — Pavé de Thon : « Filete de atún rojo 0.jpg », Xemenendura — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Filete_de_at%C3%BAn_rojo_0.jpg
+- 24.webp — Foie de volaille : « Preparing Chicken Liver 02.JPG », Poupou l'quourouce — CC BY 4.0 — https://commons.wikimedia.org/wiki/File:Preparing_Chicken_Liver_02.JPG
+- 25.webp — Riz Basmati cuit : « White rice at a restaurant.jpg », Calgary Reviews from Calgary, Canada — CC BY 2.0 — https://commons.wikimedia.org/wiki/File:White_rice_at_a_restaurant.jpg
+- 26.webp — Pâtes cuites : « Cooked-Fusilli-on-plate-1.jpg », MartinThoma — CC0 — https://commons.wikimedia.org/wiki/File:Cooked-Fusilli-on-plate-1.jpg
+- 28.webp — Pomme de terre : « Kartoffeln (25783817312).jpg », huber.edith — CC BY 2.0 — https://commons.wikimedia.org/wiki/File:Kartoffeln_(25783817312).jpg
+- 29.webp — Patate douce : « Ipomoea batatas 006.JPG », Llez — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Ipomoea_batatas_006.JPG
+- 30.webp — Pain complet : « Wholemeal tin loaf (8371640548).jpg », muffinn from Worcester, UK — CC BY 2.0 — https://commons.wikimedia.org/wiki/File:Wholemeal_tin_loaf_(8371640548).jpg
+- 32.webp — Semoule cuite : « Liat Portal for Foodie Disorder - Couscous (Prepared).jpg », HaJunkiyada — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Couscous_(Prepared).jpg
+- 33.webp — Boulgour cuit : « Sehriyeli bulgur pilav.jpg », E4024 — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Sehriyeli_bulgur_pilav.jpg
+- 34.webp — Lentilles cuites : « Liat Portal for Foodie Disorder - Cooked Lentils with Caramelized Onions.jpg », HaJunkiyada — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Cooked_Lentils_with_Caramelized_Onions.jpg
+- 36.webp — Haricots rouges cuits : « Kidney beans.jpg », Sanjay Acharya — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Kidney_beans.jpg
+- 37.webp — Haricots noirs cuits : « Black beans.jpg », Paul Goyette from Chicago, USA — CC BY-SA 2.0 — https://commons.wikimedia.org/wiki/File:Black_beans.jpg
+- 38.webp — Tortilla blé : « Flour Tortillas 001.jpg », Ocdp — CC0 — https://commons.wikimedia.org/wiki/File:Flour_Tortillas_001.jpg
+- 40.webp — Pain de mie complet : « Sliced Wheat Bread National Bakery Ooty Aug25 A7CR 07148.jpg », Timothy A. Gonsalves — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Sliced_Wheat_Bread_National_Bakery_Ooty_Aug25_A7CR_07148.jpg
+- 41.webp — Bagel : « Plain-Bagel.jpg », Evan-Amos — Public domain — https://commons.wikimedia.org/wiki/File:Plain-Bagel.jpg
+- 42.webp — Muesli : « Muesli with Berries.jpg », David Stewart — CC BY 2.0 — https://commons.wikimedia.org/wiki/File:Muesli_with_Berries.jpg
+- 44.webp — Galettes de riz : « Puffed Rice Cakes.jpg », BD2412 — Public domain — https://commons.wikimedia.org/wiki/File:Puffed_Rice_Cakes.jpg
+- 45.webp — Banane : « Bananas on black background 02.jpg », Krzysztof Golik — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Bananas_on_black_background_02.jpg
+- 46.webp — Datte : « DATES MEDJOOL.jpg », ORGANIChouse — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:DATES_MEDJOOL.jpg
+- 48.webp — Raisins secs : « Raisins 01.jpg », Paweł Kuźniar (Jojo_1, Jojo) — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Raisins_01.jpg
+- 50.webp — Huile d'olive : « Bottle of olive oil.jpg », margenauer from Pixabay — CC0 — https://commons.wikimedia.org/wiki/File:Bottle_of_olive_oil.jpg
+- 52.webp — Amandes : « Almond Nuts.jpg », Mullookkaaran — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Almond_Nuts.jpg
+- 54.webp — Noix : « Walnuts - whole and open with halved kernel.jpg », Ivar Leidus — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Walnuts_-_whole_and_open_with_halved_kernel.jpg
+- 56.webp — Pistaches : « Pistachio.jpg », Kobi Schutz — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Pistachio.jpg
+- 58.webp — Beurre : « Butter and Knive.jpg », Julikalucky — CC0 — https://commons.wikimedia.org/wiki/File:Butter_and_Knive.jpg
+- 60.webp — Lait de coco : « Coconut milk from can01.JPG », Meursault2004 — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Coconut_milk_from_can01.JPG
+- 62.webp — Olives noires : « Aceitunas negras.JPG », Wotancito — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Aceitunas_negras.JPG
+- 64.webp — Graines de lin : « Brown Flax Seeds.jpg », Sanjay Acharya — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Brown_Flax_Seeds.jpg
+- 66.webp — Tahini : « Tahina.JPG », Gilabrand — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Tahina.JPG
+- 68.webp — Myrtilles : « Dish of blueberries.jpg », Petar Milošević — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Dish_of_blueberries.jpg
+- 70.webp — Pomme : « Red Apple.jpg », Abhijit Tembhekar from Mumbai, India — CC BY 2.0 — https://commons.wikimedia.org/wiki/File:Red_Apple.jpg
+- 72.webp — Orange : « Oranges - whole-halved-segment.jpg », Ivar Leidus — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Oranges_-_whole-halved-segment.jpg
+- 74.webp — Kiwi : « Kiwi aka.jpg », André Karwath aka Aka — CC BY-SA 2.5 — https://commons.wikimedia.org/wiki/File:Kiwi_aka.jpg
+- 76.webp — Framboise : « Raspberries (Rubus idaeus).jpg », Ivar Leidus — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Raspberries_(Rubus_idaeus).jpg
+- 78.webp — Mangue : « Mangos - single and halved.jpg », Ivar Leidus — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Mangos_-_single_and_halved.jpg
+- 80.webp — Melon : « Melon-slice.jpg », User:Tomia — CC BY 2.5 — https://commons.wikimedia.org/wiki/File:Melon-slice.jpg
+- 82.webp — Cerise : « Cherry Stella444.jpg », Benjamint444, edited by Fir0002 — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Cherry_Stella444.jpg
+- 84.webp — Concombre : « Cucumber Slices (Alabama Extension).jpg », Alabama Extension — CC0 — https://commons.wikimedia.org/wiki/File:Cucumber_Slices_(Alabama_Extension).jpg
+- 86.webp — Courgette : « Starr-070730-7874-Cucurbita pepo-green zucchini-Foodland Pukalani-Maui (24797124241).jpg », Forest and Kim Starr — CC BY 3.0 us — https://commons.wikimedia.org/wiki/File:Starr-070730-7874-Cucurbita_pepo-green_zucchini-Foodland_Pukalani-Maui_(24797124241).jpg
+- 88.webp — Poivron rouge : « Red bell pepper.jpg », AntanO — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Red_bell_pepper.jpg
+- 90.webp — Champignons : « Agaricus bisporus Zuchtchampignon (cropped).JPG », böhringer friedrich — CC BY-SA 2.5 — https://commons.wikimedia.org/wiki/File:Agaricus_bisporus_Zuchtchampignon_(cropped).JPG
+- 92.webp — Asperges : « Asparagus (8587634357).jpg », Neil Conway from Oakland, USA — CC BY 2.0 — https://commons.wikimedia.org/wiki/File:Asparagus_(8587634357).jpg
+- 94.webp — Oignon : « Onion on White.JPG », Colin — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Onion_on_White.JPG
+- 96.webp — Barre protéinée : « Three protein bars.jpg », Mx. Granger — CC0 — https://commons.wikimedia.org/wiki/File:Three_protein_bars.jpg
+- 98.webp — Yaourt à boire protéiné : « Trinkjoghurt.jpg », Dirk Schneider (ds-foto) — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Trinkjoghurt.jpg
+- 102.webp — Granola : « Granola03242006.JPG », No machine-readable author provided. Miskatonic assumed (based on copyright claims). — CC BY 2.5 — https://commons.wikimedia.org/wiki/File:Granola03242006.JPG
+- 104.webp — Mix noix & fruits secs : « DriedFruit&NutsMixed.JPG », Vicki Nunn — Public domain — https://commons.wikimedia.org/wiki/File:DriedFruit%26NutsMixed.JPG
+- 106.webp — Lait d’amande sans sucre : « 004-almondmilk.jpg », Kjokkenutstyr — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:004-almondmilk.jpg
+- 110.webp — Kéfir : « Kefir in a glass.JPG », Quijote at Russian Wikipedia — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Kefir_in_a_glass.JPG
+- 111.webp — Oeuf dur : « Boiled Egg - Crossection.jpg », Ramesh NG — CC BY-SA 2.0 — https://commons.wikimedia.org/wiki/File:Boiled_Egg_-_Crossection.jpg
+- 112.webp — Oeuf mollet / à la coque : « Soft-boiled-egg.jpg », Amin — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Soft-boiled-egg.jpg
+- 113.webp — Oeuf poché : « 02016 0756 Pochierte Eier, Ostergerichte, Schlesische Beskiden.JPG », Silar — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:02016_0756_Pochierte_Eier,_Ostergerichte,_Schlesische_Beskiden.JPG
+- 114.webp — Oeuf au plat : « Pan-fried egg (huevo frito).jpg », Horacio Cambeiro — CC BY 3.0 — https://commons.wikimedia.org/wiki/File:Pan-fried_egg_(huevo_frito).jpg
+- 115.webp — Oeufs brouillés : « Rührei.jpg », IgorCalzone1 — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:R%C3%BChrei.jpg
+- 116.webp — Omelette nature : « FoodOmelete.jpg », Renee Comet (photographer) — Public domain — https://commons.wikimedia.org/wiki/File:FoodOmelete.jpg
+- 117.webp — Blanc d'oeuf : « Eischnee.jpg », No machine-readable author provided. Dial assumed (based on copyright claims). — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File:Eischnee.jpg
+- 118.webp — Jaune d'oeuf : « Egg yolk-1460404.jpg », Aline Ponce — CC0 — https://commons.wikimedia.org/wiki/File:Egg_yolk-1460404.jpg
