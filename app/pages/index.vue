@@ -475,8 +475,16 @@ const showPushBanner = ref(false)
 let currentUserId = null
 
 onMounted(async () => {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return router.push('/login')
+  // Session locale (pas d'aller-retour réseau) : démarrage plus rapide, et hors ligne on n'est pas renvoyé vers la connexion
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+  const user = session?.user
+  if (!user) {
+    if (sessionError?.name === 'AuthRetryableFetchError' || !navigator.onLine) {
+      window.addEventListener('online', () => window.location.reload(), { once: true })
+      return
+    }
+    return router.push('/login')
+  }
   currentUserId = user.id
 
   const { data: profile } = await supabase
@@ -553,9 +561,8 @@ async function handleAvatarUpload(event) {
 }
 
 async function fetchSessions() {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return
-  const { data, error } = await supabase.from('sport_sessions').select('*').eq('user_id', user.id).order('date', { ascending: true })
+  if (!currentUserId) return
+  const { data, error } = await supabase.from('sport_sessions').select('*').eq('user_id', currentUserId).order('date', { ascending: true })
   if (error) { console.error('Erreur fetchSessions:', error); return }
   sessions.value = data || []
 }
@@ -605,9 +612,8 @@ async function onDateSelected(date) {
   pickerDate.value = date
   pickerOpen.value = true
   loadingPicker.value = true
-  const { data: { user } } = await supabase.auth.getUser()
-  if (user) {
-    const { data } = await supabase.from('workout_templates').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+  if (currentUserId) {
+    const { data } = await supabase.from('workout_templates').select('*').eq('user_id', currentUserId).order('created_at', { ascending: false })
     try {
       const localColors = JSON.parse(localStorage.getItem('fittrack_tpl_colors') || '{}')
       savedTemplates.value = (data || []).map(t => ({ ...t, color: t.color || localColors[t.id] || '' }))
@@ -627,8 +633,7 @@ function openNewSession() {
 
 async function assignTemplate(template) {
   pickerOpen.value = false
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user || !pickerDate.value) return
+  if (!currentUserId || !pickerDate.value) return
   const sessionData = {
     title: template.name,
     category: template.category || '',
@@ -637,7 +642,7 @@ async function assignTemplate(template) {
     color: template.color || '',
     templateId: template.id
   }
-  const { error } = await supabase.from('sport_sessions').insert({ user_id: user.id, date: pickerDate.value, data: sessionData })
+  const { error } = await supabase.from('sport_sessions').insert({ user_id: currentUserId, date: pickerDate.value, data: sessionData })
   if (error) {
     console.error('Erreur assignTemplate:', error)
     alert("Le programme n'a pas pu être ajouté. Vérifie ta connexion et réessaie.")
@@ -695,9 +700,8 @@ async function declineFromNotif(r) {
 }
 
 async function refreshTemplates() {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return
-  const { data } = await supabase.from('workout_templates').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+  if (!currentUserId) return
+  const { data } = await supabase.from('workout_templates').select('*').eq('user_id', currentUserId).order('created_at', { ascending: false })
   try {
     const localColors = JSON.parse(localStorage.getItem('fittrack_tpl_colors') || '{}')
     savedTemplates.value = (data || []).map(t => ({ ...t, color: t.color || localColors[t.id] || '' }))
