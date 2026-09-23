@@ -105,8 +105,20 @@ const medals = computed(() => [
 
 const earnedCount = computed(() => medals.value.filter(m => m.level).length)
 
-onMounted(async () => {
-  const { data: { user } } = await supabase.auth.getUser()
+const props = defineProps({
+  active: { type: Boolean, default: true }
+})
+
+onMounted(loadMedals)
+
+// L'onglet Profil reste monté : on recalcule quand on y revient (nouvelles séances, repas, eau)
+watch(() => props.active, (active) => {
+  if (active) loadMedals()
+})
+
+async function loadMedals() {
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
   if (!user) { loading.value = false; return }
 
   const mon = weekStart()
@@ -147,5 +159,5 @@ onMounted(async () => {
   }
 
   loading.value = false
-})
+}
 </script>

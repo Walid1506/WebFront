@@ -115,6 +115,7 @@
 </template>
 
 <script setup>
+const emit = defineEmits(['refresh'])
 const supabase = useSupabaseClient()
 const { theme } = useTheme()
 
@@ -209,11 +210,13 @@ async function save() {
   await fetchSessions()
   saving.value = false
   closeModal()
+  emit('refresh')
 }
 
 async function deleteSession(id) {
   await supabase.from('workout_templates').delete().eq('id', id)
   sessions.value = sessions.value.filter(s => s.id !== id)
+  emit('refresh')
 }
 
 function categoryBg(cat) {

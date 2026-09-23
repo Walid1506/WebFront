@@ -120,7 +120,7 @@
         <!-- Modal créer programme -->
         <Transition name="slide-up">
           <div v-if="createProgrammeOpen" class="fixed inset-0 z-[350]">
-            <ModalSeance mode="programme" @close="createProgrammeOpen = false" @saved-programme="createProgrammeOpen = false" />
+            <ModalSeance mode="programme" @close="createProgrammeOpen = false" @saved-programme="createProgrammeOpen = false; refreshTemplates()" />
           </div>
         </Transition>
       </section>
@@ -223,7 +223,7 @@
         </div>
 
         <!-- Médailles -->
-        <Medailles />
+        <Medailles :active="activeTab === 'profil'" />
       </section>
     </main>
 
