@@ -279,6 +279,7 @@
       v-if="isModalOpen"
       :date="selectedDate"
       :initial-data="sessionToEdit"
+      :saving="savingSession"
       @close="closeModal"
       @save="saveSession"
     />
@@ -532,17 +533,29 @@ async function fetchSessions() {
   sessions.value = data || []
 }
 
+const savingSession = ref(false)
+
 async function saveSession(payload) {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user || !selectedDate.value) return
-  const existing = sessions.value.find(s => s.date === selectedDate.value)
-  if (existing) {
-    await supabase.from('sport_sessions').update({ data: payload.data }).eq('id', existing.id)
-  } else {
-    await supabase.from('sport_sessions').insert({ user_id: user.id, date: selectedDate.value, data: payload.data })
+  if (savingSession.value || !currentUserId || !selectedDate.value) return
+  savingSession.value = true
+  const date = selectedDate.value
+  try {
+    const existing = sessions.value.find(s => s.date === date)
+    const { error } = existing
+      ? await supabase.from('sport_sessions').update({ data: payload.data }).eq('id', existing.id)
+      : await supabase.from('sport_sessions').insert({ user_id: currentUserId, date, data: payload.data })
+    if (error) {
+      console.error('Erreur saveSession:', error)
+      alert("La séance n'a pas pu être enregistrée. Vérifie ta connexion et réessaie.")
+      return
+    }
+    // Le brouillon n'est supprimé qu'une fois la séance réellement enregistrée
+    localStorage.removeItem(`draft-seance-${date}`)
+    await fetchSessions()
+    closeModal()
+  } finally {
+    savingSession.value = false
   }
-  await fetchSessions()
-  closeModal()
 }
 
 async function handleDeleteSession(dateStr) {
@@ -597,7 +610,12 @@ async function assignTemplate(template) {
     color: template.color || '',
     templateId: template.id
   }
-  await supabase.from('sport_sessions').insert({ user_id: user.id, date: pickerDate.value, data: sessionData })
+  const { error } = await supabase.from('sport_sessions').insert({ user_id: user.id, date: pickerDate.value, data: sessionData })
+  if (error) {
+    console.error('Erreur assignTemplate:', error)
+    alert("Le programme n'a pas pu être ajouté. Vérifie ta connexion et réessaie.")
+    return
+  }
   await fetchSessions()
 }
 

@@ -195,10 +195,10 @@
 
             <button
               @click="saveSession"
-              :disabled="savingTemplate"
+              :disabled="savingTemplate || saving"
               class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-lg py-4 rounded-2xl shadow-[0_10px_30px_color-mix(in_srgb,var(--accent-solid)_40%,transparent)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60"
             >
-              {{ savingTemplate ? 'Enregistrement...' : (mode === 'programme' ? 'Enregistrer le programme' : 'Terminer la séance') }}
+              {{ (savingTemplate || saving) ? 'Enregistrement...' : (mode === 'programme' ? 'Enregistrer le programme' : 'Terminer la séance') }}
             </button>
           </div>
 
@@ -460,7 +460,8 @@ function bgAlpha(hex: string, alpha: number) {
 const props = defineProps({
   date: String,
   initialData: Object,
-  mode: { type: String, default: 'session' }
+  mode: { type: String, default: 'session' },
+  saving: Boolean
 })
 
 const emit = defineEmits(['close', 'save', 'saved-programme'])
@@ -651,6 +652,7 @@ function removeExercise(index: number) {
 }
 
 async function saveSession() {
+  if (savingTemplate.value || props.saving) return
   if (!sessionData.value.title?.trim()) {
     sessionData.value.title = props.mode === 'programme' ? 'Mon programme' : 'Nouvelle séance'
   }
@@ -670,10 +672,6 @@ async function saveSession() {
     savingTemplate.value = false
     emit('saved-programme')
     return
-  }
-
-  if (props.date) {
-    localStorage.removeItem(`draft-seance-${props.date}`)
   }
 
   emit('save', {
