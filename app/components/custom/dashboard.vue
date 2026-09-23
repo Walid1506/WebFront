@@ -37,6 +37,7 @@
       </div>
     </div>
 
+    <Teleport to="body">
     <Transition name="fade">
       <div v-if="isModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
         <div class="w-full max-w-sm bg-white rounded-[40px] p-10 shadow-2xl relative animate-in zoom-in-95 duration-300">
@@ -63,6 +64,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 

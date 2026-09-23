@@ -51,7 +51,8 @@
       </div>
     </div>
 
-    <!-- Modal ajout -->
+    <!-- Modal ajout : téléporté dans body, sinon le backdrop-blur de la carte le confine et le coupe -->
+    <Teleport to="body">
     <Transition name="fade">
       <div v-if="isModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
         <div class="w-full max-w-sm bg-white rounded-[40px] p-8 shadow-2xl relative">
@@ -125,6 +126,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
     </div>
   </div>
 </template>

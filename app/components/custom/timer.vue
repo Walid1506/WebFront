@@ -98,6 +98,9 @@ const remaining = ref(90)
 const isRunning = ref(false)
 const isFinished = ref(false)
 let interval = null
+// Heure de fin absolue : iOS suspend les timers écran verrouillé, on recalcule le reste à partir d'elle
+let endAt = 0
+let audioCtx = null
 
 const progress = computed(() => {
   if (duration.value === 0) return 0
@@ -119,26 +122,62 @@ function setPreset(s) {
   remaining.value = s
 }
 
+// Le son doit être débloqué pendant un tap (iOS), puis il peut jouer à la fin du repos
+function unlockAudio() {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)()
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+  } catch {}
+}
+
+function beep() {
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200])
+  if (!audioCtx) return
+  try {
+    const t = audioCtx.currentTime
+    for (const offset of [0, 0.3, 0.6]) {
+      const osc = audioCtx.createOscillator()
+      const gain = audioCtx.createGain()
+      osc.frequency.value = 880
+      gain.gain.setValueAtTime(0.3, t + offset)
+      gain.gain.exponentialRampToValueAtTime(0.001, t + offset + 0.25)
+      osc.connect(gain).connect(audioCtx.destination)
+      osc.start(t + offset)
+      osc.stop(t + offset + 0.25)
+    }
+  } catch {}
+}
+
+function tick() {
+  remaining.value = Math.max(0, Math.ceil((endAt - Date.now()) / 1000))
+  if (remaining.value === 0) {
+    clearInterval(interval)
+    isRunning.value = false
+    isFinished.value = true
+    beep()
+  }
+}
+
 function toggleTimer() {
   if (isFinished.value) { reset(); return }
   if (isRunning.value) {
     clearInterval(interval)
     isRunning.value = false
   } else {
+    unlockAudio()
     isRunning.value = true
     isFinished.value = false
-    interval = setInterval(() => {
-      if (remaining.value <= 0) {
-        clearInterval(interval)
-        isRunning.value = false
-        isFinished.value = true
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200])
-        return
-      }
-      remaining.value--
-    }, 1000)
+    endAt = Date.now() + remaining.value * 1000
+    clearInterval(interval)
+    interval = setInterval(tick, 250)
   }
 }
+
+function onVisibilityChange() {
+  if (!document.hidden && isRunning.value) tick()
+}
+
+onMounted(() => document.addEventListener('visibilitychange', onVisibilityChange))
 
 function reset() {
   clearInterval(interval)
@@ -148,7 +187,9 @@ function reset() {
 }
 
 function addTime(s) {
-  remaining.value = Math.min(remaining.value + s, 599)
+  const next = Math.min(remaining.value + s, 599)
+  if (isRunning.value) endAt += (next - remaining.value) * 1000
+  remaining.value = next
   if (remaining.value > duration.value) duration.value = remaining.value
 }
 
@@ -156,7 +197,11 @@ function closeTimer() {
   isOpen.value = false
 }
 
-onUnmounted(() => clearInterval(interval))
+onUnmounted(() => {
+  clearInterval(interval)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+  audioCtx?.close?.()
+})
 </script>
 
 <style scoped>

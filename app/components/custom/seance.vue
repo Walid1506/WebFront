@@ -238,6 +238,10 @@
               <input
                 v-model="searchQuery"
                 type="text"
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="off"
+                spellcheck="false"
                 placeholder="Rechercher un exercice"
                 class="w-full h-12 rounded-2xl bg-white/[0.06] border border-white/[0.08] pl-11 pr-4 text-white outline-none focus:border-[var(--accent-solid)]"
               />
@@ -522,22 +526,34 @@ const formattedDate = computed(() => {
   })
 })
 
+// Insensible aux accents et au « œ » que l'autocorrection iOS insère
+function normalizeSearch(text: string) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/œ/g, 'oe')
+    .replace(/æ/g, 'ae')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+}
+
+const searchableLibrary = exerciseLibrary.map(exo => ({
+  exo,
+  name: normalizeSearch(exo.name),
+  text: normalizeSearch(`${exo.name} ${exo.description} ${exo.equipment} ${exo.muscle}`)
+}))
+
 const filteredLibrary = computed(() => {
-  return exerciseLibrary.filter((exo) => {
-    const matchCat =
-      activeCategory.value === 'Tout' || exo.category === activeCategory.value
+  const tokens = normalizeSearch(searchQuery.value).split(/\s+/).filter(Boolean)
+  return searchableLibrary
+    .filter(e => activeCategory.value === 'Tout' || e.exo.category === activeCategory.value)
+    .filter(e => tokens.every(t => e.text.includes(t)))
+    // Les exercices dont le nom correspond passent avant ceux trouvés via la description
+    .sort((a, b) => Number(tokens.every(t => b.name.includes(t))) - Number(tokens.every(t => a.name.includes(t))))
+    .map(e => e.exo)
+})
 
-    const q = searchQuery.value.trim().toLowerCase()
-
-    const matchSearch =
-      !q ||
-      exo.name.toLowerCase().includes(q) ||
-      exo.description.toLowerCase().includes(q) ||
-      exo.equipment.toLowerCase().includes(q) ||
-      exo.muscle.toLowerCase().includes(q)
-
-    return matchCat && matchSearch
-  })
+watch(searchQuery, (q, prev) => {
+  if (q && !prev) activeCategory.value = 'Tout'
 })
 
 watch(sessionData, (val) => {
@@ -585,6 +601,7 @@ function createDefaultConfig() {
 
 function openLibrary() {
   editingIndex.value = null
+  searchQuery.value = ''
   currentStep.value = 'library'
 }
 
@@ -703,6 +720,9 @@ function isVideo(mediaType: string, mediaUrl: string) {
 
 function onImageError(event: Event) {
   const target = event.target as HTMLImageElement
+  // Une seule tentative : hors ligne, l'image de secours échoue aussi et bouclerait
+  if (target.dataset.fallback) return
+  target.dataset.fallback = '1'
   target.src = 'https://placehold.co/600x600/0f172a/94a3b8?text=Image+Indisponible'
 }
 </script>

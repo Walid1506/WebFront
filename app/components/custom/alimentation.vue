@@ -1491,6 +1491,9 @@ function macrosFor(per100, grams) {
 const calculatedMacros = computed(() => selectedFood.value ? macrosFor(selectedFood.value, amount.value) : {})
 
 function onImageError(e) {
+  // Une seule tentative : hors ligne, l'image de secours échoue aussi et bouclerait
+  if (e.target.dataset.fallback) return
+  e.target.dataset.fallback = '1'
   e.target.src = 'https://placehold.co/600x600/1e293b/94a3b8?text=Aliment'
 }
 
