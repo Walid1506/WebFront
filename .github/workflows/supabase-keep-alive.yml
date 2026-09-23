@@ -2,23 +2,46 @@ name: Supabase Keep Alive
 
 on:
   schedule:
-    # Toutes les 3 jours à 8h UTC (Supabase pause après 7 jours d'inactivité)
+    # Tous les 3 jours à 8h UTC (Supabase pause après 7 jours d'inactivité)
     - cron: '0 8 */3 * *'
   workflow_dispatch: # Permet de lancer manuellement depuis GitHub
+
+permissions:
+  actions: write # nécessaire pour gh-workflow-keepalive
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase REST API
+      - name: Ping Supabase (requête réelle sur la base)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/" \
-            -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}")
+          # Nettoie espaces / retours à la ligne / slash final copiés avec le secret
+          URL=$(printf '%s' "$SUPABASE_URL" | tr -d '[:space:]"' | sed 's:/*$::')
+          KEY=$(printf '%s' "$SUPABASE_KEY" | tr -d '[:space:]"')
+
+          if [ -z "$URL" ] || [ -z "$KEY" ]; then
+            echo "::error::Secrets SUPABASE_URL et/ou SUPABASE_KEY manquants (Settings > Secrets and variables > Actions)"
+            exit 1
+          fi
+          case "$URL" in
+            https://*) ;;
+            *) echo "::error::SUPABASE_URL doit commencer par https:// (ex: https://xxxx.supabase.co)"; exit 1 ;;
+          esac
+
+          STATUS=$(curl -sS -o response.txt -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 10 \
+            "$URL/rest/v1/profiles?select=id&limit=1" \
+            -H "apikey: $KEY") || STATUS=000
+
           echo "Status: $STATUS"
-          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 400 ]; then
-            echo "Ping failed with status $STATUS"
+          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
+            echo "::error::Ping failed with status $STATUS"
+            cat response.txt 2>/dev/null || true
             exit 1
           fi
           echo "Supabase is alive!"
+
+      # Empêche GitHub de désactiver ce workflow après 60 jours sans commit
+      - uses: liskin/gh-workflow-keepalive@v1
