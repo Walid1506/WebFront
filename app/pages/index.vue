@@ -63,6 +63,20 @@
 
       <!-- Accueil — toujours monté -->
       <section v-show="activeTab === 'accueil'" class="p-4 space-y-5 mt-4 md:mt-8">
+        <div v-if="showPushBanner" class="flex items-center gap-3 p-4 rounded-[24px] bg-white/[0.04] border border-white/[0.08]">
+          <UIcon name="i-heroicons-bell-alert" class="text-2xl shrink-0" style="color: var(--accent-solid)" />
+          <p class="flex-1 text-sm font-bold text-white">Active les notifications pour être prévenu des messages de tes amis.</p>
+          <button
+            @click="enablePush"
+            class="px-4 py-2 rounded-xl text-white font-black text-sm shrink-0"
+            style="background: linear-gradient(to right, var(--accent-from), var(--accent-to))"
+          >
+            Activer
+          </button>
+          <button @click="dismissPushBanner" class="p-1 text-slate-500 hover:text-white shrink-0">
+            <UIcon name="i-heroicons-x-mark" class="text-lg" />
+          </button>
+        </div>
         <div class="relative p-6 md:p-10 rounded-[30px] md:rounded-[45px] bg-white/[0.04] backdrop-blur-2xl border border-white/[0.08] overflow-hidden shadow-2xl">
           <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none opacity-40" :style="{ backgroundColor: theme.blobs[0] }"></div>
           <div class="absolute -bottom-10 -left-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none opacity-30" :style="{ backgroundColor: theme.blobs[2] }"></div>
@@ -455,7 +469,8 @@ const todaySession = computed(() => {
 })
 
 const { join: joinPresence, leave: leavePresence } = usePresence()
-const { requestAndSubscribe } = usePush()
+const { isSupported: pushSupported, subscribe: subscribePush, requestAndSubscribe } = usePush()
+const showPushBanner = ref(false)
 
 let currentUserId = null
 
@@ -489,9 +504,21 @@ onMounted(async () => {
   fetchPendingCount(user.id)
   fetchNotifications(user.id)
   joinPresence(user.id)
-  // Demander permission push après 3s (laisse l'app charger)
-  setTimeout(() => requestAndSubscribe(user.id), 3000)
+  if (pushSupported()) {
+    if (Notification.permission === 'granted') subscribePush(user.id)
+    else if (Notification.permission === 'default' && !localStorage.getItem('push-banner-dismissed')) showPushBanner.value = true
+  }
 })
+
+function enablePush() {
+  showPushBanner.value = false
+  if (currentUserId) requestAndSubscribe(currentUserId)
+}
+
+function dismissPushBanner() {
+  showPushBanner.value = false
+  localStorage.setItem('push-banner-dismissed', '1')
+}
 
 
 function triggerAvatarUpload() {

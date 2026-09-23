@@ -10,12 +10,11 @@ function urlBase64ToUint8Array(base64String: string) {
 export function usePush() {
   const supabase = useSupabaseClient()
 
-  async function requestAndSubscribe(userId: string) {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return
+  function isSupported() {
+    return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
+  }
 
-    const permission = await Notification.requestPermission()
-    if (permission !== 'granted') return
-
+  async function subscribe(userId: string) {
     try {
       const reg = await navigator.serviceWorker.ready
       const existing = await reg.pushManager.getSubscription()
@@ -32,5 +31,14 @@ export function usePush() {
     }
   }
 
-  return { requestAndSubscribe }
+  // Doit être appelé directement depuis un tap : iOS ignore la demande sinon (aucun await avant)
+  async function requestAndSubscribe(userId: string) {
+    if (!isSupported()) return false
+    const permission = await Notification.requestPermission()
+    if (permission !== 'granted') return false
+    await subscribe(userId)
+    return true
+  }
+
+  return { isSupported, subscribe, requestAndSubscribe }
 }
