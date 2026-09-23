@@ -414,6 +414,25 @@
 
           <div class="w-full space-y-3 mb-6">
             <button
+              v-if="!scannerRunning && !ocrLoading"
+              @click="startScanner"
+              class="w-full bg-slate-900 border border-white/10 text-white font-black py-3 rounded-2xl flex items-center justify-center gap-2"
+            >
+              <UIcon name="i-heroicons-arrow-path" class="text-xl" />
+              Scanner à nouveau
+            </button>
+
+            <button
+              @click="readDigitsFromCamera"
+              :disabled="ocrLoading"
+              class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-3 rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-60"
+            >
+              <UIcon :name="ocrLoading ? 'i-heroicons-arrow-path' : 'i-heroicons-camera'" class="text-xl" :class="ocrLoading ? 'animate-spin' : ''" />
+              {{ ocrLoading ? 'Lecture des chiffres…' : (scannerRunning ? 'Lire les chiffres du code-barres' : 'Photographier les chiffres') }}
+            </button>
+            <input ref="ocrFileInput" type="file" accept="image/*" capture="environment" class="hidden" @change="onOcrFileSelect" />
+
+            <button
               @click="manualInputOpen = !manualInputOpen"
               class="w-full bg-slate-900 border border-white/10 text-white font-black py-3 rounded-2xl"
             >
@@ -639,7 +658,11 @@
 <script setup>
 import { foodLibrary } from '~/data/foodLibrary'
 import Dashboard from '~/components/custom/dashboard.vue'
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'
+import { Html5Qrcode, Html5QrcodeSupportedFormats, Html5QrcodeScannerState } from 'html5-qrcode'
+
+const props = defineProps({
+  active: { type: Boolean, default: true }
+})
 
 const supabase = useSupabaseClient()
 
@@ -899,109 +922,109 @@ async function saveDaily() {
   frozenBesoins.value = liveBesoins.value
 }
 
+const SCAN_FORMATS = [
+  Html5QrcodeSupportedFormats.EAN_13,
+  Html5QrcodeSupportedFormats.EAN_8,
+  Html5QrcodeSupportedFormats.UPC_A,
+  Html5QrcodeSupportedFormats.UPC_E,
+  Html5QrcodeSupportedFormats.CODE_128,
+  Html5QrcodeSupportedFormats.CODE_39
+]
+const SCAN_CONFIG = { fps: 12, qrbox: { width: 280, height: 140 }, aspectRatio: 1.8, disableFlip: true }
+
+// Incrémenté à chaque arrêt : un démarrage devenu obsolète (écran fermé entre-temps) s'annule
+let scanSession = 0
+let scannerStarting = null
+let scanHandled = false
+const scannerRunning = ref(false)
+
 async function openScanner() {
   currentScreen.value = 'scanner'
   scanResult.value = null
   scanError.value = ''
   manualInputOpen.value = false
   manualBarcode.value = ''
+  await startScanner()
+}
 
-  await nextTick()
+async function waitForReader() {
+  // La transition "out-in" n'insère #reader qu'après la sortie de l'écran précédent
+  for (let i = 0; i < 60; i++) {
+    if (document.getElementById('reader')) return true
+    await new Promise(r => setTimeout(r, 25))
+  }
+  return false
+}
 
-  try {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      scanError.value = "La caméra n'est pas supportée sur cet appareil ou navigateur."
-      return
-    }
+async function startScanner() {
+  await stopScanner()
+  const session = scanSession
+  scanHandled = false
+  scanError.value = ''
 
-    try {
-      const tempStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
-      })
-      tempStream.getTracks().forEach(track => track.stop())
-    } catch (permissionErr) {
-      console.error('Permission caméra refusée :', permissionErr)
-      scanError.value = "Permission caméra refusée. Autorise l’accès à la caméra dans ton navigateur."
-      return
-    }
+  if (!navigator.mediaDevices?.getUserMedia) {
+    scanError.value = "La caméra n'est pas supportée sur cet appareil ou navigateur."
+    return
+  }
+  if (!(await waitForReader()) || session !== scanSession) return
 
-    html5QrcodeScanner = new Html5Qrcode('reader', {
-      formatsToSupport: [
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
-        Html5QrcodeSupportedFormats.UPC_A,
-        Html5QrcodeSupportedFormats.UPC_E,
-        Html5QrcodeSupportedFormats.CODE_128,
-        Html5QrcodeSupportedFormats.CODE_39
-      ],
-      verbose: false
+  const scanner = new Html5Qrcode('reader', {
+    formatsToSupport: SCAN_FORMATS,
+    useBarCodeDetectorIfSupported: true,
+    verbose: false
+  })
+  html5QrcodeScanner = scanner
+
+  scannerStarting = scanner
+    .start({ facingMode: 'environment' }, SCAN_CONFIG, onScanSuccess, () => {})
+    .catch(async (err) => {
+      if (err?.name === 'NotAllowedError' || String(err).includes('NotAllowedError')) throw err
+      const cameras = await Html5Qrcode.getCameras().catch(() => [])
+      if (!cameras.length) throw err
+      const back = cameras.find(c => /back|rear|arri[eè]re|environment/i.test(c.label)) || cameras[cameras.length - 1]
+      return scanner.start(back.id, SCAN_CONFIG, onScanSuccess, () => {})
     })
 
-    await html5QrcodeScanner.start(
-      { facingMode: { exact: 'environment' } },
-      {
-        fps: 12,
-        qrbox: { width: 280, height: 140 },
-        aspectRatio: 1.8,
-        disableFlip: true
-      },
-      onScanSuccess,
-      () => {}
-    )
+  try {
+    await scannerStarting
+    if (session === scanSession) scannerRunning.value = true
   } catch (err) {
     console.error('Erreur ouverture caméra :', err)
-
-    try {
-      html5QrcodeScanner = new Html5Qrcode('reader', {
-        formatsToSupport: [
-          Html5QrcodeSupportedFormats.EAN_13,
-          Html5QrcodeSupportedFormats.EAN_8,
-          Html5QrcodeSupportedFormats.UPC_A,
-          Html5QrcodeSupportedFormats.UPC_E,
-          Html5QrcodeSupportedFormats.CODE_128,
-          Html5QrcodeSupportedFormats.CODE_39
-        ],
-        verbose: false
-      })
-
-      const cameras = await Html5Qrcode.getCameras()
-      if (!cameras || cameras.length === 0) {
-        scanError.value = "Aucune caméra détectée."
-        return
-      }
-
-      await html5QrcodeScanner.start(
-        cameras[0].id,
-        {
-          fps: 12,
-          qrbox: { width: 280, height: 140 },
-          aspectRatio: 1.8,
-          disableFlip: true
-        },
-        onScanSuccess,
-        () => {}
-      )
-    } catch (err2) {
-      console.error('Erreur fallback caméra :', err2)
-      scanError.value = "Impossible de scanner. Essaie avec plus de lumière ou entre le code à la main."
+    if (session === scanSession) {
+      scanError.value = String(err).includes('NotAllowedError')
+        ? "Permission caméra refusée. Autorise l'accès à la caméra dans les réglages."
+        : "Impossible d'ouvrir la caméra. Réessaie ou entre le code à la main."
     }
+  } finally {
+    scannerStarting = null
   }
 }
 
 async function stopScanner() {
-  if (!html5QrcodeScanner) return
+  scanSession++
+  scannerRunning.value = false
+  const scanner = html5QrcodeScanner
+  html5QrcodeScanner = null
+  if (!scanner) return
+
+  if (scannerStarting) await scannerStarting.catch(() => {})
 
   try {
-    const state = html5QrcodeScanner.getState?.()
-    if (state === 2 || state === 3) {
-      await html5QrcodeScanner.stop()
+    const state = scanner.getState()
+    if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
+      await scanner.stop()
     }
-    await html5QrcodeScanner.clear()
   } catch (err) {
-    console.error('Erreur fermeture scanner :', err)
-  } finally {
-    html5QrcodeScanner = null
+    console.error('Erreur arrêt scanner :', err)
   }
+  // Filet de sécurité iOS : si la caméra reste ouverte, les ouvertures suivantes échouent
+  document.querySelectorAll('#reader video').forEach((v) => {
+    v.srcObject?.getTracks?.().forEach(t => t.stop())
+    v.srcObject = null
+  })
+  try {
+    scanner.clear()
+  } catch {}
 }
 
 async function closeScanner() {
@@ -1010,6 +1033,8 @@ async function closeScanner() {
 }
 
 async function onScanSuccess(decodedText) {
+  if (scanHandled) return
+  scanHandled = true
   try {
     await stopScanner()
     await lookupBarcode(decodedText)
@@ -1018,6 +1043,77 @@ async function onScanSuccess(decodedText) {
     scanError.value = 'Erreur pendant le scan ou la recherche du produit.'
   }
 }
+
+function isValidBarcode(code) {
+  if (!/^(\d{8}|\d{12}|\d{13})$/.test(code)) return false
+  const digits = code.split('').map(Number)
+  const check = digits.pop()
+  const sum = digits.reverse().reduce((s, d, i) => s + d * (i % 2 === 0 ? 3 : 1), 0)
+  return (10 - (sum % 10)) % 10 === check
+}
+
+const ocrLoading = ref(false)
+const ocrFileInput = ref(null)
+
+async function readDigitsFromCamera() {
+  const video = document.querySelector('#reader video')
+  if (!video?.videoWidth) {
+    ocrFileInput.value?.click()
+    return
+  }
+  await readDigits(await toJpegBase64(video, 1600))
+}
+
+async function onOcrFileSelect(e) {
+  const file = e.target.files?.[0]
+  e.target.value = ''
+  if (file) await readDigits(await toJpegBase64(file, 1600))
+}
+
+async function readDigits(imageBase64) {
+  ocrLoading.value = true
+  scanError.value = ''
+  try {
+    const { digits } = await $fetch('/api/read-barcode', {
+      method: 'POST',
+      body: { imageBase64, mimeType: 'image/jpeg' }
+    })
+    const code = String(digits || '')
+    if (isValidBarcode(code)) {
+      scanHandled = true
+      await stopScanner()
+      manualBarcode.value = code
+      await lookupBarcode(code)
+    } else if (code.length >= 8) {
+      manualBarcode.value = code
+      manualInputOpen.value = true
+      scanError.value = `Numéro lu : ${code}. Il semble incomplet, vérifie-le puis valide.`
+    } else {
+      scanError.value = 'Aucun numéro lisible. Rapproche la caméra des chiffres sous le code-barres.'
+    }
+  } catch (e) {
+    console.error('Erreur lecture chiffres :', e)
+    scanError.value = e?.statusCode === 429
+      ? 'Trop de lectures d’affilée, réessaie dans quelques secondes.'
+      : 'Erreur pendant la lecture des chiffres. Réessaie.'
+  } finally {
+    ocrLoading.value = false
+  }
+}
+
+watch(() => props.active, (active) => {
+  if (!active && currentScreen.value === 'scanner') closeScanner()
+})
+
+function onVisibilityChange() {
+  if (currentScreen.value !== 'scanner') return
+  // iOS coupe la caméra quand l'app passe en arrière-plan : on la relance au retour
+  if (document.hidden) stopScanner()
+  else if (!scanResult.value) startScanner()
+}
+
+onMounted(() => document.addEventListener('visibilitychange', onVisibilityChange))
+onBeforeUnmount(() => document.removeEventListener('visibilitychange', onVisibilityChange))
 
 async function lookupBarcode(barcode) {
   const localShared = sharedFoods.value.find(item => item.barcode === barcode)
@@ -1094,13 +1190,15 @@ async function lookupBarcode(barcode) {
 }
 
 async function submitManualBarcode() {
-  if (!manualBarcode.value.trim()) return
+  const code = manualBarcode.value.replace(/\D/g, '')
+  if (!code) return
   scanError.value = ''
   scanResult.value = null
 
   try {
+    scanHandled = true
     await stopScanner()
-    await lookupBarcode(manualBarcode.value.trim())
+    await lookupBarcode(code)
   } catch (e) {
     console.error(e)
     scanError.value = 'Erreur pendant la recherche du produit.'
@@ -1214,7 +1312,9 @@ function selectFood(f) {
 }
 
 function goBackFromQuantity() {
-  currentScreen.value = lastScreenBeforeQuantity.value || 'main'
+  const target = lastScreenBeforeQuantity.value || 'main'
+  currentScreen.value = target
+  if (target === 'scanner') startScanner()
 }
 
 function addFood() {
@@ -1353,20 +1453,43 @@ function triggerFileInput() {
   fileInputRef.value?.click()
 }
 
-function handleImageSelect(e) {
+// Redimensionne (photo ou image de la caméra) en JPEG base64 pour rester sous la limite de 4 Mo de Groq
+async function toJpegBase64(source, maxSide = 1280) {
+  let el = source
+  let url = null
+  if (source instanceof Blob) {
+    url = URL.createObjectURL(source)
+    el = new Image()
+    el.src = url
+    await el.decode()
+  }
+  const w = el.videoWidth || el.naturalWidth
+  const h = el.videoHeight || el.naturalHeight
+  const scale = Math.min(1, maxSide / Math.max(w, h))
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.round(w * scale)
+  canvas.height = Math.round(h * scale)
+  canvas.getContext('2d').drawImage(el, 0, 0, canvas.width, canvas.height)
+  if (url) URL.revokeObjectURL(url)
+  return canvas.toDataURL('image/jpeg', 0.85).split(',')[1]
+}
+
+async function handleImageSelect(e) {
   const file = e.target.files?.[0]
   if (!file) return
 
-  aiImageMime.value = file.type || 'image/jpeg'
+  aiImageMime.value = 'image/jpeg'
   aiResult.value = null
   aiError.value = null
 
-  const reader = new FileReader()
-  reader.onload = (ev) => {
-    aiImage.value = ev.target.result
-    aiImageBase64.value = ev.target.result.split(',')[1]
+  try {
+    const base64 = await toJpegBase64(file)
+    aiImageBase64.value = base64
+    aiImage.value = `data:image/jpeg;base64,${base64}`
+  } catch (err) {
+    console.error('Erreur lecture image :', err)
+    aiError.value = "Impossible de lire cette image."
   }
-  reader.readAsDataURL(file)
 }
 
 function clearAiState() {

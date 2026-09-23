@@ -129,7 +129,7 @@
           <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-orange-400 to-pink-500 rounded-full"></div>
           <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Nutrition</h2>
         </div>
-        <AlimentationSection />
+        <AlimentationSection :active="activeTab === 'nutrition'" />
       </section>
 
       <!-- Amis — monté à la première visite -->

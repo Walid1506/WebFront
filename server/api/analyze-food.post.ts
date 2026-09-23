@@ -13,31 +13,12 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Image manquante' })
   }
 
-  // Convertir base64 → buffer → upload sur Litterbox (URL temporaire 1h)
-  const imageBuffer = Buffer.from(imageBase64, 'base64')
-  const ext = mimeType.includes('png') ? 'png' : 'jpg'
-
-  const form = new FormData()
-  form.append('reqtype', 'fileupload')
-  form.append('time', '1h')
-  form.append('fileToUpload', new Blob([imageBuffer], { type: mimeType }), `food.${ext}`)
-
-  const uploadRes = await fetch('https://litterbox.catbox.moe/resources/internals/api.php', {
-    method: 'POST',
-    body: form
-  })
-
-  if (!uploadRes.ok) {
-    throw createError({ statusCode: 500, message: 'Erreur upload image' })
+  // Groq refuse les images base64 de plus de 4 Mo (le client redimensionne avant l'envoi)
+  if (imageBase64.length > 5_000_000) {
+    throw createError({ statusCode: 413, message: 'Image trop lourde' })
   }
+  const imageUrl = `data:${mimeType};base64,${imageBase64}`
 
-  const imageUrl = (await uploadRes.text()).trim()
-
-  if (!imageUrl.startsWith('https://')) {
-    throw createError({ statusCode: 500, message: 'URL image invalide' })
-  }
-
-  // Appel Groq Vision avec l'URL publique
   const prompt = `Tu es un expert en nutrition. Analyse l'aliment ou le repas dans cette image.
 
 Identifie le(s) aliment(s) et estime les valeurs nutritionnelles pour la portion visible dans l'assiette.
@@ -68,7 +49,7 @@ Règles :
       'Authorization': `Bearer ${apiKey}`
     },
     body: JSON.stringify({
-      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+      model: 'qwen/qwen3.8-27b',
       messages: [
         {
           role: 'user',
