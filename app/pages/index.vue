@@ -152,7 +152,7 @@
           <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-[var(--accent-from)] to-[var(--accent-to)] rounded-full"></div>
           <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Amis</h2>
         </div>
-        <Amis @pending-change="pendingCount = $event" @unread-change="unreadMsgCount = $event" />
+        <Amis :active="activeTab === 'amis'" @pending-change="pendingCount = $event" @unread-change="unreadMsgCount = $event" />
       </section>
 
       <!-- Profil — monté à la première visite -->
@@ -690,12 +690,12 @@ async function fetchNotifications(uid) {
 }
 
 async function acceptFromNotif(r) {
-  await supabase.from('friendships').update({ status: 'accepted' }).eq('id', r.id)
+  await supabase.from('friendships').update({ status: 'accepted' }).eq('id', r.id).eq('status', 'pending')
   await fetchNotifications(currentUserId)
 }
 
 async function declineFromNotif(r) {
-  await supabase.from('friendships').delete().eq('id', r.id)
+  await supabase.from('friendships').delete().eq('id', r.id).eq('status', 'pending')
   await fetchNotifications(currentUserId)
 }
 

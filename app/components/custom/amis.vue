@@ -386,6 +386,9 @@
 </template>
 
 <script setup>
+const props = defineProps({
+  active: { type: Boolean, default: true }
+})
 const emit = defineEmits(['pending-change', 'unread-change'])
 const { theme } = useTheme()
 
@@ -415,10 +418,15 @@ const myStats = ref(null)
 let currentUserId = null
 
 onMounted(async () => {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return
-  currentUserId = user.id
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.user) return
+  currentUserId = session.user.id
   await Promise.all([fetchFriends(), fetchPending()])
+})
+
+// L'onglet reste monté : on rafraîchit à chaque retour (demandes acceptées depuis la cloche, nouveaux amis...)
+watch(() => props.active, (active) => {
+  if (active && currentUserId) Promise.all([fetchFriends(), fetchPending()])
 })
 
 async function searchUser() {
@@ -471,13 +479,14 @@ async function fetchPending() {
 }
 
 async function acceptRequest(id) {
-  await supabase.from('friendships').update({ status: 'accepted' }).eq('id', id)
+  await supabase.from('friendships').update({ status: 'accepted' }).eq('id', id).eq('status', 'pending')
   await Promise.all([fetchFriends(), fetchPending()])
   emit('pending-change', pendingReceived.value.length)
 }
 
 async function declineRequest(id) {
-  await supabase.from('friendships').delete().eq('id', id)
+  // Seulement si c'est encore une demande : une liste pas à jour ne doit pas supprimer une amitié acceptée
+  await supabase.from('friendships').delete().eq('id', id).eq('status', 'pending')
   await fetchPending()
   emit('pending-change', pendingReceived.value.length)
 }
@@ -508,14 +517,21 @@ async function fetchFriends() {
     unreadBySender[m.sender_id] = (unreadBySender[m.sender_id] || 0) + 1
   }
 
+  // Une seule requête pour les séances du mois de tous les amis (au lieu d'une par ami)
+  const { data: monthSessions } = await supabase.from('sport_sessions')
+    .select('user_id').in('user_id', allFriendIds).gte('date', firstOfMonth)
+  const sessionsByFriend = {}
+  for (const s of monthSessions || []) {
+    sessionsByFriend[s.user_id] = (sessionsByFriend[s.user_id] || 0) + 1
+  }
+
   const enriched = await Promise.all(allFriendIds.map(async friendId => {
-    const { data: sessions } = await supabase.from('sport_sessions').select('id').eq('user_id', friendId).gte('date', firstOfMonth)
     let profile = profiles?.find(p => p.id === friendId) ?? null
     if (!profile) {
       const { data: p } = await supabase.from('profiles').select('id, username, avatar_url, last_seen').eq('id', friendId).maybeSingle()
       profile = p ?? { id: friendId, username: null, avatar_url: null, last_seen: null }
     }
-    return { friendId, profile, sessionCount: sessions?.length || 0, unreadCount: unreadBySender[friendId] || 0, lastSeen: profile?.last_seen || null }
+    return { friendId, profile, sessionCount: sessionsByFriend[friendId] || 0, unreadCount: unreadBySender[friendId] || 0, lastSeen: profile?.last_seen || null }
   }))
 
   friends.value = enriched
@@ -535,6 +551,7 @@ function formatLastSeen(ts) {
 function resetUnread(f) {
   const idx = friends.value.findIndex(fr => fr.friendId === f.friendId)
   if (idx !== -1) friends.value[idx] = { ...friends.value[idx], unreadCount: 0 }
+  emit('unread-change', friends.value.reduce((sum, fr) => sum + fr.unreadCount, 0))
 }
 
 function openChat(f) {
