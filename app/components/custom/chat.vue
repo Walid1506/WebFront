@@ -189,6 +189,7 @@ let currentUserId = null
 let currentUsername = ''
 let channel = null
 let mediaRecorder = null
+let recordingStream = null
 let audioChunks = []
 let recordingTimer = null
 let recordingMimeType = 'audio/webm'
@@ -210,21 +211,44 @@ onMounted(async () => {
   await markRead()
   subscribeRealtime()
   scrollToBottom()
+  document.addEventListener('visibilitychange', onVisibilityChange)
 })
 
 onUnmounted(() => {
+  document.removeEventListener('visibilitychange', onVisibilityChange)
   channel?.unsubscribe()
   cancelRecording()
 })
 
+// Le temps réel ne rejoue pas les messages reçus pendant une coupure (app en arrière-plan sur iOS) :
+// on recharge la conversation au retour et à chaque (re)connexion du canal
+async function catchUp() {
+  await fetchMessages()
+  await markRead()
+  scrollToBottom()
+}
+
+function onVisibilityChange() {
+  if (!document.hidden && currentUserId) catchUp()
+}
+
+function addMessage(message) {
+  if (!messages.value.some(m => m.id === message.id)) messages.value.push(message)
+}
+
 async function fetchMessages() {
-  loading.value = true
-  const { data } = await supabase.from('messages')
+  const { data, error } = await supabase.from('messages')
     .select('*')
     .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${props.friendId}),and(sender_id.eq.${props.friendId},receiver_id.eq.${currentUserId})`)
     .order('created_at', { ascending: true })
-  messages.value = data || []
   loading.value = false
+  if (error) {
+    console.error('Erreur fetchMessages:', error)
+    return
+  }
+  const ids = new Set(data.map(m => m.id))
+  messages.value = [...data, ...messages.value.filter(m => !ids.has(m.id))]
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
 }
 
 async function markRead() {
@@ -240,7 +264,7 @@ function subscribeRealtime() {
       filter: `receiver_id=eq.${currentUserId}`
     }, async payload => {
       if (payload.new.sender_id === props.friendId) {
-        messages.value.push(payload.new)
+        addMessage(payload.new)
         await markRead()
         scrollToBottom()
       }
@@ -253,7 +277,9 @@ function subscribeRealtime() {
       const idx = messages.value.findIndex(m => m.id === payload.new.id)
       if (idx !== -1) messages.value[idx] = { ...messages.value[idx], ...payload.new }
     })
-    .subscribe()
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') catchUp()
+    })
 }
 
 async function sendMessage() {
@@ -263,15 +289,19 @@ async function sendMessage() {
   newMessage.value = ''
   if (textareaEl.value) textareaEl.value.style.height = 'auto'
 
-  const { data } = await supabase.from('messages').insert({
+  const { data, error } = await supabase.from('messages').insert({
     sender_id: currentUserId,
     receiver_id: props.friendId,
     content,
     read: false
   }).select().single()
 
-  if (data) {
-    messages.value.push(data)
+  if (error) {
+    console.error('Erreur envoi message:', error)
+    if (!newMessage.value) newMessage.value = content
+    alert("Message non envoyé. Vérifie ta connexion et réessaie.")
+  } else if (data) {
+    addMessage(data)
     scrollToBottom()
     triggerPush({ receiver_id: props.friendId, content, media_url: null })
   }
@@ -300,7 +330,7 @@ async function sendPhoto(event) {
   }).select().single()
 
   if (data) {
-    messages.value.push(data)
+    addMessage(data)
     scrollToBottom()
     triggerPush({ receiver_id: props.friendId, content: null, media_url: publicUrl })
   }
@@ -328,13 +358,14 @@ function getSupportedMimeType() {
 async function startRecording() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    recordingStream = stream
     audioChunks = []
     const mimeType = getSupportedMimeType()
     recordingMimeType = mimeType || 'audio/webm'
     const mr = new MediaRecorder(stream, mimeType ? { mimeType } : {})
     mr.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data) }
     mr.onstop = () => {
-      stream.getTracks().forEach(t => t.stop())
+      releaseMicrophone()
       uploadAudio()
     }
     mediaRecorder = mr
@@ -356,13 +387,19 @@ function stopRecording() {
   }
 }
 
+function releaseMicrophone() {
+  recordingStream?.getTracks().forEach(t => t.stop())
+  recordingStream = null
+}
+
 function cancelRecording() {
   if (mediaRecorder) {
     mediaRecorder.ondataavailable = null
     mediaRecorder.onstop = null
-    mediaRecorder.stop()
+    if (mediaRecorder.state !== 'inactive') mediaRecorder.stop()
     mediaRecorder = null
   }
+  releaseMicrophone()
   if (recordingTimer) clearInterval(recordingTimer)
   isRecording.value = false
   audioChunks = []
@@ -389,7 +426,7 @@ async function uploadAudio() {
     read: false
   }).select().single()
   if (data) {
-    messages.value.push(data)
+    addMessage(data)
     scrollToBottom()
     triggerPush({ receiver_id: props.friendId, content: '🎤 Message vocal', media_url: publicUrl })
   }
