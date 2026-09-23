@@ -19,7 +19,7 @@
         <div class="absolute -top-20 left-1/4 w-72 h-72 rounded-full blur-[100px] pointer-events-none" :style="{ backgroundColor: theme.blobs[0] }"></div>
         <div class="absolute bottom-0 right-1/4 w-72 h-72 rounded-full blur-[100px] pointer-events-none" :style="{ backgroundColor: theme.blobs[1] }"></div>
         <!-- Header -->
-        <div class="absolute top-0 left-0 right-0 flex justify-between items-center p-6">
+        <div class="absolute top-[env(safe-area-inset-top)] left-0 right-0 flex justify-between items-center p-6">
           <p class="text-xs font-black uppercase tracking-widest text-slate-500">Timer de repos</p>
           <button @click="closeTimer" class="p-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white transition">
             <UIcon name="i-heroicons-x-mark" class="text-xl" />

@@ -11,7 +11,7 @@
     </div>
 
     <!-- Header -->
-    <nav class="px-4 py-3 md:px-6 md:py-4 flex justify-between items-center backdrop-blur-2xl sticky top-0 z-50 border-b border-white/[0.06] transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.75) }">
+    <nav class="px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] md:px-6 md:pb-4 md:pt-[calc(1rem+env(safe-area-inset-top))] flex justify-between items-center backdrop-blur-2xl sticky top-0 z-50 border-b border-white/[0.06] transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.75) }">
       <div class="flex items-center gap-3">
         <div class="bg-white/10 backdrop-blur p-1.5 rounded-xl border border-white/10">
           <img src="/images/logo.jpg" alt="Logo" class="h-7 w-7 md:h-8 md:w-8 rounded-lg" />
@@ -253,7 +253,7 @@
     <!-- ── Panel notifications ── -->
     <Transition name="fade">
       <div v-if="notifOpen" class="fixed inset-0 z-[600]" @click.self="notifOpen = false">
-        <div class="absolute top-14 right-4 w-80 rounded-[24px] border border-white/[0.08] backdrop-blur-2xl shadow-2xl overflow-hidden"
+        <div class="absolute top-[calc(3.5rem+env(safe-area-inset-top))] right-4 w-80 rounded-[24px] border border-white/[0.08] backdrop-blur-2xl shadow-2xl overflow-hidden"
           :style="{ backgroundColor: bgAlpha(theme.bg, 0.97) }">
           <div class="flex items-center justify-between px-5 py-4 border-b border-white/[0.08]">
             <p class="font-black text-white">Notifications</p>
@@ -360,7 +360,7 @@
 
     <!-- ── Gérer mes séances sauvegardées ── -->
     <Transition name="slide-up">
-      <div v-if="manageSessionsOpen" class="fixed inset-0 z-[260] backdrop-blur-2xl flex flex-col transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.98) }">
+      <div v-if="manageSessionsOpen" class="fixed inset-0 z-[260] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl flex flex-col transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.98) }">
         <div class="flex items-center gap-4 px-5 py-5 border-b border-white/[0.08]">
           <button @click="manageSessionsOpen = false" class="p-2 rounded-xl bg-white/[0.06] text-slate-400 hover:text-white transition">
             <UIcon name="i-heroicons-arrow-left" class="text-xl" />

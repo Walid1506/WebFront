@@ -57,7 +57,7 @@
 
     <!-- ── Modal créer/éditer ── -->
     <Transition name="slide-up">
-      <div v-if="modalOpen" class="fixed inset-0 z-[200] backdrop-blur-2xl flex flex-col" :style="{ backgroundColor: bgAlpha(theme.bg, 0.98) }">
+      <div v-if="modalOpen" class="fixed inset-0 z-[200] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl flex flex-col" :style="{ backgroundColor: bgAlpha(theme.bg, 0.98) }">
         <div class="flex items-center gap-4 px-5 py-5 border-b border-white/[0.08]">
           <button @click="closeModal" class="p-2 rounded-xl bg-white/[0.06] text-slate-400 hover:text-white transition">
             <UIcon name="i-heroicons-arrow-left" class="text-xl" />

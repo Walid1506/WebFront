@@ -289,7 +289,7 @@
 
       </div>
 
-      <div v-else-if="currentScreen === 'library'" key="library" class="fixed inset-0 z-[100] backdrop-blur-2xl">
+      <div v-else-if="currentScreen === 'library'" key="library" class="fixed inset-0 z-[100] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl">
         <div class="w-full max-w-7xl mx-auto flex flex-col h-full">
           <div class="sticky top-0 z-30 backdrop-blur-2xl px-4 sm:px-8 pt-4 sm:pt-8 pb-4 border-b border-white/10">
             <div class="flex items-center justify-between mb-4 gap-4">
@@ -372,7 +372,7 @@
       </div>
 
       <div v-else-if="currentScreen === 'quantity' && selectedFood" key="quantity" class="fixed inset-0 z-[120] backdrop-blur-2xl flex flex-col items-center justify-center p-6">
-        <button @click="goBackFromQuantity" class="absolute top-8 left-8 text-slate-400 hover:text-white transition">
+        <button @click="goBackFromQuantity" class="absolute top-[calc(2rem+env(safe-area-inset-top))] left-8 text-slate-400 hover:text-white transition">
           <UIcon name="i-heroicons-arrow-left" class="text-4xl" />
         </button>
 
@@ -410,7 +410,7 @@
       </div>
 
       <div v-else-if="currentScreen === 'scanner'" key="scanner" class="fixed inset-0 z-[110] backdrop-blur-2xl flex flex-col items-center justify-center p-6">
-        <button @click="closeScanner" class="absolute top-8 left-8 text-slate-400 bg-slate-900 p-4 rounded-full">
+        <button @click="closeScanner" class="absolute top-[calc(2rem+env(safe-area-inset-top))] left-8 text-slate-400 bg-slate-900 p-4 rounded-full">
           <UIcon name="i-heroicons-x-mark" class="text-2xl" />
         </button>
 
@@ -482,7 +482,7 @@
       </div>
 
       <!-- ── ÉCRAN ANALYSE IA ── -->
-      <div v-else-if="currentScreen === 'camera'" key="camera" class="fixed inset-0 z-[110] bg-black flex flex-col">
+      <div v-else-if="currentScreen === 'camera'" key="camera" class="fixed inset-0 z-[110] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] bg-black flex flex-col">
         <div class="flex items-center gap-4 px-6 py-5 border-b border-white/10 backdrop-blur-2xl">
           <button @click="currentScreen = 'main'" class="text-slate-400 hover:text-white transition">
             <UIcon name="i-heroicons-arrow-left" class="text-3xl" />
@@ -605,7 +605,7 @@
         </div>
       </div>
 
-      <div v-else-if="currentScreen === 'cart'" key="cart" class="fixed inset-0 z-[110] backdrop-blur-2xl flex flex-col items-center p-2 sm:p-6">
+      <div v-else-if="currentScreen === 'cart'" key="cart" class="fixed inset-0 z-[110] backdrop-blur-2xl flex flex-col items-center px-2 pb-2 sm:px-6 sm:pb-6 pt-[calc(0.5rem+env(safe-area-inset-top))] sm:pt-[calc(1.5rem+env(safe-area-inset-top))]">
         <div class="w-full max-w-3xl bg-[#111111] rounded-[28px] sm:rounded-[40px] border border-white/10 flex flex-col h-full overflow-hidden">
           <div class="px-4 py-4 sm:p-8 flex justify-between items-center border-b border-white/5 bg-black/50">
             <div class="flex items-center gap-3 sm:gap-6">

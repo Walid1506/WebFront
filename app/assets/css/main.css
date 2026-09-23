@@ -17,8 +17,10 @@ html, body { background-color: var(--theme-bg); }
 html, body {
   /* Évite le scroll rebond iOS hors app */
   overscroll-behavior: none;
-  /* Safe area : contenu ne passe pas sous l'encoche */
-  padding-top: env(safe-area-inset-top);
+}
+body {
+  /* Côtés seulement : le haut (encoche) est géré par l'en-tête et chaque écran plein écran,
+     sinon la marge était appliquée deux fois (html + body) et l'en-tête collant passait sous l'heure */
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }

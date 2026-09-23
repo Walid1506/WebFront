@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 z-[400] flex flex-col" :style="{ backgroundColor: theme.bg }">
+  <div class="fixed inset-0 z-[400] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col" :style="{ backgroundColor: theme.bg }">
 
     <!-- Header -->
     <div class="flex items-center gap-3 px-4 py-4 border-b border-white/[0.08] backdrop-blur-xl shrink-0" :style="{ backgroundColor: bgAlpha(theme.bg, 0.92) }">
@@ -146,7 +146,7 @@
     <!-- Viewer image plein écran -->
     <Transition name="fade">
       <div v-if="viewImage" class="fixed inset-0 z-[500] bg-black/95 flex items-center justify-center" @click="viewImage = null">
-        <button class="absolute top-5 right-5 p-2 text-white/50 hover:text-white transition">
+        <button class="absolute top-[calc(1.25rem+env(safe-area-inset-top))] right-5 p-2 text-white/50 hover:text-white transition">
           <UIcon name="i-heroicons-x-mark" class="text-2xl" />
         </button>
         <img :src="viewImage" class="max-w-full max-h-full object-contain rounded-2xl" @click.stop />
