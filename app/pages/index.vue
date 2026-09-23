@@ -415,6 +415,25 @@ const tabs = [
   { id: 'amis', label: 'Amis', icon: 'i-heroicons-user-group' },
 ]
 
+// Ouverture depuis une notification : ?tab=amis dans l'URL, ou message du service worker si l'app était déjà ouverte
+function openTabFromUrl(url) {
+  try {
+    const tab = new URL(url, window.location.origin).searchParams.get('tab')
+    if (tab && [...tabs.map(t => t.id), 'profil'].includes(tab)) changeTab(tab)
+  } catch {}
+}
+
+function onServiceWorkerMessage(event) {
+  if (event.data?.type === 'open-url') openTabFromUrl(event.data.url)
+}
+
+onMounted(() => {
+  openTabFromUrl(window.location.href)
+  navigator.serviceWorker?.addEventListener('message', onServiceWorkerMessage)
+})
+
+onUnmounted(() => navigator.serviceWorker?.removeEventListener('message', onServiceWorkerMessage))
+
 const isModalOpen = ref(false)
 const selectedDate = ref(null)
 const sessionToEdit = ref(null)

@@ -93,10 +93,21 @@ onUnmounted(() => subscription.unsubscribe())
 onMounted(async () => {
   if (ready.value) return
 
-  // Détecter les erreurs dans le hash (ex: #error=access_denied)
+  // Détecter les erreurs dans le hash (ex: #error=access_denied) ou la query
   const hashParams = new URLSearchParams(window.location.hash.substring(1))
-  if (hashParams.get('error')) {
+  const query = new URLSearchParams(window.location.search)
+  if (hashParams.get('error') || query.get('error')) {
     linkError.value = 'Lien invalide ou expiré. Recommence depuis la connexion.'
+    return
+  }
+
+  // Lien "token_hash" (modèle d'e-mail Supabase) : il fonctionne même quand le lien s'ouvre dans un autre
+  // navigateur que celui qui a fait la demande (sur iPhone, l'app installée et Safari ne partagent rien)
+  const tokenHash = query.get('token_hash')
+  if (tokenHash) {
+    const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
+    if (error) linkError.value = 'Lien invalide ou expiré. Recommence depuis la connexion.'
+    else ready.value = true
     return
   }
 
