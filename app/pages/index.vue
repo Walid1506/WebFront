@@ -11,7 +11,7 @@
     </div>
 
     <!-- Header -->
-    <nav class="px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] md:px-6 md:pb-4 md:pt-[calc(1rem+env(safe-area-inset-top))] flex justify-between items-center backdrop-blur-2xl sticky top-0 z-50 border-b border-white/[0.06] transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.75) }">
+    <nav ref="topNavEl" class="px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] md:px-6 md:pb-4 md:pt-[calc(1rem+env(safe-area-inset-top))] flex justify-between items-center backdrop-blur-2xl sticky top-0 z-50 border-b border-white/[0.06] transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.75) }">
       <div class="flex items-center gap-3">
         <div class="bg-white/10 backdrop-blur p-1.5 rounded-xl border border-white/10">
           <img src="/images/logo.jpg" alt="Logo" class="h-7 w-7 md:h-8 md:w-8 rounded-lg" />
@@ -41,7 +41,7 @@
     </nav>
 
     <!-- Tab bar desktop -->
-    <div class="hidden md:flex sticky top-[60px] z-40 backdrop-blur-2xl border-b border-white/[0.06] px-6 transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.85) }">
+    <div ref="desktopTabsEl" class="hidden md:flex sticky top-[var(--app-nav-h,60px)] z-40 backdrop-blur-2xl border-b border-white/[0.06] px-6 transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.85) }">
       <button
         v-for="tab in tabs"
         :key="tab.id"
@@ -433,6 +433,28 @@ onMounted(() => {
 })
 
 onUnmounted(() => navigator.serviceWorker?.removeEventListener('message', onServiceWorkerMessage))
+
+// Hauteurs réelles des barres du haut (encoche comprise) exposées en CSS : les éléments collants
+// se placent juste dessous au lieu de passer sous la barre FitTrack
+const topNavEl = ref(null)
+const desktopTabsEl = ref(null)
+let headerObserver = null
+
+function updateHeaderHeights() {
+  const navH = topNavEl.value?.offsetHeight || 0
+  const tabsH = desktopTabsEl.value?.offsetHeight || 0
+  document.documentElement.style.setProperty('--app-nav-h', `${navH}px`)
+  document.documentElement.style.setProperty('--app-header-h', `${navH + tabsH}px`)
+}
+
+onMounted(() => {
+  updateHeaderHeights()
+  headerObserver = new ResizeObserver(updateHeaderHeights)
+  if (topNavEl.value) headerObserver.observe(topNavEl.value)
+  if (desktopTabsEl.value) headerObserver.observe(desktopTabsEl.value)
+})
+
+onUnmounted(() => headerObserver?.disconnect())
 
 const isModalOpen = ref(false)
 const selectedDate = ref(null)

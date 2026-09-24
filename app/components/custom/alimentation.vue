@@ -2,7 +2,12 @@
   <div class="w-full max-w-7xl mx-auto space-y-6 pb-20 pt-4 px-4 min-h-screen text-white font-sans">
     <Transition name="slide" mode="out-in">
       <div v-if="currentScreen === 'main'" key="main" class="flex flex-col gap-6">
-        <div class="backdrop-blur-xl sticky top-0 z-40 py-4 border-b border-white/[0.06] space-y-4">
+        <!-- Collant seulement sur grand écran (sous les barres de l'app) : sur téléphone il prenait un tiers de l'écran -->
+        <div
+          ref="headerEl"
+          class="backdrop-blur-xl md:sticky md:top-[var(--app-header-h,0px)] z-40 py-4 border-b border-white/[0.06] space-y-4"
+          style="background-color: color-mix(in srgb, var(--theme-bg, #060d1a) 88%, transparent)"
+        >
           <div class="flex justify-between items-center">
             <h1 class="text-4xl font-[1000] tracking-tighter text-white">Nutrition</h1>
             <div class="flex gap-4">
@@ -63,9 +68,10 @@
           </p>
         </div>
 
+        <!-- Sur mobile les colonnes s'effacent (contents) pour réordonner les cartes : le journal passe en haut -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div class="lg:col-span-5 space-y-8">
-            <div class="bg-white/[0.04] backdrop-blur-2xl rounded-[35px] p-6 border border-white/[0.08] shadow-2xl relative overflow-hidden">
+          <div class="contents lg:block lg:col-span-5 lg:space-y-8">
+            <div class="order-5 lg:order-none bg-white/[0.04] backdrop-blur-2xl rounded-[35px] p-6 border border-white/[0.08] shadow-2xl relative overflow-hidden">
               <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--accent-from)] via-[var(--accent-to)] to-[var(--accent-from)]"></div>
 
               <div class="flex justify-between items-center mb-6">
@@ -152,11 +158,17 @@
               </div>
             </div>
 
-            <div class="bg-[#111111] rounded-[35px] p-6 border border-white/5">
-              <h2 class="text-lg font-black text-white mb-8">Objectifs du jour</h2>
+            <div class="order-1 lg:order-none bg-[#111111] rounded-[35px] p-6 border border-white/5">
+              <div class="flex items-center justify-between mb-8 gap-3">
+                <h2 class="text-lg font-black text-white">Objectifs du jour</h2>
+                <button @click="scrollToJournal" class="text-xs font-black flex items-center gap-1 shrink-0" style="color: var(--accent-solid)">
+                  Voir mon journal
+                  <UIcon name="i-heroicons-chevron-right" class="text-sm" />
+                </button>
+              </div>
 
               <div class="flex justify-around items-end">
-                <div class="relative w-40 h-40 flex items-center justify-center">
+                <div class="relative w-40 h-40 flex items-center justify-center cursor-pointer active:scale-95 transition-transform" @click="scrollToJournal">
                   <svg viewBox="0 0 36 36" class="absolute inset-0 w-full h-full -rotate-90">
                     <path class="text-slate-800" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                     <path class="text-[#FF2A5F] transition-all duration-1000" :stroke-dasharray="`${progressKcal}, 100`" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
@@ -188,16 +200,16 @@
             </div>
           </div>
 
-          <div class="lg:col-span-7 space-y-8">
+          <div class="contents lg:block lg:col-span-7 lg:space-y-8">
             <button
               @click="openLibrary"
-              class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-xl py-6 rounded-[30px] shadow-lg shadow-[color:var(--accent-solid)]/20 transition-all active:scale-95 flex items-center justify-center gap-3"
+              class="order-2 lg:order-none w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-xl py-6 rounded-[30px] shadow-lg shadow-[color:var(--accent-solid)]/20 transition-all active:scale-95 flex items-center justify-center gap-3"
             >
               <UIcon name="i-heroicons-plus-circle" class="text-3xl" />
               Ajouter un aliment
             </button>
 
-            <div class="bg-[#111111] p-8 rounded-[35px] border border-white/5 space-y-6">
+            <div class="order-4 lg:order-none bg-[#111111] p-8 rounded-[35px] border border-white/5 space-y-6">
               <div
                 v-for="macro in [['Glucides', total.carbs, activeBesoins.carbs, '#FF9500', progressCarbs], ['Protéines', total.prot, activeBesoins.prot, '#2F6BFF', progressProt], ['Lipides', total.fats, activeBesoins.fats, '#9DFF00', progressFats]]"
                 :key="macro[0]"
@@ -215,13 +227,16 @@
               </div>
             </div>
 
-            <div class="bg-[#111111] rounded-[35px] border border-white/5 overflow-hidden">
-              <div class="flex items-center justify-between p-6 bg-white/5">
+            <div ref="journalEl" class="order-3 lg:order-none bg-[#111111] rounded-[35px] border border-white/5 overflow-hidden">
+              <div class="flex items-center justify-between p-6 bg-white/5 gap-3">
                 <h3 class="text-white font-bold text-xl flex items-center gap-3">
                   <UIcon name="i-heroicons-shopping-bag" />
                   Journal
                 </h3>
-                <span class="bg-slate-800 px-4 py-1.5 rounded-full text-sm font-black">{{ consumed.length }}</span>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span v-if="consumed.length" class="text-slate-400 text-sm font-black">{{ total.kcal }} kcal</span>
+                  <span class="bg-slate-800 px-4 py-1.5 rounded-full text-sm font-black">{{ consumed.length }}</span>
+                </div>
               </div>
 
               <div class="p-4 space-y-2">
@@ -235,9 +250,9 @@
                   class="flex flex-wrap justify-between items-center group p-4 rounded-2xl hover:bg-slate-900 border border-transparent hover:border-white/5 transition-all"
                 >
                   <div class="flex items-center gap-4 text-left min-w-0">
-                    <img :src="item.img" class="w-14 h-14 rounded-xl object-cover bg-white shrink-0" @error="onImageError" />
+                    <img :src="item.img" class="w-14 h-14 rounded-xl object-cover bg-white shrink-0 cursor-pointer" @click="toggleDetails(index)" @error="onImageError" />
                     <div class="min-w-0">
-                      <p class="text-white font-bold text-lg leading-tight">{{ item.name }}</p>
+                      <p class="text-white font-bold text-lg leading-tight break-words cursor-pointer" @click="toggleDetails(index)">{{ item.name }}</p>
                       <button
                         @click="editingIndex === index ? cancelEdit() : startEdit(index)"
                         class="text-[#2F6BFF] font-black text-xs mt-1 -my-2 py-2 pr-3 flex items-center gap-1 hover:text-white transition-colors"
@@ -245,6 +260,21 @@
                         {{ item.amount }} g • {{ item.kcal }} kcal
                         <UIcon name="i-heroicons-pencil-square" class="text-sm" />
                       </button>
+                    </div>
+                  </div>
+
+                  <div v-if="expandedIndex === index && editingIndex !== index" class="order-last w-full grid grid-cols-3 gap-2 mt-3 text-center">
+                    <div class="bg-slate-900 rounded-xl py-2">
+                      <p class="text-blue-400 font-black text-sm">{{ item.prot }} g</p>
+                      <p class="text-[10px] text-slate-500 font-black uppercase">Prot</p>
+                    </div>
+                    <div class="bg-slate-900 rounded-xl py-2">
+                      <p class="text-orange-400 font-black text-sm">{{ item.carbs }} g</p>
+                      <p class="text-[10px] text-slate-500 font-black uppercase">Gluc</p>
+                    </div>
+                    <div class="bg-slate-900 rounded-xl py-2">
+                      <p class="text-[#9DFF00] font-black text-sm">{{ item.fats }} g</p>
+                      <p class="text-[10px] text-slate-500 font-black uppercase">Lip</p>
                     </div>
                   </div>
 
@@ -1306,17 +1336,38 @@ const liveBesoins = computed(() => {
 
 const activeBesoins = computed(() => (!isToday.value && frozenBesoins.value) ? frozenBesoins.value : liveBesoins.value)
 
-const total = computed(() =>
-  consumed.value.reduce(
+const total = computed(() => {
+  const t = consumed.value.reduce(
     (a, c) => ({
-      kcal: a.kcal + c.kcal,
-      prot: a.prot + c.prot,
-      carbs: a.carbs + c.carbs,
-      fats: a.fats + c.fats
+      kcal: a.kcal + (Number(c.kcal) || 0),
+      prot: a.prot + (Number(c.prot) || 0),
+      carbs: a.carbs + (Number(c.carbs) || 0),
+      fats: a.fats + (Number(c.fats) || 0)
     }),
     { kcal: 0, prot: 0, carbs: 0, fats: 0 }
   )
-)
+  // Arrondi : la somme de décimales donnait des affichages comme 93.19999999999999 g
+  const round1 = n => Math.round(n * 10) / 10
+  return { kcal: Math.round(t.kcal), prot: round1(t.prot), carbs: round1(t.carbs), fats: round1(t.fats) }
+})
+
+const headerEl = ref(null)
+const journalEl = ref(null)
+const expandedIndex = ref(null)
+
+function toggleDetails(i) {
+  expandedIndex.value = expandedIndex.value === i ? null : i
+}
+
+function scrollToJournal() {
+  if (!journalEl.value) return
+  // Décalage des barres collantes (barre FitTrack, + en-tête Nutrition sur grand écran) pour ne pas cacher le journal
+  const appHeader = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--app-header-h')) || 0
+  const nutritionHeader = headerEl.value && getComputedStyle(headerEl.value).position === 'sticky' ? headerEl.value.offsetHeight : 0
+  const stickyOffset = appHeader + nutritionHeader + 16
+  const top = journalEl.value.getBoundingClientRect().top + window.scrollY - stickyOffset
+  window.scrollTo({ top, behavior: 'smooth' })
+}
 
 const progressKcal = computed(() => Math.min(100, (total.value.kcal / activeBesoins.value.kcal) * 100) || 0)
 const progressCarbs = computed(() => Math.min(100, (total.value.carbs / activeBesoins.value.carbs) * 100) || 0)
@@ -1326,6 +1377,7 @@ const progressEau = computed(() => Math.min(100, (eau.value / 3.0) * 100) || 0)
 
 function changeDay(d) {
   cancelEdit()
+  expandedIndex.value = null
   const date = new Date(selectedDateObj.value)
   date.setDate(date.getDate() + d)
   selectedDateObj.value = date
@@ -1386,6 +1438,7 @@ function addFood() {
 
 function removeItem(i) {
   cancelEdit()
+  expandedIndex.value = null
   consumed.value.splice(i, 1)
   saveDaily()
 }

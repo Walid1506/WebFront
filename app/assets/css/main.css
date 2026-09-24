@@ -33,8 +33,12 @@ input, textarea, select {
 /* Barre de navigation du bas : dépasse bien sous la home indicator iPhone */
 .pb-safe { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
 
-/* Tap sans délai 300ms sur iOS */
-* { touch-action: manipulation; }
+/* Tap sans délai 300ms et pas de zoom (double-tap ni pincement) : défilement uniquement */
+* { touch-action: pan-x pan-y; }
+
+/* Filet de sécurité : un contenu trop large (nom d'aliment très long...) ne fait pas glisser la page de côté.
+   clip (et non hidden) pour ne pas casser les en-têtes collants */
+html, body { overflow-x: clip; }
 
 @theme static {
   --font-sans: 'Public Sans', sans-serif;
