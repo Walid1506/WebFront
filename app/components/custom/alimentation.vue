@@ -239,8 +239,20 @@
                 </div>
               </div>
 
+              <p v-if="dailySaveError" class="px-6 pt-4 text-red-400 text-sm font-bold">
+                Pas encore sauvegardé.
+                <button @click="retryDailyIfNeeded" class="underline text-white ml-1">Réessayer</button>
+              </p>
+
               <div class="p-4 space-y-2">
-                <div v-if="consumed.length === 0" class="text-center text-slate-500 font-bold py-10">
+                <div v-if="dailyLoadError" class="text-center py-10 space-y-3">
+                  <p class="text-red-400 font-bold">Ton journal n'a pas pu être chargé.</p>
+                  <button @click="fetchDaily" class="bg-slate-800 text-white font-black text-sm px-5 py-2.5 rounded-xl">Réessayer</button>
+                </div>
+                <div v-else-if="!dayLoaded" class="text-center text-slate-500 font-bold py-10">
+                  Chargement du journal...
+                </div>
+                <div v-else-if="consumed.length === 0" class="text-center text-slate-500 font-bold py-10">
                   Journal vide pour ce jour.
                 </div>
 
@@ -829,21 +841,24 @@ watch(searchQuery, (q, prev) => {
 })
 
 onMounted(async () => {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return
+  // Le journal se charge tout de suite avec la session locale : l'ancien contrôle réseau pouvait
+  // échouer au réveil de l'app, et le journal restait alors vide sans message
+  fetchDaily()
+  fetchSharedFoods()
+
+  const userId = await getUserId()
+  if (!userId) return
 
   const { data: globals } = await supabase
     .from('nutrition_globals')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .maybeSingle()
 
   if (globals) {
     if (globals.profil) Object.assign(profil, globals.profil)
     if (globals.shopping_list) shoppingList.value = globals.shopping_list
   }
-
-  await Promise.all([fetchDaily(), fetchSharedFoods()])
 })
 
 onBeforeUnmount(async () => {
@@ -902,15 +917,54 @@ async function saveScannedFoodToSharedLibrary(barcode, food) {
 // (sinon une liste vide écraserait les repas du jour en base)
 const dailyLoadedFor = ref(null)
 const dailyLoadError = ref(false)
+const dailySaveError = ref(false)
+const dayLoaded = computed(() => dailyLoadedFor.value === selectedDateStr.value)
 let dailySaveChain = Promise.resolve()
+let dailyLoad = null // chargement en cours : { date, promise }
+let dailyLoadSeq = 0
+let failedSave = null // dernière sauvegarde en échec, renvoyée plus tard : { date, payload, seq }
+let saveSeq = 0
+const latestSaveSeq = {} // date -> numéro de la dernière sauvegarde demandée pour ce jour
 
 async function getUserId() {
   const { data: { session } } = await supabase.auth.getSession()
   return session?.user?.id || null
 }
 
-async function fetchDaily() {
+// D'anciennes versions de l'app pouvaient créer plusieurs lignes pour le même jour (taps rapides) :
+// on les fusionne, un aliment présent dans plusieurs lignes n'étant compté qu'une fois
+function mergeRepas(lists) {
+  if (lists.length <= 1) return lists[0] || []
+  const kept = new Map()
+  const merged = []
+  for (const list of lists) {
+    const seen = new Map()
+    for (const item of list) {
+      const key = JSON.stringify([item.name, item.amount, item.kcal])
+      const n = (seen.get(key) || 0) + 1
+      seen.set(key, n)
+      if (n > (kept.get(key) || 0)) {
+        kept.set(key, n)
+        merged.push(item)
+      }
+    }
+  }
+  return merged
+}
+
+function fetchDaily() {
   const date = selectedDateStr.value
+  // Déjà en cours pour ce jour : on attend le même chargement
+  if (dailyLoad?.date === date) return dailyLoad.promise
+  const promise = loadDaily(date).finally(() => {
+    if (dailyLoad?.promise === promise) dailyLoad = null
+  })
+  dailyLoad = { date, promise }
+  return promise
+}
+
+async function loadDaily(date) {
+  const seq = ++dailyLoadSeq
   dailyLoadedFor.value = null
   dailyLoadError.value = false
   consumed.value = []
@@ -919,30 +973,47 @@ async function fetchDaily() {
 
   await dailySaveChain
   const userId = await getUserId()
-  if (!userId || date !== selectedDateStr.value) return
+  // Un chargement plus récent (autre jour, nouvel essai) a pris le relais : ce résultat n'est plus le bon
+  if (seq !== dailyLoadSeq || date !== selectedDateStr.value) return
+  if (!userId) {
+    dailyLoadError.value = true
+    return
+  }
 
-  const { data: dailyList, error } = await supabase
+  const { data: rows, error } = await supabase
     .from('nutrition_daily')
     .select('*')
     .eq('user_id', userId)
     .eq('date', date)
-    .limit(1)
+    .order('id', { ascending: true })
 
-  // L'utilisateur a changé de jour pendant la requête : ce résultat n'est plus le bon
-  if (date !== selectedDateStr.value) return
+  if (seq !== dailyLoadSeq || date !== selectedDateStr.value) return
   if (error) {
     console.error('Erreur fetchDaily:', error)
     dailyLoadError.value = true
     return
   }
 
-  if (dailyList?.length > 0) {
-    const d = dailyList[0]
-    eau.value = Number(d.eau) || 0
-    consumed.value = d.repas || []
-    frozenBesoins.value = d.cibles || null
+  if (rows?.length > 0) {
+    eau.value = Math.max(...rows.map(r => Number(r.eau) || 0))
+    consumed.value = mergeRepas(rows.map(r => r.repas || []))
+    frozenBesoins.value = [...rows].reverse().find(r => r.cibles)?.cibles || null
   }
   dailyLoadedFor.value = date
+}
+
+// Avant toute modification, le jour doit être chargé : sinon on modifierait une liste vide jamais
+// sauvegardée (on ne verrait que les derniers ajouts, et ils disparaîtraient à la réouverture)
+async function ensureDayLoaded() {
+  if (dayLoaded.value) return true
+  await fetchDaily()
+  return dayLoaded.value
+}
+
+// Nouvel essai quand on revient sur l'app ou l'onglet, ou quand le réseau revient
+function retryDailyIfNeeded() {
+  if (dailyLoadError.value) fetchDaily()
+  else if (failedSave) queueSave(failedSave.date, failedSave.payload, failedSave.seq)
 }
 
 async function saveGlobals() {
@@ -975,29 +1046,52 @@ function saveDaily() {
     cibles: JSON.parse(JSON.stringify(liveBesoins.value))
   }
 
-  // Sauvegardes en file : deux taps rapides ne créent pas deux lignes pour le même jour
+  const seq = ++saveSeq
+  latestSaveSeq[date] = seq
+  return queueSave(date, payload, seq)
+}
+
+// Sauvegardes en file : deux taps rapides ne créent pas deux lignes pour le même jour
+function queueSave(date, payload, seq) {
   dailySaveChain = dailySaveChain
-    .then(() => persistDaily(date, payload))
-    .catch(err => console.error('Erreur saveDaily:', err))
+    .then(async () => {
+      // Une sauvegarde plus récente du même jour suit dans la file : elle contient déjà tout
+      if (latestSaveSeq[date] !== seq) return
+      await persistDaily(date, payload)
+      if (failedSave?.date === date) failedSave = null
+    })
+    .catch(err => {
+      console.error('Erreur saveDaily:', err)
+      if (latestSaveSeq[date] === seq) failedSave = { date, payload, seq }
+    })
+    .finally(() => { dailySaveError.value = !!failedSave })
   return dailySaveChain
 }
 
 async function persistDaily(date, payload) {
   const userId = await getUserId()
-  if (!userId) return
+  if (!userId) throw new Error('Session introuvable')
 
-  const { data: exists, error: selectError } = await supabase
+  // Toutes les lignes du jour sont mises à jour (d'anciennes versions pouvaient en créer plusieurs)
+  const { data: updated, error } = await supabase
     .from('nutrition_daily')
-    .select('id')
+    .update(payload)
     .eq('user_id', userId)
     .eq('date', date)
-    .limit(1)
-  if (selectError) throw selectError
-
-  const { error } = exists?.length > 0
-    ? await supabase.from('nutrition_daily').update(payload).eq('id', exists[0].id)
-    : await supabase.from('nutrition_daily').insert({ user_id: userId, date, ...payload })
+    .select('id')
   if (error) throw error
+
+  if (!updated?.length) {
+    const { error: insertError } = await supabase
+      .from('nutrition_daily')
+      .insert({ user_id: userId, date, ...payload })
+    if (insertError) throw insertError
+  } else if (updated.length > 1) {
+    // Les doublons ont maintenant le même contenu : on n'en garde qu'un
+    const extraIds = updated.map(r => r.id).sort((a, b) => (a < b ? -1 : 1)).slice(1)
+    const { error: deleteError } = await supabase.from('nutrition_daily').delete().in('id', extraIds)
+    if (deleteError) console.error('Erreur nettoyage des doublons:', deleteError)
+  }
 
   if (date === selectedDateStr.value) frozenBesoins.value = payload.cibles
 }
@@ -1183,18 +1277,28 @@ async function readDigits(imageBase64) {
 
 watch(() => props.active, (active) => {
   if (!active && currentScreen.value === 'scanner') closeScanner()
+  if (active) retryDailyIfNeeded()
 })
 
 function onVisibilityChange() {
-  if (!document.hidden) refreshToday()
+  if (!document.hidden) {
+    refreshToday()
+    retryDailyIfNeeded()
+  }
   if (currentScreen.value !== 'scanner') return
   // iOS coupe la caméra quand l'app passe en arrière-plan : on la relance au retour
   if (document.hidden) stopScanner()
   else if (!scanResult.value) startScanner()
 }
 
-onMounted(() => document.addEventListener('visibilitychange', onVisibilityChange))
-onBeforeUnmount(() => document.removeEventListener('visibilitychange', onVisibilityChange))
+onMounted(() => {
+  document.addEventListener('visibilitychange', onVisibilityChange)
+  window.addEventListener('online', retryDailyIfNeeded)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+  window.removeEventListener('online', retryDailyIfNeeded)
+})
 
 async function lookupBarcode(barcode) {
   const localShared = sharedFoods.value.find(item => item.barcode === barcode)
@@ -1384,7 +1488,8 @@ function changeDay(d) {
   fetchDaily()
 }
 
-function adjustWater(v) {
+async function adjustWater(v) {
+  if (!(await ensureDayLoaded())) return
   eau.value = Math.max(0, Math.min(3.0, Number((eau.value + v).toFixed(1))))
   saveDaily()
 }
@@ -1421,19 +1526,25 @@ function goBackFromQuantity() {
   if (target === 'scanner') startScanner()
 }
 
-function addFood() {
-  const { k, p, c, f } = selectedFood.value
-  consumed.value.push({
-    name: selectedFood.value.name,
-    img: selectedFood.value.img,
-    amount: amount.value,
-    base: { k, p, c, f },
-    ...calculatedMacros.value
-  })
+let addingFood = false
+async function addFood() {
+  if (addingFood || !selectedFood.value) return
+  const { name, img, k, p, c, f } = selectedFood.value
+  const item = { name, img, amount: amount.value, base: { k, p, c, f }, ...calculatedMacros.value }
 
-  selectedFood.value = null
-  currentScreen.value = 'main'
-  saveDaily()
+  addingFood = true
+  try {
+    if (!(await ensureDayLoaded())) {
+      alert("Ton journal n'a pas pu être chargé. Vérifie ta connexion puis réessaie.")
+      return
+    }
+    consumed.value.push(item)
+    selectedFood.value = null
+    currentScreen.value = 'main'
+    saveDaily()
+  } finally {
+    addingFood = false
+  }
 }
 
 function removeItem(i) {

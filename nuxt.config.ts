@@ -51,6 +51,8 @@ export default defineNuxtConfig({
 
   // 👇 Toute la configuration de l'application mobile (PWA) 👇
   pwa: {
+    // La nouvelle version s'installe dès l'ouverture de l'app (sinon l'iPhone garde l'ancienne un moment)
+    registerType: 'autoUpdate',
     manifest: {
       name: 'FitTrack',
       short_name: 'FitTrack',
