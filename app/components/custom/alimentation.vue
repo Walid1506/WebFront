@@ -201,13 +201,28 @@
           </div>
 
           <div class="contents lg:block lg:col-span-7 lg:space-y-8">
-            <button
-              @click="openLibrary"
-              class="order-2 lg:order-none w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-xl py-6 rounded-[30px] shadow-lg shadow-[color:var(--accent-solid)]/20 transition-all active:scale-95 flex items-center justify-center gap-3"
-            >
-              <UIcon name="i-heroicons-plus-circle" class="text-3xl" />
-              Ajouter un aliment
-            </button>
+            <!-- Ajout par repas : chaque case montre ce qui a déjà été mangé à ce moment de la journée -->
+            <div class="order-2 lg:order-none grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <button
+                v-for="meal in mealCases"
+                :key="meal.key"
+                @click="openLibrary(meal.key)"
+                class="bg-[#111111] rounded-[26px] p-4 border border-white/5 text-left active:scale-95 transition-all"
+              >
+                <div class="flex items-center justify-between mb-3">
+                  <span class="w-10 h-10 rounded-2xl flex items-center justify-center" :style="{ background: `color-mix(in srgb, ${meal.color} 15%, transparent)` }">
+                    <UIcon :name="meal.icon" class="text-xl" :style="{ color: meal.color }" />
+                  </span>
+                  <span class="w-8 h-8 rounded-full flex items-center justify-center text-white bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)]">
+                    <UIcon name="i-heroicons-plus" class="text-lg" />
+                  </span>
+                </div>
+                <p class="text-white font-black text-base leading-tight">{{ meal.label }}</p>
+                <p class="text-xs font-bold mt-0.5" :class="meal.entries.length ? 'text-slate-300' : 'text-slate-500'">
+                  {{ meal.entries.length ? `${meal.kcal} kcal` : 'Ajouter' }}
+                </p>
+              </button>
+            </div>
 
             <div class="order-4 lg:order-none bg-[#111111] p-8 rounded-[35px] border border-white/5 space-y-6">
               <div
@@ -244,7 +259,7 @@
                 <button @click="retryDailyIfNeeded" class="underline text-white ml-1">Réessayer</button>
               </p>
 
-              <div class="p-4 space-y-2">
+              <div class="p-4">
                 <div v-if="dailyLoadError" class="text-center py-10 space-y-3">
                   <p class="text-red-400 font-bold">Ton journal n'a pas pu être chargé.</p>
                   <button @click="fetchDaily" class="bg-slate-800 text-white font-black text-sm px-5 py-2.5 rounded-xl">Réessayer</button>
@@ -252,78 +267,118 @@
                 <div v-else-if="!dayLoaded" class="text-center text-slate-500 font-bold py-10">
                   Chargement du journal...
                 </div>
-                <div v-else-if="consumed.length === 0" class="text-center text-slate-500 font-bold py-10">
-                  Journal vide pour ce jour.
-                </div>
 
-                <div
-                  v-for="(item, index) in consumed"
-                  :key="index"
-                  class="flex flex-wrap justify-between items-center group p-4 rounded-2xl hover:bg-slate-900 border border-transparent hover:border-white/5 transition-all"
-                >
-                  <div class="flex items-center gap-4 text-left min-w-0">
-                    <img :src="item.img" class="w-14 h-14 rounded-xl object-cover bg-white shrink-0 cursor-pointer" @click="toggleDetails(index)" @error="onImageError" />
-                    <div class="min-w-0">
-                      <p class="text-white font-bold text-lg leading-tight break-words cursor-pointer" @click="toggleDetails(index)">{{ item.name }}</p>
+                <!-- Rangé par repas, dans l'ordre de la journée -->
+                <template v-else>
+                  <section
+                    v-for="(meal, g) in mealGroups"
+                    :key="meal.key"
+                    :class="g > 0 ? 'border-t border-white/5 mt-2 pt-2' : ''"
+                  >
+                    <div class="flex items-center justify-between gap-3 px-2 py-2">
+                      <div class="flex items-center gap-2 min-w-0">
+                        <UIcon :name="meal.icon" class="text-lg shrink-0" :style="{ color: meal.color }" />
+                        <h4 class="text-white font-black">{{ meal.label }}</h4>
+                        <span v-if="meal.entries.length" class="text-slate-500 text-sm font-bold">{{ meal.kcal }} kcal</span>
+                      </div>
                       <button
-                        @click="editingIndex === index ? cancelEdit() : startEdit(index)"
-                        class="text-[#2F6BFF] font-black text-xs mt-1 -my-2 py-2 pr-3 flex items-center gap-1 hover:text-white transition-colors"
+                        v-if="meal.key !== 'autres'"
+                        @click="openLibrary(meal.key)"
+                        class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center shrink-0 transition-colors"
+                        :aria-label="`Ajouter au ${meal.lower}`"
                       >
-                        {{ item.amount }} g • {{ item.kcal }} kcal
-                        <UIcon name="i-heroicons-pencil-square" class="text-sm" />
+                        <UIcon name="i-heroicons-plus" class="text-lg" />
                       </button>
                     </div>
-                  </div>
 
-                  <div v-if="expandedIndex === index && editingIndex !== index" class="order-last w-full grid grid-cols-3 gap-2 mt-3 text-center">
-                    <div class="bg-slate-900 rounded-xl py-2">
-                      <p class="text-blue-400 font-black text-sm">{{ item.prot }} g</p>
-                      <p class="text-[10px] text-slate-500 font-black uppercase">Prot</p>
-                    </div>
-                    <div class="bg-slate-900 rounded-xl py-2">
-                      <p class="text-orange-400 font-black text-sm">{{ item.carbs }} g</p>
-                      <p class="text-[10px] text-slate-500 font-black uppercase">Gluc</p>
-                    </div>
-                    <div class="bg-slate-900 rounded-xl py-2">
-                      <p class="text-[#9DFF00] font-black text-sm">{{ item.fats }} g</p>
-                      <p class="text-[10px] text-slate-500 font-black uppercase">Lip</p>
-                    </div>
-                  </div>
+                    <p v-if="!meal.entries.length" class="px-2 pb-2 text-slate-600 text-sm font-bold">Rien pour l'instant</p>
+                    <div v-else class="space-y-2">
+                      <div
+                        v-for="{ item, index } in meal.entries"
+                        :key="index"
+                        class="flex flex-wrap justify-between items-center group p-4 rounded-2xl hover:bg-slate-900 border border-transparent hover:border-white/5 transition-all"
+                      >
+                        <div class="flex items-center gap-4 text-left min-w-0">
+                          <img :src="item.img" class="w-14 h-14 rounded-xl object-cover bg-white shrink-0 cursor-pointer" @click="toggleDetails(index)" @error="onImageError" />
+                          <div class="min-w-0">
+                            <p class="text-white font-bold text-lg leading-tight break-words cursor-pointer" @click="toggleDetails(index)">{{ item.name }}</p>
+                            <button
+                              @click="editingIndex === index ? cancelEdit() : startEdit(index)"
+                              class="text-[#2F6BFF] font-black text-xs mt-1 -my-2 py-2 pr-3 flex items-center gap-1 hover:text-white transition-colors"
+                            >
+                              {{ item.amount }} g • {{ item.kcal }} kcal
+                              <UIcon name="i-heroicons-pencil-square" class="text-sm" />
+                            </button>
+                          </div>
+                        </div>
 
-                  <div v-if="editingIndex === index" class="w-full flex items-center gap-2 mt-3">
-                    <input
-                      :ref="el => { if (el) editInputEl = el }"
-                      v-model.number="editAmount"
-                      type="number"
-                      inputmode="decimal"
-                      min="1"
-                      class="min-w-0 flex-1 bg-slate-900 text-white font-black text-base rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[color:var(--accent-solid)]"
-                      @keydown.enter="confirmEdit(index)"
-                      @keydown.esc="cancelEdit"
-                    />
-                    <span class="text-[#2F6BFF] font-black text-sm">g</span>
-                    <button
-                      @click="cancelEdit"
-                      class="text-slate-400 hover:text-white p-3 bg-slate-800 rounded-xl transition-all shrink-0"
-                    >
-                      <UIcon name="i-heroicons-x-mark" class="text-xl" />
-                    </button>
-                    <button
-                      @click="confirmEdit(index)"
-                      class="text-white p-3 rounded-xl transition-all shrink-0"
-                      style="background: linear-gradient(to right, var(--accent-from), var(--accent-to))"
-                    >
-                      <UIcon name="i-heroicons-check" class="text-xl" />
-                    </button>
-                  </div>
-                  <button
-                    v-else
-                    @click="removeItem(index)"
-                    class="text-red-400 hover:text-white p-3 bg-red-500/10 hover:bg-red-500 rounded-xl transition-all shrink-0"
-                  >
-                    <UIcon name="i-heroicons-trash" class="text-xl" />
-                  </button>
-                </div>
+                        <div v-if="expandedIndex === index && editingIndex !== index" class="order-last w-full mt-3 space-y-3">
+                          <div class="grid grid-cols-3 gap-2 text-center">
+                            <div class="bg-slate-900 rounded-xl py-2">
+                              <p class="text-blue-400 font-black text-sm">{{ item.prot }} g</p>
+                              <p class="text-[10px] text-slate-500 font-black uppercase">Prot</p>
+                            </div>
+                            <div class="bg-slate-900 rounded-xl py-2">
+                              <p class="text-orange-400 font-black text-sm">{{ item.carbs }} g</p>
+                              <p class="text-[10px] text-slate-500 font-black uppercase">Gluc</p>
+                            </div>
+                            <div class="bg-slate-900 rounded-xl py-2">
+                              <p class="text-[#9DFF00] font-black text-sm">{{ item.fats }} g</p>
+                              <p class="text-[10px] text-slate-500 font-black uppercase">Lip</p>
+                            </div>
+                          </div>
+                          <!-- Changer de repas (utile pour les aliments ajoutés avant les repas, rangés dans "Autres") -->
+                          <div class="flex flex-wrap items-center gap-1.5">
+                            <span class="text-[10px] text-slate-500 font-black uppercase mr-1">Repas</span>
+                            <button
+                              v-for="m in MEALS"
+                              :key="m.key"
+                              @click="moveItem(index, m.key)"
+                              class="px-3 py-1.5 rounded-full text-xs font-black transition-colors"
+                              :class="item.meal === m.key ? 'bg-white text-black' : 'bg-slate-800 text-slate-300'"
+                            >
+                              {{ m.label }}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div v-if="editingIndex === index" class="w-full flex items-center gap-2 mt-3">
+                          <input
+                            :ref="el => { if (el) editInputEl = el }"
+                            v-model.number="editAmount"
+                            type="number"
+                            inputmode="decimal"
+                            min="1"
+                            class="min-w-0 flex-1 bg-slate-900 text-white font-black text-base rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[color:var(--accent-solid)]"
+                            @keydown.enter="confirmEdit(index)"
+                            @keydown.esc="cancelEdit"
+                          />
+                          <span class="text-[#2F6BFF] font-black text-sm">g</span>
+                          <button
+                            @click="cancelEdit"
+                            class="text-slate-400 hover:text-white p-3 bg-slate-800 rounded-xl transition-all shrink-0"
+                          >
+                            <UIcon name="i-heroicons-x-mark" class="text-xl" />
+                          </button>
+                          <button
+                            @click="confirmEdit(index)"
+                            class="text-white p-3 rounded-xl transition-all shrink-0"
+                            style="background: linear-gradient(to right, var(--accent-from), var(--accent-to))"
+                          >
+                            <UIcon name="i-heroicons-check" class="text-xl" />
+                          </button>
+                        </div>
+                        <button
+                          v-else
+                          @click="removeItem(index)"
+                          class="text-red-400 hover:text-white p-3 bg-red-500/10 hover:bg-red-500 rounded-xl transition-all shrink-0"
+                        >
+                          <UIcon name="i-heroicons-trash" class="text-xl" />
+                        </button>
+                      </div>
+                    </div>
+                  </section>
+                </template>
               </div>
             </div>
           </div>
@@ -363,6 +418,11 @@
                 </button>
               </div>
             </div>
+
+            <p class="flex items-center gap-2 text-sm font-black text-slate-300 mb-3">
+              <UIcon :name="targetMealInfo.icon" class="text-base" :style="{ color: targetMealInfo.color }" />
+              Pour le {{ targetMealInfo.lower }}
+            </p>
 
             <div class="overflow-x-auto no-scrollbar">
               <div class="flex gap-3 min-w-max pb-1">
@@ -413,42 +473,58 @@
         </div>
       </div>
 
-      <div v-else-if="currentScreen === 'quantity' && selectedFood" key="quantity" class="fixed inset-0 z-[120] backdrop-blur-2xl flex flex-col items-center justify-center p-6">
-        <button @click="goBackFromQuantity" class="absolute top-[calc(2rem+env(safe-area-inset-top))] left-8 text-slate-400 hover:text-white transition">
-          <UIcon name="i-heroicons-arrow-left" class="text-4xl" />
-        </button>
+      <div v-else-if="currentScreen === 'quantity' && selectedFood" key="quantity" class="fixed inset-0 z-[120] backdrop-blur-2xl overflow-y-auto">
+        <!-- Centré quand tout tient dans l'écran, défilable sinon (petits iPhone) -->
+        <div class="relative min-h-full flex flex-col items-center justify-center px-6 pt-[calc(5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+          <button @click="goBackFromQuantity" class="absolute top-[calc(2rem+env(safe-area-inset-top))] left-8 text-slate-400 hover:text-white transition">
+            <UIcon name="i-heroicons-arrow-left" class="text-4xl" />
+          </button>
 
-        <img :src="selectedFood.img" class="w-48 h-48 rounded-full object-cover mb-8 shadow-2xl" style="border: 4px solid var(--accent-solid)" @error="onImageError" />
-        <h3 class="text-4xl font-[1000] text-white mb-8 text-center">{{ selectedFood.name }}</h3>
+          <img :src="selectedFood.img" class="w-36 h-36 sm:w-48 sm:h-48 rounded-full object-cover mb-6 sm:mb-8 shadow-2xl" style="border: 4px solid var(--accent-solid)" @error="onImageError" />
+          <h3 class="text-3xl sm:text-4xl font-[1000] text-white mb-6 sm:mb-8 text-center">{{ selectedFood.name }}</h3>
 
-        <div class="bg-[#111111] border border-white/10 p-8 rounded-[40px] mb-8 w-full max-w-md text-center">
-          <input
-            v-model.number="amount"
-            type="number"
-            class="bg-transparent text-white font-[1000] text-7xl text-center w-full outline-none mb-4"
-            placeholder="0"
-          />
-          <p class="text-blue-500 font-black">Grammes</p>
+          <div class="bg-[#111111] border border-white/10 p-6 sm:p-8 rounded-[40px] mb-6 w-full max-w-md text-center">
+            <input
+              v-model.number="amount"
+              type="number"
+              class="bg-transparent text-white font-[1000] text-7xl text-center w-full outline-none mb-4"
+              placeholder="0"
+            />
+            <p class="text-blue-500 font-black">Grammes</p>
 
-          <div class="flex justify-between border-t border-white/5 mt-6 pt-6 text-center">
-            <div>
-              <p class="text-slate-500 text-[10px] font-black uppercase">Calories</p>
-              <p class="text-white font-bold text-xl">{{ calculatedMacros.kcal }}</p>
-            </div>
-            <div>
-              <p class="text-blue-500 text-[10px] font-black uppercase">Prot</p>
-              <p class="text-white font-bold text-xl">{{ calculatedMacros.prot }}g</p>
-            </div>
-            <div>
-              <p class="text-orange-500 text-[10px] font-black uppercase">Gluc</p>
-              <p class="text-white font-bold text-xl">{{ calculatedMacros.carbs }}g</p>
+            <div class="flex justify-between border-t border-white/5 mt-6 pt-6 text-center">
+              <div>
+                <p class="text-slate-500 text-[10px] font-black uppercase">Calories</p>
+                <p class="text-white font-bold text-xl">{{ calculatedMacros.kcal }}</p>
+              </div>
+              <div>
+                <p class="text-blue-500 text-[10px] font-black uppercase">Prot</p>
+                <p class="text-white font-bold text-xl">{{ calculatedMacros.prot }}g</p>
+              </div>
+              <div>
+                <p class="text-orange-500 text-[10px] font-black uppercase">Gluc</p>
+                <p class="text-white font-bold text-xl">{{ calculatedMacros.carbs }}g</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <button @click="addFood" class="w-full max-w-md bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-2xl py-6 rounded-[30px] shadow-lg shadow-[color:var(--accent-solid)]/20 transition-all active:scale-95">
-          Ajouter au journal
-        </button>
+          <div class="w-full max-w-md grid grid-cols-4 gap-2 mb-6">
+            <button
+              v-for="m in MEALS"
+              :key="m.key"
+              @click="targetMeal = m.key"
+              class="flex flex-col items-center gap-1 py-2.5 rounded-2xl border text-xs font-black transition-colors"
+              :class="targetMeal === m.key ? 'bg-white text-black border-white' : 'bg-[#111111] text-slate-400 border-white/10'"
+            >
+              <UIcon :name="m.icon" class="text-lg" :style="targetMeal === m.key ? {} : { color: m.color }" />
+              {{ m.label }}
+            </button>
+          </div>
+
+          <button @click="addFood" class="w-full max-w-md bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-xl sm:text-2xl py-6 rounded-[30px] shadow-lg shadow-[color:var(--accent-solid)]/20 transition-all active:scale-95">
+            Ajouter au {{ targetMealInfo.lower }}
+          </button>
+        </div>
       </div>
 
       <div v-else-if="currentScreen === 'scanner'" key="scanner" class="fixed inset-0 z-[110] backdrop-blur-2xl flex flex-col items-center justify-center p-6">
@@ -726,6 +802,38 @@ const eau = ref(0)
 const shoppingList = ref([])
 const consumed = ref([])
 const frozenBesoins = ref(null)
+
+// Repas de la journée : chaque aliment du journal est rangé dans l'un d'eux (champ "meal")
+const MEALS = [
+  { key: 'petit_dej', label: 'Petit-déj', lower: 'petit-déj', icon: 'i-lucide-coffee', color: '#FFB020' },
+  { key: 'dejeuner', label: 'Déjeuner', lower: 'déjeuner', icon: 'i-lucide-utensils', color: '#9DFF00' },
+  { key: 'gouter', label: 'Goûter', lower: 'goûter', icon: 'i-lucide-cookie', color: '#FF7AB6' },
+  { key: 'diner', label: 'Dîner', lower: 'dîner', icon: 'i-lucide-moon', color: '#8B9CFF' }
+]
+const MEAL_KEYS = MEALS.map(m => m.key)
+
+// Repas proposé selon l'heure (scanner, photo IA) : modifiable avant d'ajouter
+function mealForNow() {
+  const h = new Date().getHours() + new Date().getMinutes() / 60
+  if (h >= 4 && h < 10.5) return 'petit_dej'
+  if (h >= 10.5 && h < 15) return 'dejeuner'
+  if (h >= 15 && h < 18) return 'gouter'
+  return 'diner'
+}
+
+const targetMeal = ref(mealForNow())
+const targetMealInfo = computed(() => MEALS.find(m => m.key === targetMeal.value) || MEALS[0])
+
+// Journal rangé par repas ; les aliments ajoutés avant les repas vont dans "Autres"
+const mealGroups = computed(() => {
+  const entries = consumed.value.map((item, index) => ({ item, index }))
+  const groups = MEALS.map(m => ({ ...m, entries: entries.filter(e => e.item.meal === m.key) }))
+  const others = entries.filter(e => !MEAL_KEYS.includes(e.item.meal))
+  if (others.length) groups.push({ key: 'autres', label: 'Autres', lower: 'autres', icon: 'i-heroicons-squares-2x2', color: '#94A3B8', entries: others })
+  return groups.map(g => ({ ...g, kcal: Math.round(g.entries.reduce((s, e) => s + (Number(e.item.kcal) || 0), 0)) }))
+})
+const mealCases = computed(() => mealGroups.value.slice(0, MEALS.length))
+
 const newCartItem = ref('')
 const scanResult = ref(null)
 const scanError = ref('')
@@ -831,7 +939,8 @@ const searchIndex = computed(() =>
   mergedFoodLibrary.value.map(food => ({ food, words: searchWords(food.name), text: normalizeSearch(food.name) }))
 )
 
-function openLibrary() {
+function openLibrary(meal) {
+  targetMeal.value = MEAL_KEYS.includes(meal) ? meal : mealForNow()
   searchQuery.value = ''
   currentScreen.value = 'library'
 }
@@ -940,7 +1049,7 @@ function mergeRepas(lists) {
   for (const list of lists) {
     const seen = new Map()
     for (const item of list) {
-      const key = JSON.stringify([item.name, item.amount, item.kcal])
+      const key = JSON.stringify([item.name, item.amount, item.kcal, item.meal])
       const n = (seen.get(key) || 0) + 1
       seen.set(key, n)
       if (n > (kept.get(key) || 0)) {
@@ -1113,6 +1222,7 @@ let scanHandled = false
 const scannerRunning = ref(false)
 
 async function openScanner() {
+  targetMeal.value = mealForNow()
   currentScreen.value = 'scanner'
   scanResult.value = null
   scanError.value = ''
@@ -1530,7 +1640,7 @@ let addingFood = false
 async function addFood() {
   if (addingFood || !selectedFood.value) return
   const { name, img, k, p, c, f } = selectedFood.value
-  const item = { name, img, amount: amount.value, base: { k, p, c, f }, ...calculatedMacros.value }
+  const item = { name, img, amount: amount.value, meal: targetMeal.value, base: { k, p, c, f }, ...calculatedMacros.value }
 
   addingFood = true
   try {
@@ -1551,6 +1661,13 @@ function removeItem(i) {
   cancelEdit()
   expandedIndex.value = null
   consumed.value.splice(i, 1)
+  saveDaily()
+}
+
+function moveItem(i, meal) {
+  const item = consumed.value[i]
+  if (!item || item.meal === meal) return
+  consumed.value[i] = { ...item, meal }
   saveDaily()
 }
 
@@ -1665,6 +1782,7 @@ function onImageError(e) {
 
 function openCamera() {
   clearAiState()
+  targetMeal.value = mealForNow()
   currentScreen.value = 'camera'
 }
 
