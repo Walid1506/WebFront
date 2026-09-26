@@ -304,14 +304,28 @@
                       <p class="text-[10px] text-slate-500 font-black uppercase mt-1">Lip</p>
                     </div>
                   </div>
+                  <!-- Rangé par repas : on voit à quel moment de la journée il a mangé -->
                   <div
-                    v-for="(meal, mi) in friendProfile.todayMeals"
-                    :key="mi"
-                    class="flex items-center gap-3 py-2.5 border-t border-white/[0.06]"
+                    v-for="group in friendProfile.todayGroups"
+                    :key="group.key"
+                    class="py-2.5 border-t border-white/[0.06]"
                   >
-                    <img :src="meal.img" class="w-10 h-10 rounded-xl object-cover bg-white shrink-0" loading="lazy" @error="onMealImageError" />
-                    <p class="flex-1 min-w-0 text-white font-bold text-sm truncate">{{ meal.name }}</p>
-                    <p class="text-xs font-black text-slate-400 shrink-0">{{ meal.amount }} g · {{ meal.kcal }} kcal</p>
+                    <div class="flex items-center gap-2">
+                      <UIcon :name="group.icon" class="text-base shrink-0" :style="{ color: group.color }" />
+                      <p class="text-white font-black text-sm">{{ group.label }}</p>
+                      <p class="ml-auto text-xs font-black" :class="group.entries.length ? 'text-slate-300' : 'text-slate-600'">
+                        {{ group.entries.length ? `${group.kcal} kcal` : 'Rien' }}
+                      </p>
+                    </div>
+                    <div
+                      v-for="{ item: meal, index: mi } in group.entries"
+                      :key="mi"
+                      class="flex items-center gap-3 pt-2"
+                    >
+                      <img :src="meal.img" class="w-10 h-10 rounded-xl object-cover bg-white shrink-0" loading="lazy" decoding="async" width="40" height="40" @error="onMealImageError" />
+                      <p class="flex-1 min-w-0 text-white font-bold text-sm truncate">{{ meal.name }}</p>
+                      <p class="text-xs font-black text-slate-400 shrink-0">{{ meal.amount }} g · {{ meal.kcal }} kcal</p>
+                    </div>
                   </div>
                   <p v-if="friendProfile.todayWater > 0" class="text-xs font-black text-sky-400 pt-3 border-t border-white/[0.06]">
                     Eau : {{ friendProfile.todayWater }} L
@@ -609,6 +623,7 @@ async function openFriendProfile(f) {
     totalSessions: allSessions?.length || 0,
     totalVolume,
     todayMeals,
+    todayGroups: groupByMeal(todayMeals),
     todayTotals: sumMeals(todayMeals),
     todayWater: Number(todayNutrition?.[0]?.eau) || 0
   }

@@ -201,29 +201,6 @@
           </div>
 
           <div class="contents lg:block lg:col-span-7 lg:space-y-8">
-            <!-- Ajout par repas : chaque case montre ce qui a déjà été mangé à ce moment de la journée -->
-            <div class="order-2 lg:order-none grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <button
-                v-for="meal in mealCases"
-                :key="meal.key"
-                @click="openLibrary(meal.key)"
-                class="bg-[#111111] rounded-[26px] p-4 border border-white/5 text-left active:scale-95 transition-all"
-              >
-                <div class="flex items-center justify-between mb-3">
-                  <span class="w-10 h-10 rounded-2xl flex items-center justify-center" :style="{ background: `color-mix(in srgb, ${meal.color} 15%, transparent)` }">
-                    <UIcon :name="meal.icon" class="text-xl" :style="{ color: meal.color }" />
-                  </span>
-                  <span class="w-8 h-8 rounded-full flex items-center justify-center text-white bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)]">
-                    <UIcon name="i-heroicons-plus" class="text-lg" />
-                  </span>
-                </div>
-                <p class="text-white font-black text-base leading-tight">{{ meal.label }}</p>
-                <p class="text-xs font-bold mt-0.5" :class="meal.entries.length ? 'text-slate-300' : 'text-slate-500'">
-                  {{ meal.entries.length ? `${meal.kcal} kcal` : 'Ajouter' }}
-                </p>
-              </button>
-            </div>
-
             <div class="order-4 lg:order-none bg-[#111111] p-8 rounded-[35px] border border-white/5 space-y-6">
               <div
                 v-for="macro in [['Glucides', total.carbs, activeBesoins.carbs, '#FF9500', progressCarbs], ['Protéines', total.prot, activeBesoins.prot, '#2F6BFF', progressProt], ['Lipides', total.fats, activeBesoins.fats, '#9DFF00', progressFats]]"
@@ -268,46 +245,65 @@
                   Chargement du journal...
                 </div>
 
-                <!-- Rangé par repas, dans l'ordre de la journée -->
-                <template v-else>
+                <!-- Rangé par repas, dans l'ordre de la journée ; chaque repas se déplie d'un appui -->
+                <div v-else class="space-y-2">
                   <section
-                    v-for="(meal, g) in mealGroups"
+                    v-for="meal in mealGroups"
                     :key="meal.key"
-                    :class="g > 0 ? 'border-t border-white/5 mt-2 pt-2' : ''"
+                    class="rounded-2xl bg-white/[0.03] border border-white/5 overflow-hidden"
                   >
-                    <div class="flex items-center justify-between gap-3 px-2 py-2">
-                      <div class="flex items-center gap-2 min-w-0">
-                        <UIcon :name="meal.icon" class="text-lg shrink-0" :style="{ color: meal.color }" />
-                        <h4 class="text-white font-black">{{ meal.label }}</h4>
-                        <span v-if="meal.entries.length" class="text-slate-500 text-sm font-bold">{{ meal.kcal }} kcal</span>
-                      </div>
+                    <div class="flex items-center gap-3 p-3">
+                      <button
+                        @click="toggleMeal(meal.key)"
+                        class="flex-1 min-w-0 flex items-center gap-3 text-left"
+                        :aria-expanded="openMeals.has(meal.key)"
+                      >
+                        <span class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" :style="{ background: `color-mix(in srgb, ${meal.color} 15%, transparent)` }">
+                          <UIcon :name="meal.icon" class="text-lg" :style="{ color: meal.color }" />
+                        </span>
+                        <span class="min-w-0">
+                          <span class="block text-white font-black leading-tight">{{ meal.label }}</span>
+                          <span class="block text-xs font-bold mt-0.5" :class="meal.entries.length ? 'text-slate-400' : 'text-slate-600'">
+                            {{ meal.entries.length ? `${meal.kcal} kcal · ${meal.entries.length} aliment${meal.entries.length > 1 ? 's' : ''}` : "Rien pour l'instant" }}
+                          </span>
+                        </span>
+                        <UIcon
+                          name="i-heroicons-chevron-down"
+                          class="ml-auto text-slate-500 text-lg shrink-0 transition-transform duration-200"
+                          :class="openMeals.has(meal.key) ? 'rotate-180' : ''"
+                        />
+                      </button>
                       <button
                         v-if="meal.key !== 'autres'"
                         @click="openLibrary(meal.key)"
-                        class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center shrink-0 transition-colors"
+                        class="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-white bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] active:scale-95 transition-transform"
                         :aria-label="`Ajouter au ${meal.lower}`"
                       >
                         <UIcon name="i-heroicons-plus" class="text-lg" />
                       </button>
                     </div>
 
-                    <p v-if="!meal.entries.length" class="px-2 pb-2 text-slate-600 text-sm font-bold">Rien pour l'instant</p>
-                    <div v-else class="space-y-2">
+                    <div v-if="openMeals.has(meal.key) && meal.entries.length" class="px-1 pb-1 space-y-1">
                       <div
                         v-for="{ item, index } in meal.entries"
                         :key="index"
-                        class="flex flex-wrap justify-between items-center group p-4 rounded-2xl hover:bg-slate-900 border border-transparent hover:border-white/5 transition-all"
+                        class="flex flex-wrap items-center gap-3 group p-2.5 rounded-2xl hover:bg-slate-900 border border-transparent hover:border-white/5 transition-all"
                       >
-                        <div class="flex items-center gap-4 text-left min-w-0">
-                          <img :src="item.img" class="w-14 h-14 rounded-xl object-cover bg-white shrink-0 cursor-pointer" @click="toggleDetails(index)" @error="onImageError" />
+                        <!-- flex-1 : un nom long passe à la ligne sans pousser la poubelle -->
+                        <div class="flex-1 flex items-center gap-3 text-left min-w-0">
+                          <img :src="item.img" loading="lazy" decoding="async" width="48" height="48" class="w-12 h-12 rounded-xl object-cover bg-white shrink-0 cursor-pointer" @click="toggleDetails(index)" @error="onImageError" />
                           <div class="min-w-0">
-                            <p class="text-white font-bold text-lg leading-tight break-words cursor-pointer" @click="toggleDetails(index)">{{ item.name }}</p>
+                            <p
+                              class="text-white font-bold text-lg leading-tight break-words cursor-pointer"
+                              :class="expandedIndex === index ? '' : 'line-clamp-2'"
+                              @click="toggleDetails(index)"
+                            >{{ item.name }}</p>
                             <button
                               @click="editingIndex === index ? cancelEdit() : startEdit(index)"
-                              class="text-[#2F6BFF] font-black text-xs mt-1 -my-2 py-2 pr-3 flex items-center gap-1 hover:text-white transition-colors"
+                              class="text-[#2F6BFF] font-black text-xs mt-1 -my-2 py-2 pr-1 flex items-center gap-1 max-w-full hover:text-white transition-colors"
                             >
-                              {{ item.amount }} g • {{ item.kcal }} kcal
-                              <UIcon name="i-heroicons-pencil-square" class="text-sm" />
+                              <span class="truncate">{{ item.amount }} g • {{ item.kcal }} kcal</span>
+                              <UIcon name="i-heroicons-pencil-square" class="text-sm shrink-0" />
                             </button>
                           </div>
                         </div>
@@ -371,14 +367,14 @@
                         <button
                           v-else
                           @click="removeItem(index)"
-                          class="text-red-400 hover:text-white p-3 bg-red-500/10 hover:bg-red-500 rounded-xl transition-all shrink-0"
+                          class="text-red-400 hover:text-white p-2.5 bg-red-500/10 hover:bg-red-500 rounded-xl transition-all shrink-0"
                         >
                           <UIcon name="i-heroicons-trash" class="text-xl" />
                         </button>
                       </div>
                     </div>
                   </section>
-                </template>
+                </div>
               </div>
             </div>
           </div>
@@ -780,8 +776,11 @@
 
 <script setup>
 import { foodLibrary } from '~/data/foodLibrary'
-import Dashboard from '~/components/custom/dashboard.vue'
-import { Html5Qrcode, Html5QrcodeSupportedFormats, Html5QrcodeScannerState } from 'html5-qrcode'
+// Graphique du poids (Chart.js) et scanner (html5-qrcode) : les deux plus grosses bibliothèques,
+// chargées seulement quand elles servent pour que l'onglet s'ouvre vite
+const Dashboard = defineAsyncComponent(() => import('~/components/custom/dashboard.vue'))
+let qrLib = null
+const loadQrLib = () => (qrLib ??= import('html5-qrcode'))
 
 const props = defineProps({
   active: { type: Boolean, default: true }
@@ -803,36 +802,21 @@ const shoppingList = ref([])
 const consumed = ref([])
 const frozenBesoins = ref(null)
 
-// Repas de la journée : chaque aliment du journal est rangé dans l'un d'eux (champ "meal")
-const MEALS = [
-  { key: 'petit_dej', label: 'Petit-déj', lower: 'petit-déj', icon: 'i-lucide-coffee', color: '#FFB020' },
-  { key: 'dejeuner', label: 'Déjeuner', lower: 'déjeuner', icon: 'i-lucide-utensils', color: '#9DFF00' },
-  { key: 'gouter', label: 'Goûter', lower: 'goûter', icon: 'i-lucide-cookie', color: '#FF7AB6' },
-  { key: 'diner', label: 'Dîner', lower: 'dîner', icon: 'i-lucide-moon', color: '#8B9CFF' }
-]
-const MEAL_KEYS = MEALS.map(m => m.key)
-
-// Repas proposé selon l'heure (scanner, photo IA) : modifiable avant d'ajouter
-function mealForNow() {
-  const h = new Date().getHours() + new Date().getMinutes() / 60
-  if (h >= 4 && h < 10.5) return 'petit_dej'
-  if (h >= 10.5 && h < 15) return 'dejeuner'
-  if (h >= 15 && h < 18) return 'gouter'
-  return 'diner'
-}
-
+// Repas (MEALS, groupByMeal, mealForNow : app/utils/meals.ts)
 const targetMeal = ref(mealForNow())
 const targetMealInfo = computed(() => MEALS.find(m => m.key === targetMeal.value) || MEALS[0])
+const mealGroups = computed(() => groupByMeal(consumed.value))
 
-// Journal rangé par repas ; les aliments ajoutés avant les repas vont dans "Autres"
-const mealGroups = computed(() => {
-  const entries = consumed.value.map((item, index) => ({ item, index }))
-  const groups = MEALS.map(m => ({ ...m, entries: entries.filter(e => e.item.meal === m.key) }))
-  const others = entries.filter(e => !MEAL_KEYS.includes(e.item.meal))
-  if (others.length) groups.push({ key: 'autres', label: 'Autres', lower: 'autres', icon: 'i-heroicons-squares-2x2', color: '#94A3B8', entries: others })
-  return groups.map(g => ({ ...g, kcal: Math.round(g.entries.reduce((s, e) => s + (Number(e.item.kcal) || 0), 0)) }))
-})
-const mealCases = computed(() => mealGroups.value.slice(0, MEALS.length))
+// Repas repliés par défaut (sinon le journal affiche trop d'infos d'un coup)
+const openMeals = ref(new Set())
+function toggleMeal(key) {
+  const next = new Set(openMeals.value)
+  if (!next.delete(key)) next.add(key)
+  openMeals.value = next
+}
+function showMeal(key) {
+  if (!openMeals.value.has(key)) openMeals.value = new Set([...openMeals.value, key])
+}
 
 const newCartItem = ref('')
 const scanResult = ref(null)
@@ -1205,14 +1189,7 @@ async function persistDaily(date, payload) {
   if (date === selectedDateStr.value) frozenBesoins.value = payload.cibles
 }
 
-const SCAN_FORMATS = [
-  Html5QrcodeSupportedFormats.EAN_13,
-  Html5QrcodeSupportedFormats.EAN_8,
-  Html5QrcodeSupportedFormats.UPC_A,
-  Html5QrcodeSupportedFormats.UPC_E,
-  Html5QrcodeSupportedFormats.CODE_128,
-  Html5QrcodeSupportedFormats.CODE_39
-]
+const SCAN_FORMAT_NAMES = ['EAN_13', 'EAN_8', 'UPC_A', 'UPC_E', 'CODE_128', 'CODE_39']
 const SCAN_CONFIG = { fps: 12, qrbox: { width: 280, height: 140 }, aspectRatio: 1.8, disableFlip: true }
 
 // Incrémenté à chaque arrêt : un démarrage devenu obsolète (écran fermé entre-temps) s'annule
@@ -1250,10 +1227,17 @@ async function startScanner() {
     scanError.value = "La caméra n'est pas supportée sur cet appareil ou navigateur."
     return
   }
-  if (!(await waitForReader()) || session !== scanSession) return
+  const [readerReady, lib] = await Promise.all([waitForReader(), loadQrLib().catch(() => null)])
+  if (!readerReady || session !== scanSession) return
+  if (!lib) {
+    qrLib = null
+    scanError.value = 'Impossible de charger le scanner. Vérifie ta connexion puis réessaie.'
+    return
+  }
 
+  const { Html5Qrcode, Html5QrcodeSupportedFormats } = lib
   const scanner = new Html5Qrcode('reader', {
-    formatsToSupport: SCAN_FORMATS,
+    formatsToSupport: SCAN_FORMAT_NAMES.map(n => Html5QrcodeSupportedFormats[n]),
     useBarCodeDetectorIfSupported: true,
     verbose: false
   })
@@ -1294,6 +1278,7 @@ async function stopScanner() {
   if (scannerStarting) await scannerStarting.catch(() => {})
 
   try {
+    const { Html5QrcodeScannerState } = await loadQrLib()
     const state = scanner.getState()
     if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
       await scanner.stop()
@@ -1649,6 +1634,7 @@ async function addFood() {
       return
     }
     consumed.value.push(item)
+    showMeal(item.meal)
     selectedFood.value = null
     currentScreen.value = 'main'
     saveDaily()
@@ -1668,6 +1654,7 @@ function moveItem(i, meal) {
   const item = consumed.value[i]
   if (!item || item.meal === meal) return
   consumed.value[i] = { ...item, meal }
+  showMeal(meal)
   saveDaily()
 }
 

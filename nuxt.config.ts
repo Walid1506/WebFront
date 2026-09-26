@@ -69,8 +69,20 @@ export default defineNuxtConfig({
     workbox: {
       additionalManifestEntries: [],
       importScripts: ['/sw-push.js'],
+      // Tout ce qu'il faut pour ouvrir l'app gardé sur le téléphone : code, styles, polices, photos des aliments.
+      // (Sans cette liste, le module n'en gardait que ses petits fichiers internes : tout repassait par le réseau)
+      globPatterns: ['**/*.{js,css,html,woff2}', 'foods/*.webp', 'images/*.{jpg,png,webp}']
     },
     devOptions: { enabled: false }
+  },
+
+  // Icônes incluses dans le code de l'app (sinon chacune est demandée au serveur au premier affichage)
+  icon: {
+    clientBundle: {
+      scan: true,
+      // Icônes des repas (app/utils/meals.ts, fichier que le scan ne lit pas)
+      icons: ['lucide:coffee', 'lucide:utensils', 'lucide:cookie', 'heroicons:squares-2x2']
+    }
   },
 
   // 👇 Configuration des langues 👇
@@ -93,7 +105,12 @@ export default defineNuxtConfig({
   // 👇 LA CLÉ POUR SUPPRIMER LES ERREURS D'HYDRATION 👇
   routeRules: {
     // On force TOUTES les pages à charger uniquement côté navigateur
-    '/**': { ssr: false }
+    '/**': { ssr: false },
+    // Page de l'app générée à l'avance : le service worker la garde et l'app s'ouvre sans attendre le réseau
+    '/': { prerender: true },
+    // Photos des aliments et logo : gardés en cache au lieu d'être redemandés au serveur à chaque affichage
+    '/foods/**': { headers: { 'cache-control': 'public, max-age=86400, stale-while-revalidate=604800' } },
+    '/images/**': { headers: { 'cache-control': 'public, max-age=86400, stale-while-revalidate=604800' } }
   },
 
   // 👇 Configuration Style Eslint 👇

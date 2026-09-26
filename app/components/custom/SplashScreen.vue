@@ -47,13 +47,28 @@ const emit = defineEmits(['done'])
 const visible = ref(true)
 const step = ref(0)
 const { theme } = useTheme()
+const appReady = useAppReady()
+const route = useRoute()
 
 onMounted(() => {
+  const start = Date.now()
   // Animation séquentielle
   setTimeout(() => { step.value = 1 }, 100)   // logo
   setTimeout(() => { step.value = 2 }, 500)   // texte
   setTimeout(() => { step.value = 3 }, 900)   // dots
-  setTimeout(() => { visible.value = false; emit('done') }, 2400)
+
+  let hiding = false
+  const hide = () => {
+    if (hiding) return
+    hiding = true
+    // Au moins 0,6 s pour voir le logo, mais plus d'attente fixe de 2,4 s quand l'app est déjà prête
+    setTimeout(() => { visible.value = false; emit('done') }, Math.max(0, 600 - (Date.now() - start)))
+  }
+  setTimeout(hide, 2400) // au plus tard, comme avant
+  // Accueil : dès que ses données sont là ; autres pages (connexion, inscription) : tout de suite
+  watch([appReady, () => route.path], ([ready, path]) => {
+    if (ready || path !== '/') hide()
+  }, { immediate: true })
 })
 </script>
 

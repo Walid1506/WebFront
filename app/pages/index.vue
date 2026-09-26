@@ -379,18 +379,22 @@
 <script setup>
 definePageMeta({ layout: false })
 
-import Calendrier from '~/components/custom/calendrier.vue'
-import ModalSeance from '~/components/custom/seance.vue'
-import AlimentationSection from '~/components/custom/alimentation.vue'
-import Records from '~/components/custom/records.vue'
 import TimerRepos from '~/components/custom/timer.vue'
 import ProgrammeWidget from '~/components/custom/programme-widget.vue'
-import Programmes from '~/components/custom/programmes.vue'
-import Amis from '~/components/custom/amis.vue'
-import Medailles from '~/components/custom/medailles.vue'
+
+// Onglets et fenêtres chargés à la première ouverture : le démarrage ne charge que l'accueil
+// (la nutrition embarque le scanner de code-barres et les graphiques, très lourds)
+const Calendrier = defineAsyncComponent(() => import('~/components/custom/calendrier.vue'))
+const ModalSeance = defineAsyncComponent(() => import('~/components/custom/seance.vue'))
+const AlimentationSection = defineAsyncComponent(() => import('~/components/custom/alimentation.vue'))
+const Records = defineAsyncComponent(() => import('~/components/custom/records.vue'))
+const Programmes = defineAsyncComponent(() => import('~/components/custom/programmes.vue'))
+const Amis = defineAsyncComponent(() => import('~/components/custom/amis.vue'))
+const Medailles = defineAsyncComponent(() => import('~/components/custom/medailles.vue'))
 
 const router = useRouter()
 const supabase = useSupabaseClient()
+const appReady = useAppReady()
 
 const { theme, themeId, setTheme, initTheme, THEMES } = useTheme()
 
@@ -522,17 +526,18 @@ onMounted(async () => {
   if (!user) {
     if (sessionError?.name === 'AuthRetryableFetchError' || !navigator.onLine) {
       window.addEventListener('online', () => window.location.reload(), { once: true })
+      appReady.value = true
       return
     }
     return router.push('/login')
   }
   currentUserId = user.id
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('username, avatar_url')
-    .eq('id', user.id)
-    .maybeSingle()
+  // Profil et séances en même temps : un aller-retour réseau de moins avant d'afficher l'accueil
+  const [{ data: profile }] = await Promise.all([
+    supabase.from('profiles').select('username, avatar_url').eq('id', user.id).maybeSingle(),
+    fetchSessions()
+  ])
 
   const defaultUsername = user.email?.split('@')[0] || 'user'
 
@@ -555,7 +560,7 @@ onMounted(async () => {
 
   avatarUrl.value = profile?.avatar_url || ''
   initTheme()
-  await fetchSessions()
+  appReady.value = true
   refreshTemplates()
   fetchPendingCount(user.id)
   fetchNotifications(user.id)
