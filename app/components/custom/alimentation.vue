@@ -523,75 +523,158 @@
         </div>
       </div>
 
-      <div v-else-if="currentScreen === 'scanner'" key="scanner" class="fixed inset-0 z-[110] backdrop-blur-2xl flex flex-col items-center justify-center p-6">
-        <button @click="closeScanner" class="absolute top-[calc(2rem+env(safe-area-inset-top))] left-8 text-slate-400 bg-slate-900 p-4 rounded-full">
-          <UIcon name="i-heroicons-x-mark" class="text-2xl" />
-        </button>
+      <div v-else-if="currentScreen === 'scanner'" key="scanner" class="fixed inset-0 z-[110] backdrop-blur-2xl overflow-y-auto">
+        <!-- Défilable : avec l'encadré "produit introuvable", tout ne tient pas sur un petit iPhone -->
+        <div class="relative min-h-full flex flex-col items-center justify-center px-6 pt-[calc(6rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+          <button @click="closeScanner" class="absolute top-[calc(2rem+env(safe-area-inset-top))] left-8 text-slate-400 bg-slate-900 p-4 rounded-full">
+            <UIcon name="i-heroicons-x-mark" class="text-2xl" />
+          </button>
 
-        <div class="w-full max-w-md flex flex-col items-center">
-          <div id="reader" class="w-full h-64 rounded-[40px] relative overflow-hidden bg-slate-900/50 mb-6" style="border: 4px solid var(--accent-solid)"></div>
+          <div class="w-full max-w-md flex flex-col items-center">
+            <div id="reader" class="w-full h-64 rounded-[40px] relative overflow-hidden bg-slate-900/50 mb-6" style="border: 4px solid var(--accent-solid)"></div>
 
-          <div class="w-full space-y-3 mb-6">
-            <button
-              v-if="!scannerRunning && !ocrLoading"
-              @click="startScanner"
-              class="w-full bg-slate-900 border border-white/10 text-white font-black py-3 rounded-2xl flex items-center justify-center gap-2"
-            >
-              <UIcon name="i-heroicons-arrow-path" class="text-xl" />
-              Scanner à nouveau
-            </button>
-
-            <button
-              @click="readDigitsFromCamera"
-              :disabled="ocrLoading"
-              class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-3 rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-60"
-            >
-              <UIcon :name="ocrLoading ? 'i-heroicons-arrow-path' : 'i-heroicons-camera'" class="text-xl" :class="ocrLoading ? 'animate-spin' : ''" />
-              {{ ocrLoading ? 'Lecture des chiffres…' : (scannerRunning ? 'Lire les chiffres du code-barres' : 'Photographier les chiffres') }}
-            </button>
-            <input ref="ocrFileInput" type="file" accept="image/*" capture="environment" class="hidden" @change="onOcrFileSelect" />
-
-            <button
-              @click="manualInputOpen = !manualInputOpen"
-              class="w-full bg-slate-900 border border-white/10 text-white font-black py-3 rounded-2xl"
-            >
-              {{ manualInputOpen ? 'Masquer la saisie manuelle' : 'Saisir le code-barres à la main' }}
-            </button>
-
-            <div v-if="manualInputOpen" class="space-y-3">
-              <input
-                v-model="manualBarcode"
-                type="text"
-                inputmode="numeric"
-                placeholder="Ex: 3017620422003"
-                class="w-full bg-[#111111] border border-white/10 rounded-2xl px-4 py-3 text-white font-bold outline-none"
-              />
+            <div class="w-full space-y-3 mb-6">
               <button
-                @click="submitManualBarcode"
-                class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-3 rounded-2xl active:scale-95 transition-all"
+                v-if="!scannerRunning && !ocrLoading"
+                @click="startScanner"
+                class="w-full bg-slate-900 border border-white/10 text-white font-black py-3 rounded-2xl flex items-center justify-center gap-2"
               >
-                Rechercher ce code
+                <UIcon name="i-heroicons-arrow-path" class="text-xl" />
+                Scanner à nouveau
               </button>
+
+              <button
+                @click="readDigitsFromCamera"
+                :disabled="ocrLoading"
+                class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-3 rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-60"
+              >
+                <UIcon :name="ocrLoading ? 'i-heroicons-arrow-path' : 'i-heroicons-camera'" class="text-xl" :class="ocrLoading ? 'animate-spin' : ''" />
+                {{ ocrLoading ? 'Lecture des chiffres…' : (scannerRunning ? 'Lire les chiffres du code-barres' : 'Photographier les chiffres') }}
+              </button>
+              <input ref="ocrFileInput" type="file" accept="image/*" capture="environment" class="hidden" @change="onOcrFileSelect" />
+
+              <button
+                @click="manualInputOpen = !manualInputOpen"
+                class="w-full bg-slate-900 border border-white/10 text-white font-black py-3 rounded-2xl"
+              >
+                {{ manualInputOpen ? 'Masquer la saisie manuelle' : 'Saisir le code-barres à la main' }}
+              </button>
+
+              <div v-if="manualInputOpen" class="space-y-3">
+                <input
+                  v-model="manualBarcode"
+                  type="text"
+                  inputmode="numeric"
+                  placeholder="Ex: 3017620422003"
+                  class="w-full bg-[#111111] border border-white/10 rounded-2xl px-4 py-3 text-white font-bold outline-none"
+                />
+                <button
+                  @click="submitManualBarcode"
+                  class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-3 rounded-2xl active:scale-95 transition-all"
+                >
+                  Rechercher ce code
+                </button>
+              </div>
+            </div>
+
+            <div ref="scanOutcomeEl" class="w-full flex flex-col items-center">
+              <template v-if="scanResult">
+                <div
+                  @click="addScannedFood"
+                  class="p-6 rounded-[30px] w-full border-2 cursor-pointer animate-in slide-in-from-bottom-10 bg-green-500/10 border-green-500 text-green-400"
+                >
+                  <h4 class="font-[1000] text-2xl text-white">{{ scanResult.nom }}</h4>
+                  <p class="text-sm font-bold">{{ scanResult.message }}</p>
+                  <p class="mt-2 text-[10px] uppercase font-black text-white/50">Clique pour définir la quantité</p>
+                </div>
+                <button
+                  v-if="scanResult.data?.barcode"
+                  @click="openCustomFood(scanResult.data.barcode, scanResult.data)"
+                  class="mt-4 text-slate-400 hover:text-white text-sm font-bold underline underline-offset-4"
+                >
+                  Infos manquantes ou fausses ? Les corriger
+                </button>
+              </template>
+
+              <div v-else-if="notFoundBarcode" class="w-full p-5 rounded-[30px] border-2 border-orange-400/60 bg-orange-400/10 text-center space-y-3">
+                <p class="text-white font-[1000] text-xl">Produit introuvable</p>
+                <p class="text-slate-300 text-sm font-bold">
+                  Le code {{ notFoundBarcode }} n'est dans aucune base. Ajoute ce produit toi-même : il sera reconnu au prochain scan.
+                </p>
+                <button
+                  @click="openCustomFood(notFoundBarcode)"
+                  class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-3 rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all"
+                >
+                  <UIcon name="i-heroicons-pencil-square" class="text-xl" />
+                  Remplir les infos du produit
+                </button>
+              </div>
+
+              <p v-else-if="scanError" class="text-red-400 font-bold text-center max-w-md">
+                {{ scanError }}
+              </p>
+
+              <p v-else class="text-slate-500 font-bold text-center">
+                Place le code-barres devant la caméra
+              </p>
             </div>
           </div>
+        </div>
+      </div>
 
-          <div
-            v-if="scanResult"
-            @click="addScannedFood"
-            class="p-6 rounded-[30px] w-full border-2 cursor-pointer animate-in slide-in-from-bottom-10 bg-green-500/10 border-green-500 text-green-400"
-          >
-            <h4 class="font-[1000] text-2xl text-white">{{ scanResult.nom }}</h4>
-            <p class="text-sm font-bold">{{ scanResult.message }}</p>
-            <p class="mt-2 text-[10px] uppercase font-black text-white/50">Clique pour définir la quantité</p>
-          </div>
+      <!-- ── PRODUIT REMPLI À LA MAIN (code-barres introuvable ou valeurs manquantes) ── -->
+      <div v-else-if="currentScreen === 'customFood'" key="customFood" class="fixed inset-0 z-[120] backdrop-blur-2xl overflow-y-auto">
+        <div class="relative min-h-full flex flex-col items-center justify-center px-6 pt-[calc(5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+          <button @click="currentScreen = 'scanner'" class="absolute top-[calc(2rem+env(safe-area-inset-top))] left-8 text-slate-400 hover:text-white transition">
+            <UIcon name="i-heroicons-arrow-left" class="text-4xl" />
+          </button>
 
-          <p v-else-if="scanError" class="text-red-400 font-bold text-center max-w-md">
-            {{ scanError }}
-          </p>
+          <form class="w-full max-w-md space-y-4" @submit.prevent="submitCustomFood" @input="customFoodError = ''">
+            <div class="text-center space-y-1">
+              <h3 class="text-3xl font-[1000] text-white">{{ customFood.editing ? 'Corriger le produit' : 'Nouveau produit' }}</h3>
+              <p class="text-slate-400 text-sm font-bold">Recopie les valeurs « pour 100 g » du tableau sur l'emballage.</p>
+              <p v-if="customFood.barcode" class="text-slate-500 text-xs font-black">Code-barres {{ customFood.barcode }}</p>
+            </div>
 
-          <p v-else class="text-slate-500 font-bold text-center">
-            Place le code-barres devant la caméra
-          </p>
+            <label class="block">
+              <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nom du produit</span>
+              <input
+                v-model="customFood.name"
+                type="text"
+                maxlength="80"
+                autocomplete="off"
+                placeholder="Ex : Yaourt nature"
+                class="mt-1 w-full bg-[#111111] border border-white/10 text-white font-bold text-base rounded-2xl px-4 py-3.5 outline-none focus:border-[color:var(--accent-solid)]"
+              />
+            </label>
+
+            <div class="grid grid-cols-2 gap-3">
+              <label v-for="field in CUSTOM_FIELDS" :key="field.key" class="block">
+                <span class="text-[10px] font-black uppercase tracking-widest" :class="field.color">{{ field.label }}</span>
+                <span class="relative block mt-1">
+                  <input
+                    v-model="customFood[field.key]"
+                    type="text"
+                    inputmode="decimal"
+                    autocomplete="off"
+                    placeholder="0"
+                    class="w-full bg-[#111111] border border-white/10 text-white font-black text-lg rounded-2xl pl-4 pr-12 py-3 outline-none focus:border-[color:var(--accent-solid)]"
+                  />
+                  <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-black pointer-events-none">{{ field.unit }}</span>
+                </span>
+              </label>
+            </div>
+
+            <p v-if="customFoodError" class="text-red-400 text-sm font-bold text-center">{{ customFoodError }}</p>
+
+            <button
+              type="submit"
+              :disabled="customFoodSaving"
+              class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-xl py-5 rounded-[26px] shadow-lg active:scale-95 transition-all disabled:opacity-50"
+            >
+              {{ customFoodSaving ? 'Enregistrement…' : 'Continuer' }}
+            </button>
+          </form>
         </div>
       </div>
 
@@ -801,6 +884,8 @@ const eau = ref(0)
 const shoppingList = ref([])
 const consumed = ref([])
 const frozenBesoins = ref(null)
+// Image des produits sans photo (fichier local : s'affiche aussi hors ligne)
+const CUSTOM_FOOD_IMG = '/images/aliment.svg'
 
 // Repas (MEALS, groupByMeal, mealForNow : app/utils/meals.ts)
 const targetMeal = ref(mealForNow())
@@ -973,7 +1058,7 @@ async function fetchSharedFoods() {
     id: item.id,
     barcode: item.barcode,
     name: item.name,
-    img: item.img || 'https://placehold.co/600x600/1e293b/94a3b8?text=Aliment',
+    img: item.img || CUSTOM_FOOD_IMG,
     k: Number(item.k || 0),
     p: Number(item.p || 0),
     c: Number(item.c || 0),
@@ -1222,6 +1307,7 @@ async function startScanner() {
   const session = scanSession
   scanHandled = false
   scanError.value = ''
+  notFoundBarcode.value = ''
 
   if (!navigator.mediaDevices?.getUserMedia) {
     scanError.value = "La caméra n'est pas supportée sur cet appareil ou navigateur."
@@ -1395,7 +1481,20 @@ onBeforeUnmount(() => {
   window.removeEventListener('online', retryDailyIfNeeded)
 })
 
+// Après chaque recherche (scan, photo des chiffres, saisie) : le résultat est amené à l'écran
+// (sur petit iPhone, il tombait sous les boutons)
+const scanOutcomeEl = ref(null)
 async function lookupBarcode(barcode) {
+  try {
+    await searchBarcode(barcode)
+  } finally {
+    manualInputOpen.value = false
+    nextTick(() => scanOutcomeEl.value?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
+  }
+}
+
+async function searchBarcode(barcode) {
+  notFoundBarcode.value = ''
   const localShared = sharedFoods.value.find(item => item.barcode === barcode)
 
   if (localShared) {
@@ -1419,7 +1518,7 @@ async function lookupBarcode(barcode) {
       id: existingShared.id,
       barcode: existingShared.barcode,
       name: existingShared.name,
-      img: existingShared.img || 'https://placehold.co/600x600/1e293b/94a3b8?text=Aliment',
+      img: existingShared.img || CUSTOM_FOOD_IMG,
       k: Number(existingShared.k || 0),
       p: Number(existingShared.p || 0),
       c: Number(existingShared.c || 0),
@@ -1446,7 +1545,7 @@ async function lookupBarcode(barcode) {
     const food = {
       barcode,
       name: p.product_name || p.product_name_fr || 'Produit inconnu',
-      img: p.image_url || p.image_front_url || 'https://placehold.co/600x600/1e293b/94a3b8?text=Aliment',
+      img: p.image_url || p.image_front_url || CUSTOM_FOOD_IMG,
       k: Math.round(p.nutriments?.['energy-kcal_100g'] || p.nutriments?.['energy-kcal'] || 0),
       p: Number(p.nutriments?.proteins_100g || 0),
       c: Number(p.nutriments?.carbohydrates_100g || 0),
@@ -1456,15 +1555,20 @@ async function lookupBarcode(barcode) {
 
     await saveScannedFoodToSharedLibrary(barcode, food)
 
+    // Fiche Open Food Facts parfois vide : on invite à compléter les valeurs
+    const incomplete = !food.k && !food.p && !food.c && !food.f
     scanResult.value = {
       nom: food.name,
-      message: 'Produit trouvé ! Ajouté à la base partagée, clique pour ajouter.',
+      message: incomplete
+        ? 'Trouvé, mais sans valeurs nutritionnelles : corrige-les ci-dessous.'
+        : 'Produit trouvé ! Ajouté à la base partagée, clique pour ajouter.',
       data: food
     }
 
     scanError.value = ''
   } else {
     scanResult.value = null
+    notFoundBarcode.value = barcode
     scanError.value = `Produit introuvable pour le code ${barcode}`
   }
 }
@@ -1493,6 +1597,88 @@ function addScannedFood() {
     amount.value = 100
     currentScreen.value = 'quantity'
   }
+}
+
+// Produit introuvable (ou valeurs manquantes) : on le remplit soi-même. Il est gardé dans la base partagée
+// avec son code-barres, donc le prochain scan le trouve directement
+const CUSTOM_FIELDS = [
+  { key: 'k', label: 'Calories', unit: 'kcal', color: 'text-slate-400' },
+  { key: 'p', label: 'Protéines', unit: 'g', color: 'text-blue-400' },
+  { key: 'c', label: 'Glucides', unit: 'g', color: 'text-orange-400' },
+  { key: 'f', label: 'Lipides', unit: 'g', color: 'text-[#9DFF00]' }
+]
+const notFoundBarcode = ref('')
+const customFood = reactive({ barcode: '', name: '', img: '', k: '', p: '', c: '', f: '', editing: false })
+const customFoodError = ref('')
+const customFoodSaving = ref(false)
+
+function openCustomFood(barcode, base = null) {
+  const value = (n) => (Number(n) > 0 ? String(n) : '')
+  Object.assign(customFood, {
+    barcode,
+    editing: !!base,
+    name: base?.name && base.name !== 'Produit inconnu' ? base.name : '',
+    // Anciennes fiches sans photo : image externe remplacée par l'image locale
+    img: base?.img && !base.img.includes('placehold.co') ? base.img : '',
+    k: value(base?.k),
+    p: value(base?.p),
+    c: value(base?.c),
+    f: value(base?.f)
+  })
+  customFoodError.value = ''
+  stopScanner()
+  currentScreen.value = 'customFood'
+}
+
+// Accepte la virgule (clavier français) : "12,5" -> 12.5 ; champ vide -> 0
+function parseNutrient(v) {
+  const s = String(v ?? '').trim().replace(',', '.')
+  return s === '' ? 0 : Number(s)
+}
+
+async function submitCustomFood() {
+  if (customFoodSaving.value) return
+  customFoodError.value = ''
+  const name = customFood.name.trim()
+  const [k, p, c, f] = ['k', 'p', 'c', 'f'].map(key => parseNutrient(customFood[key]))
+
+  if (!name) {
+    customFoodError.value = 'Donne un nom au produit.'
+    return
+  }
+  if (!String(customFood.k).trim() || !Number.isFinite(k) || k < 0 || k > 900) {
+    customFoodError.value = 'Indique les calories pour 100 g (entre 0 et 900).'
+    return
+  }
+  if ([p, c, f].some(v => !Number.isFinite(v) || v < 0 || v > 100) || p + c + f > 100.5) {
+    customFoodError.value = 'Protéines, glucides et lipides : en grammes pour 100 g (100 g au total maximum).'
+    return
+  }
+
+  const round1 = n => Math.round(n * 10) / 10
+  const food = {
+    barcode: customFood.barcode,
+    name,
+    img: customFood.img || CUSTOM_FOOD_IMG,
+    k: Math.round(k),
+    p: round1(p),
+    c: round1(c),
+    f: round1(f),
+    cat: 'Scannés'
+  }
+
+  customFoodSaving.value = true
+  try {
+    if (food.barcode) await saveScannedFoodToSharedLibrary(food.barcode, food)
+  } finally {
+    customFoodSaving.value = false
+  }
+
+  notFoundBarcode.value = ''
+  lastScreenBeforeQuantity.value = 'customFood'
+  selectedFood.value = food
+  amount.value = 100
+  currentScreen.value = 'quantity'
 }
 
 const imc = computed(() => profil.poids && profil.taille ? (profil.poids / Math.pow(profil.taille / 100, 2)).toFixed(1) : 0)
@@ -1762,7 +1948,7 @@ function onImageError(e) {
   // Une seule tentative : hors ligne, l'image de secours échoue aussi et bouclerait
   if (e.target.dataset.fallback) return
   e.target.dataset.fallback = '1'
-  e.target.src = 'https://placehold.co/600x600/1e293b/94a3b8?text=Aliment'
+  e.target.src = CUSTOM_FOOD_IMG
 }
 
 // ── Analyse IA ──

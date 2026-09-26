@@ -71,7 +71,7 @@ export default defineNuxtConfig({
       importScripts: ['/sw-push.js'],
       // Tout ce qu'il faut pour ouvrir l'app gardé sur le téléphone : code, styles, polices, photos des aliments.
       // (Sans cette liste, le module n'en gardait que ses petits fichiers internes : tout repassait par le réseau)
-      globPatterns: ['**/*.{js,css,html,woff2}', 'foods/*.webp', 'images/*.{jpg,png,webp}']
+      globPatterns: ['**/*.{js,css,html,woff2}', 'foods/*.webp', 'images/*.{jpg,png,webp,svg}']
     },
     devOptions: { enabled: false }
   },
