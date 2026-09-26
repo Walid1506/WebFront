@@ -529,8 +529,8 @@
             </button>
           </div>
 
-          <button @click="addFood" class="w-full max-w-md bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-xl sm:text-2xl py-6 rounded-[30px] shadow-lg shadow-[color:var(--accent-solid)]/20 transition-all active:scale-95">
-            Ajouter au {{ targetMealInfo.lower }}
+          <button @click="addFood" :disabled="addingFood" class="w-full max-w-md bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-xl sm:text-2xl py-6 rounded-[30px] shadow-lg shadow-[color:var(--accent-solid)]/20 transition-all active:scale-95 disabled:opacity-60">
+            {{ addingFood ? 'Ajout…' : `Ajouter au ${targetMealInfo.lower}` }}
           </button>
         </div>
       </div>
@@ -1950,14 +1950,17 @@ function goBackFromQuantity() {
   if (target === 'scanner') startScanner()
 }
 
-let addingFood = false
+const addingFood = ref(false)
 async function addFood() {
-  if (addingFood || !selectedFood.value) return
-  const { name, img, k, p, c, f } = selectedFood.value
+  if (addingFood.value || !selectedFood.value) return
+  const { name, img, k, p, c, f, imgUpload } = selectedFood.value
   const item = { name, img, amount: amount.value, meal: targetMeal.value, base: { k, p, c, f }, ...calculatedMacros.value }
 
-  addingFood = true
+  addingFood.value = true
   try {
+    // Photo de l'analyse IA : le journal garde l'adresse de la vignette envoyée (pas l'image elle-même)
+    // (8 s au plus : sans réseau, l'aliment est ajouté avec l'image par défaut)
+    if (imgUpload) item.img = (await Promise.race([imgUpload, new Promise(r => setTimeout(() => r(null), 8000))])) || CUSTOM_FOOD_IMG
     if (!(await ensureDayLoaded())) {
       alert("Ton journal n'a pas pu être chargé. Vérifie ta connexion puis réessaie.")
       return
@@ -1968,7 +1971,7 @@ async function addFood() {
     currentScreen.value = 'main'
     saveDaily()
   } finally {
-    addingFood = false
+    addingFood.value = false
   }
 }
 
@@ -2174,18 +2177,47 @@ async function analyzeImage() {
   }
 }
 
+// La photo prise pour l'analyse IA devient l'image de l'aliment : une vignette est envoyée dans le stockage
+// des photos (dossier de l'utilisateur, le même que pour les photos du chat) une seule fois par photo
+let aiPhotoUpload = { image: null, promise: null }
+
+async function uploadMealPhoto(dataUrl) {
+  try {
+    const userId = await getUserId()
+    if (!userId) return null
+    const img = new Image()
+    img.src = dataUrl
+    await img.decode()
+    const blob = await (await fetch(`data:image/jpeg;base64,${await toJpegBase64(img, 480)}`)).blob()
+    const path = `${userId}/repas/${Date.now()}.jpg`
+    const { error } = await supabase.storage.from('chat-photos')
+      .upload(path, blob, { contentType: 'image/jpeg', cacheControl: '31536000' })
+    if (error) throw error
+    return supabase.storage.from('chat-photos').getPublicUrl(path).data.publicUrl
+  } catch (err) {
+    console.error('Erreur envoi photo du repas :', err)
+    return null
+  }
+}
+
 function addAiResult() {
   if (!aiResult.value) return
 
+  if (aiPhotoUpload.image !== aiImage.value) {
+    aiPhotoUpload = { image: aiImage.value, promise: aiImage.value ? uploadMealPhoto(aiImage.value) : Promise.resolve(null) }
+  }
   const per100 = aiResult.value.portion / 100
   lastScreenBeforeQuantity.value = 'camera'
   selectedFood.value = {
     name: aiResult.value.name,
-    img: 'https://placehold.co/600x600/1e1b4b/818cf8?text=IA',
-    k: Math.round(aiResult.value.calories / per100),
-    p: parseFloat((aiResult.value.proteins / per100).toFixed(1)),
-    c: parseFloat((aiResult.value.carbs / per100).toFixed(1)),
-    f: parseFloat((aiResult.value.fats / per100).toFixed(1))
+    // Aperçu immédiat avec la photo prise ; l'adresse envoyée la remplace à l'ajout au journal
+    img: aiImage.value || CUSTOM_FOOD_IMG,
+    imgUpload: aiPhotoUpload.promise,
+    // Valeurs pour 100 g gardées précises : la portion estimée redonne exactement les chiffres de l'IA
+    k: +(aiResult.value.calories / per100).toFixed(1),
+    p: +(aiResult.value.proteins / per100).toFixed(2),
+    c: +(aiResult.value.carbs / per100).toFixed(2),
+    f: +(aiResult.value.fats / per100).toFixed(2)
   }
   amount.value = aiResult.value.portion
   currentScreen.value = 'quantity'
