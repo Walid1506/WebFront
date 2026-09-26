@@ -311,7 +311,7 @@
                               @click="toggleDetails(index)"
                             >{{ item.name }}</p>
                             <button
-                              @click="editingIndex === index ? cancelEdit() : startEdit(index)"
+                              @click="openItemEdit(index)"
                               class="text-[#2F6BFF] font-black text-xs mt-1 -my-2 py-2 pr-1 flex items-center gap-1 max-w-full hover:text-white transition-colors"
                             >
                               <span class="truncate">{{ item.amount }} g • {{ item.kcal }} kcal</span>
@@ -320,7 +320,7 @@
                           </div>
                         </div>
 
-                        <div v-if="expandedIndex === index && editingIndex !== index" class="order-last w-full mt-3 space-y-3">
+                        <div v-if="expandedIndex === index" class="order-last w-full mt-3 space-y-3">
                           <div class="grid grid-cols-3 gap-2 text-center">
                             <div class="bg-slate-900 rounded-xl py-2">
                               <p class="text-blue-400 font-black text-sm">{{ item.prot }} g</p>
@@ -350,34 +350,7 @@
                           </div>
                         </div>
 
-                        <div v-if="editingIndex === index" class="w-full flex items-center gap-2 mt-3">
-                          <input
-                            :ref="el => { if (el) editInputEl = el }"
-                            v-model.number="editAmount"
-                            type="number"
-                            inputmode="decimal"
-                            min="1"
-                            class="min-w-0 flex-1 bg-slate-900 text-white font-black text-base rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[color:var(--accent-solid)]"
-                            @keydown.enter="confirmEdit(index)"
-                            @keydown.esc="cancelEdit"
-                          />
-                          <span class="text-[#2F6BFF] font-black text-sm">g</span>
-                          <button
-                            @click="cancelEdit"
-                            class="text-slate-400 hover:text-white p-3 bg-slate-800 rounded-xl transition-all shrink-0"
-                          >
-                            <UIcon name="i-heroicons-x-mark" class="text-xl" />
-                          </button>
-                          <button
-                            @click="confirmEdit(index)"
-                            class="text-white p-3 rounded-xl transition-all shrink-0"
-                            style="background: linear-gradient(to right, var(--accent-from), var(--accent-to))"
-                          >
-                            <UIcon name="i-heroicons-check" class="text-xl" />
-                          </button>
-                        </div>
                         <button
-                          v-else
                           @click="removeItem(index)"
                           class="text-red-400 hover:text-white p-2.5 bg-red-500/10 hover:bg-red-500 rounded-xl transition-all shrink-0"
                         >
@@ -872,7 +845,7 @@
       <Transition name="fade-quick">
         <div
           v-if="goalsOpen"
-          class="fixed inset-0 z-[400] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-6"
+          class="fixed inset-0 z-[400] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center pt-[calc(env(safe-area-inset-top)+0.75rem)] sm:p-6"
           @click.self="goalsOpen = false"
         >
           <div class="w-full max-w-md bg-[#111111] border border-white/10 rounded-t-[32px] sm:rounded-[32px] p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] space-y-5 max-h-full overflow-y-auto">
@@ -940,6 +913,115 @@
               Enregistrer
             </button>
           </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Modifier un aliment du journal : photo, nom, repas, quantité, valeurs de la portion -->
+    <Teleport to="body">
+      <Transition name="fade-quick">
+        <div
+          v-if="itemEditOpen"
+          class="fixed inset-0 z-[400] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center pt-[calc(env(safe-area-inset-top)+0.75rem)] sm:p-6"
+          @click.self="itemEditOpen = false"
+        >
+          <form
+            class="w-full max-w-md bg-[#111111] border border-white/10 rounded-t-[32px] sm:rounded-[32px] p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] space-y-4 max-h-full overflow-y-auto"
+            @submit.prevent="saveItemEdit"
+            @input="itemEditError = ''"
+          >
+            <div class="flex items-center justify-between">
+              <h3 class="text-white text-xl font-black">Modifier l'aliment</h3>
+              <button type="button" @click="itemEditOpen = false" class="text-slate-400 hover:text-white p-1" aria-label="Fermer">
+                <UIcon name="i-heroicons-x-mark" class="text-2xl" />
+              </button>
+            </div>
+
+            <div class="flex items-center gap-4">
+              <img :src="itemEdit.photo || itemEdit.img" class="w-20 h-20 rounded-2xl object-cover bg-white shrink-0" @error="onImageError" />
+              <button
+                type="button"
+                @click="itemPhotoInput?.click()"
+                class="flex-1 bg-slate-900 border border-white/10 text-white font-black text-sm py-3 rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all"
+              >
+                <UIcon name="i-heroicons-camera" class="text-lg" />
+                {{ itemEdit.photo ? 'Autre photo' : 'Changer la photo' }}
+              </button>
+              <input ref="itemPhotoInput" type="file" accept="image/*" class="hidden" @change="onItemEditPhoto" />
+            </div>
+
+            <label class="block">
+              <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nom</span>
+              <input
+                v-model="itemEdit.name"
+                type="text"
+                maxlength="80"
+                autocomplete="off"
+                class="mt-1 w-full bg-slate-900 border border-white/10 text-white font-bold text-base rounded-2xl px-4 py-3 outline-none focus:border-[color:var(--accent-solid)]"
+              />
+            </label>
+
+            <div>
+              <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Repas</span>
+              <div class="grid grid-cols-4 gap-2 mt-1">
+                <button
+                  v-for="m in MEALS"
+                  :key="m.key"
+                  type="button"
+                  @click="itemEdit.meal = m.key"
+                  class="py-2 rounded-xl text-xs font-black border transition-colors"
+                  :class="itemEdit.meal === m.key ? 'bg-white text-black border-white' : 'bg-slate-900 text-slate-400 border-white/10'"
+                >
+                  {{ m.label }}
+                </button>
+              </div>
+            </div>
+
+            <label class="block">
+              <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Quantité</span>
+              <span class="relative block mt-1">
+                <input
+                  v-model="itemEdit.amount"
+                  type="text"
+                  inputmode="decimal"
+                  autocomplete="off"
+                  class="w-full bg-slate-900 border border-white/10 text-white font-black text-lg rounded-2xl pl-4 pr-12 py-3 outline-none focus:border-[color:var(--accent-solid)]"
+                  @input="onItemEditAmount"
+                />
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-black pointer-events-none">g</span>
+              </span>
+            </label>
+
+            <div>
+              <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Pour cette quantité</span>
+              <div class="grid grid-cols-2 gap-3 mt-1">
+                <label v-for="field in GOAL_FIELDS" :key="field.key" class="block">
+                  <span class="text-[10px] font-black uppercase tracking-widest" :class="field.color">{{ field.label }}</span>
+                  <span class="relative block mt-1">
+                    <input
+                      v-model="itemEdit[field.key]"
+                      type="text"
+                      inputmode="decimal"
+                      autocomplete="off"
+                      class="w-full bg-slate-900 border border-white/10 text-white font-black text-lg rounded-2xl pl-4 pr-12 py-3 outline-none focus:border-[color:var(--accent-solid)]"
+                      @input="itemEdit.touched = true"
+                    />
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-black pointer-events-none">{{ field.unit }}</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <p v-if="itemEditError" class="text-red-400 text-sm font-bold">{{ itemEditError }}</p>
+
+            <button
+              type="submit"
+              :disabled="itemEditSaving"
+              class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-lg py-4 rounded-2xl active:scale-95 transition-all disabled:opacity-60"
+            >
+              {{ itemEditSaving ? 'Envoi de la photo…' : 'Enregistrer' }}
+            </button>
+          </form>
         </div>
       </Transition>
     </Teleport>
@@ -1904,7 +1986,7 @@ const progressFats = computed(() => Math.min(100, (total.value.fats / activeBeso
 const progressEau = computed(() => Math.min(100, (eau.value / 3.0) * 100) || 0)
 
 function changeDay(d) {
-  cancelEdit()
+  itemEditOpen.value = false
   expandedIndex.value = null
   const date = new Date(selectedDateObj.value)
   date.setDate(date.getDate() + d)
@@ -1976,7 +2058,7 @@ async function addFood() {
 }
 
 function removeItem(i) {
-  cancelEdit()
+  itemEditOpen.value = false
   expandedIndex.value = null
   consumed.value.splice(i, 1)
   saveDaily()
@@ -1990,40 +2072,132 @@ function moveItem(i, meal) {
   saveDaily()
 }
 
-const editingIndex = ref(null)
-const editAmount = ref(0)
-const editInputEl = ref(null)
-
-function startEdit(i) {
-  editingIndex.value = i
-  editAmount.value = consumed.value[i].amount
-  nextTick(() => editInputEl.value?.select())
-}
-
-function cancelEdit() {
-  editingIndex.value = null
-  editInputEl.value = null
-}
-
-function confirmEdit(i) {
-  const item = consumed.value[i]
-  const grams = Number(editAmount.value)
-  cancelEdit()
-  if (!item || !(grams > 0) || grams === item.amount) return
-
-  // Anciennes entrées sans `base` : valeurs exactes de la bibliothèque, sinon déduites des macros arrondies (non sauvegardées)
+// Valeurs pour 100 g d'une entrée du journal. Anciennes entrées sans `base` : valeurs de la bibliothèque,
+// sinon déduites de la portion
+function per100Of(item) {
   const libFood = !item.base && mergedFoodLibrary.value.find(f => f.name === item.name)
   const base = item.base || (libFood && { k: libFood.k, p: libFood.p, c: libFood.c, f: libFood.f })
-  const per100 = base || (item.amount > 0 && {
+  return base || (item.amount > 0 ? {
     k: item.kcal * 100 / item.amount,
     p: item.prot * 100 / item.amount,
     c: item.carbs * 100 / item.amount,
     f: item.fats * 100 / item.amount
-  })
-  if (!per100) return
+  } : null)
+}
 
-  consumed.value[i] = { ...item, amount: grams, ...(base && { base }), ...macrosFor(per100, grams) }
+// Modifier un aliment du journal : photo, nom, repas, quantité et valeurs de la portion
+const itemEditOpen = ref(false)
+const itemEdit = reactive({ index: -1, name: '', meal: '', amount: '', kcal: '', prot: '', carbs: '', fats: '', img: '', photo: '', touched: false })
+const itemEditError = ref('')
+const itemEditSaving = ref(false)
+const itemPhotoInput = ref(null)
+let itemEditTarget = null // entrée ouverte (si le journal est rechargé entre-temps, on n'écrase rien)
+let itemEditPer100 = null
+
+function openItemEdit(i) {
+  const item = consumed.value[i]
+  if (!item) return
+  itemEditTarget = item
+  itemEditPer100 = per100Of(item)
+  Object.assign(itemEdit, {
+    index: i,
+    name: item.name,
+    meal: item.meal || '',
+    amount: String(item.amount),
+    kcal: String(item.kcal),
+    prot: String(item.prot),
+    carbs: String(item.carbs),
+    fats: String(item.fats),
+    img: item.img,
+    photo: '',
+    touched: false
+  })
+  itemEditError.value = ''
+  itemEditOpen.value = true
+}
+
+// Les valeurs suivent la quantité, tant que l'utilisateur ne les a pas changées lui-même
+function onItemEditAmount() {
+  const grams = parseNutrient(itemEdit.amount)
+  if (itemEdit.touched || !itemEditPer100 || !(grams > 0)) return
+  const m = macrosFor(itemEditPer100, grams)
+  Object.assign(itemEdit, { kcal: String(m.kcal), prot: String(m.prot), carbs: String(m.carbs), fats: String(m.fats) })
+}
+
+async function onItemEditPhoto(e) {
+  const file = e.target.files?.[0]
+  e.target.value = ''
+  if (!file) return
+  try {
+    itemEdit.photo = `data:image/jpeg;base64,${await toJpegBase64(file, 480)}`
+  } catch (err) {
+    console.error('Erreur lecture photo :', err)
+    itemEditError.value = 'Impossible de lire cette photo.'
+  }
+}
+
+async function saveItemEdit() {
+  if (itemEditSaving.value) return
+  itemEditError.value = ''
+  const i = itemEdit.index
+  if (consumed.value[i] !== itemEditTarget) {
+    itemEditOpen.value = false
+    return
+  }
+  const name = itemEdit.name.trim()
+  const grams = parseNutrient(itemEdit.amount)
+  const [kcal, prot, carbs, fats] = ['kcal', 'prot', 'carbs', 'fats'].map(k => parseNutrient(itemEdit[k]))
+  if (!name) {
+    itemEditError.value = "Donne un nom à l'aliment."
+    return
+  }
+  if (!(grams > 0) || grams > 5000) {
+    itemEditError.value = 'Quantité : entre 1 et 5 000 g.'
+    return
+  }
+  if (!Number.isFinite(kcal) || kcal < 0 || kcal > 20000) {
+    itemEditError.value = 'Calories : entre 0 et 20 000 kcal.'
+    return
+  }
+  if ([prot, carbs, fats].some(v => !Number.isFinite(v) || v < 0 || v > 5000)) {
+    itemEditError.value = 'Protéines, glucides et lipides : en grammes, pour cette quantité.'
+    return
+  }
+
+  let img = itemEditTarget.img
+  let photoFailed = false
+  if (itemEdit.photo) {
+    itemEditSaving.value = true
+    // 8 s au plus : sans réseau, on garde l'ancienne photo et le reste est enregistré
+    const url = await Promise.race([uploadMealPhoto(itemEdit.photo), new Promise(r => setTimeout(() => r(null), 8000))])
+    itemEditSaving.value = false
+    if (url) img = url
+    else photoFailed = true
+    if (consumed.value[i] !== itemEditTarget) {
+      itemEditOpen.value = false
+      return
+    }
+  }
+
+  const round1 = n => Math.round(n * 10) / 10
+  const r = grams / 100
+  consumed.value[i] = {
+    ...itemEditTarget,
+    name,
+    img,
+    amount: grams,
+    meal: MEAL_KEYS.includes(itemEdit.meal) ? itemEdit.meal : itemEditTarget.meal,
+    // Valeurs pour 100 g recalculées : une prochaine modification de la quantité reste juste
+    base: { k: +(kcal / r).toFixed(1), p: +(prot / r).toFixed(2), c: +(carbs / r).toFixed(2), f: +(fats / r).toFixed(2) },
+    kcal: Math.round(kcal),
+    prot: round1(prot),
+    carbs: round1(carbs),
+    fats: round1(fats)
+  }
+  if (consumed.value[i].meal) showMeal(consumed.value[i].meal)
+  itemEditOpen.value = false
   saveDaily()
+  if (photoFailed) alert("La photo n'a pas pu être envoyée (connexion ?). Le reste est enregistré.")
 }
 
 function toggleCheck(i) {
