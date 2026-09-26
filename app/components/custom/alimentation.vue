@@ -146,10 +146,12 @@
                   <p class="text-[10px] font-black uppercase tracking-widest mt-0.5" :class="imcColor">{{ imcLabel }}</p>
                 </div>
 
-                <div class="text-right">
-                  <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest">Cible Journalière</p>
+                <button class="text-right" @click="openGoals">
+                  <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest">
+                    Cible Journalière{{ profil.objectifsPerso ? ' · perso' : '' }}
+                  </p>
                   <p class="text-white font-[1000] text-2xl">{{ activeBesoins.kcal }} <span class="text-sm font-bold text-slate-400">kcal</span></p>
-                </div>
+                </button>
               </div>
 
               <!-- Suivi du poids -->
@@ -197,6 +199,16 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Objectifs calculés par l'app, ou choisis par l'utilisateur -->
+              <button
+                @click="openGoals"
+                class="mt-6 w-full flex items-center justify-center gap-2 text-xs font-black text-slate-300 bg-slate-900/70 hover:bg-slate-900 border border-white/5 rounded-2xl py-3 px-3 transition-colors"
+              >
+                <UIcon name="i-heroicons-adjustments-horizontal" class="text-base shrink-0" />
+                <span class="truncate">{{ profil.objectifsPerso ? 'Mes objectifs perso' : 'Objectifs automatiques' }}</span>
+                <span class="shrink-0" style="color: var(--accent-solid)">· Modifier</span>
+              </button>
             </div>
           </div>
 
@@ -854,6 +866,83 @@
         </div>
       </div>
     </Transition>
+
+    <!-- Objectifs du jour : ceux calculés par l'app, ou les siens -->
+    <Teleport to="body">
+      <Transition name="fade-quick">
+        <div
+          v-if="goalsOpen"
+          class="fixed inset-0 z-[400] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-6"
+          @click.self="goalsOpen = false"
+        >
+          <div class="w-full max-w-md bg-[#111111] border border-white/10 rounded-t-[32px] sm:rounded-[32px] p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] space-y-5 max-h-full overflow-y-auto">
+            <div class="flex items-center justify-between">
+              <h3 class="text-white text-xl font-black">Objectifs du jour</h3>
+              <button @click="goalsOpen = false" class="text-slate-400 hover:text-white p-1" aria-label="Fermer">
+                <UIcon name="i-heroicons-x-mark" class="text-2xl" />
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-1 bg-slate-900 p-1 rounded-2xl">
+              <button
+                @click="goalsForm.custom = false"
+                class="py-2.5 rounded-xl font-black text-sm transition-colors"
+                :class="!goalsForm.custom ? 'bg-white text-black' : 'text-slate-400'"
+              >
+                Calculés par l'app
+              </button>
+              <button
+                @click="goalsForm.custom = true"
+                class="py-2.5 rounded-xl font-black text-sm transition-colors"
+                :class="goalsForm.custom ? 'bg-white text-black' : 'text-slate-400'"
+              >
+                Les miens
+              </button>
+            </div>
+
+            <div v-if="!goalsForm.custom" class="space-y-2">
+              <p class="text-slate-400 text-sm font-bold">D'après ton profil (poids, taille, âge, activité, objectif) :</p>
+              <div class="grid grid-cols-4 gap-2 text-center">
+                <div v-for="field in GOAL_FIELDS" :key="field.key" class="bg-slate-900 rounded-xl py-2">
+                  <p class="text-white font-black text-sm">{{ autoBesoins[field.key] }}{{ field.unit === 'g' ? ' g' : '' }}</p>
+                  <p class="text-[10px] font-black uppercase" :class="field.color">{{ field.short }}</p>
+                </div>
+              </div>
+            </div>
+
+            <form v-else class="space-y-3" @submit.prevent="saveGoals" @input="goalsError = ''">
+              <div class="grid grid-cols-2 gap-3">
+                <label v-for="field in GOAL_FIELDS" :key="field.key" class="block">
+                  <span class="text-[10px] font-black uppercase tracking-widest" :class="field.color">{{ field.label }}</span>
+                  <span class="relative block mt-1">
+                    <input
+                      v-model="goalsForm[field.key]"
+                      type="text"
+                      inputmode="decimal"
+                      autocomplete="off"
+                      class="w-full bg-slate-900 border border-white/10 text-white font-black text-lg rounded-2xl pl-4 pr-12 py-3 outline-none focus:border-[color:var(--accent-solid)]"
+                    />
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-black pointer-events-none">{{ field.unit }}</span>
+                  </span>
+                </label>
+              </div>
+              <p class="text-slate-500 text-xs font-bold">
+                Tes macros font {{ goalsMacroKcal }} kcal (protéines et glucides 4 kcal/g, lipides 9 kcal/g).
+              </p>
+            </form>
+
+            <p v-if="goalsError" class="text-red-400 text-sm font-bold">{{ goalsError }}</p>
+
+            <button
+              @click="saveGoals"
+              class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-lg py-4 rounded-2xl active:scale-95 transition-all"
+            >
+              Enregistrer
+            </button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -926,7 +1015,9 @@ const profil = reactive({
   age: 25,
   genre: 'homme',
   activite: 1.55,
-  objectif: 'masse'
+  objectif: 'masse',
+  // Objectifs du jour choisis par l'utilisateur ({ kcal, prot, carbs, fats }) ; null = calculés par l'app
+  objectifsPerso: null
 })
 
 let html5QrcodeScanner = null
@@ -1701,7 +1792,8 @@ const imcLabel = computed(() => {
   return 'Obésité'
 })
 
-const liveBesoins = computed(() => {
+// Objectifs calculés avec le profil (poids, taille, âge, activité, objectif)
+const autoBesoins = computed(() => {
   let bmr = (10 * profil.poids) + (6.25 * profil.taille) - (5 * profil.age) + (profil.genre === 'homme' ? 5 : -161)
   let k = Math.round(bmr * profil.activite)
 
@@ -1718,6 +1810,57 @@ const liveBesoins = computed(() => {
     carbs: Math.round((k - (prot * 4) - (fats * 9)) / 4)
   }
 })
+
+// Les objectifs de l'utilisateur remplacent le calcul quand il en a choisi
+const liveBesoins = computed(() => profil.objectifsPerso || autoBesoins.value)
+
+const goalsOpen = ref(false)
+const goalsForm = reactive({ custom: false, kcal: '', prot: '', carbs: '', fats: '' })
+const goalsError = ref('')
+const GOAL_FIELDS = [
+  { key: 'kcal', label: 'Calories', short: 'kcal', unit: 'kcal', color: 'text-slate-400' },
+  { key: 'prot', label: 'Protéines', short: 'Prot', unit: 'g', color: 'text-blue-400' },
+  { key: 'carbs', label: 'Glucides', short: 'Gluc', unit: 'g', color: 'text-orange-400' },
+  { key: 'fats', label: 'Lipides', short: 'Lip', unit: 'g', color: 'text-[#9DFF00]' }
+]
+// Calories apportées par les macros saisies (4 kcal/g protéines et glucides, 9 kcal/g lipides)
+const goalsMacroKcal = computed(() => Math.round(
+  (parseNutrient(goalsForm.prot) || 0) * 4 + (parseNutrient(goalsForm.carbs) || 0) * 4 + (parseNutrient(goalsForm.fats) || 0) * 9
+))
+
+function openGoals() {
+  const g = profil.objectifsPerso || autoBesoins.value
+  Object.assign(goalsForm, {
+    custom: !!profil.objectifsPerso,
+    kcal: String(g.kcal),
+    prot: String(g.prot),
+    carbs: String(g.carbs),
+    fats: String(g.fats)
+  })
+  goalsError.value = ''
+  goalsOpen.value = true
+}
+
+function saveGoals() {
+  goalsError.value = ''
+  if (goalsForm.custom) {
+    const [kcal, prot, carbs, fats] = ['kcal', 'prot', 'carbs', 'fats'].map(k => parseNutrient(goalsForm[k]))
+    if (!Number.isFinite(kcal) || kcal < 500 || kcal > 10000) {
+      goalsError.value = 'Calories : entre 500 et 10 000 kcal.'
+      return
+    }
+    if ([prot, carbs, fats].some(v => !Number.isFinite(v) || v < 0 || v > 2000)) {
+      goalsError.value = 'Protéines, glucides et lipides : en grammes (0 à 2 000).'
+      return
+    }
+    profil.objectifsPerso = { kcal: Math.round(kcal), prot: Math.round(prot), carbs: Math.round(carbs), fats: Math.round(fats) }
+  } else {
+    profil.objectifsPerso = null
+  }
+  goalsOpen.value = false
+  // Le jour en cours garde une copie de ses objectifs (historique, médailles)
+  if (isToday.value) saveDaily()
+}
 
 const activeBesoins = computed(() => (!isToday.value && frozenBesoins.value) ? frozenBesoins.value : liveBesoins.value)
 
