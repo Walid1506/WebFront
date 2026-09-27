@@ -281,103 +281,14 @@
               </div>
             </div>
 
-            <!-- Ce que l'ami a mangé aujourd'hui -->
-            <div class="space-y-3">
-              <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Son assiette aujourd'hui</p>
-              <div class="bg-white/[0.04] rounded-[24px] border border-white/[0.08] p-4">
-                <template v-if="friendProfile.todayMeals?.length">
-                  <div class="grid grid-cols-4 gap-2 text-center pb-3">
-                    <div>
-                      <p class="text-white font-black text-lg leading-none">{{ friendProfile.todayTotals.kcal }}</p>
-                      <p class="text-[10px] text-slate-500 font-black uppercase mt-1">kcal</p>
-                    </div>
-                    <div>
-                      <p class="text-blue-400 font-black text-lg leading-none">{{ friendProfile.todayTotals.prot }}g</p>
-                      <p class="text-[10px] text-slate-500 font-black uppercase mt-1">Prot</p>
-                    </div>
-                    <div>
-                      <p class="text-orange-400 font-black text-lg leading-none">{{ friendProfile.todayTotals.carbs }}g</p>
-                      <p class="text-[10px] text-slate-500 font-black uppercase mt-1">Gluc</p>
-                    </div>
-                    <div>
-                      <p class="text-[#9DFF00] font-black text-lg leading-none">{{ friendProfile.todayTotals.fats }}g</p>
-                      <p class="text-[10px] text-slate-500 font-black uppercase mt-1">Lip</p>
-                    </div>
-                  </div>
-                  <!-- Rangé par repas : on voit à quel moment de la journée il a mangé -->
-                  <div
-                    v-for="group in friendProfile.todayGroups"
-                    :key="group.key"
-                    class="py-2.5 border-t border-white/[0.06]"
-                  >
-                    <div class="flex items-center gap-2">
-                      <UIcon :name="group.icon" class="text-base shrink-0" :style="{ color: group.color }" />
-                      <p class="text-white font-black text-sm">{{ group.label }}</p>
-                      <p class="ml-auto text-xs font-black" :class="group.entries.length ? 'text-slate-300' : 'text-slate-600'">
-                        {{ group.entries.length ? `${group.kcal} kcal` : 'Rien' }}
-                      </p>
-                    </div>
-                    <div
-                      v-for="{ item: meal, index: mi } in group.entries"
-                      :key="mi"
-                      class="flex items-center gap-3 pt-2"
-                    >
-                      <img :src="meal.img" class="w-10 h-10 rounded-xl object-cover bg-white shrink-0" loading="lazy" decoding="async" width="40" height="40" @error="onMealImageError" />
-                      <p class="flex-1 min-w-0 text-white font-bold text-sm truncate">{{ meal.name }}</p>
-                      <p class="text-xs font-black text-slate-400 shrink-0">{{ meal.amount }} g · {{ meal.kcal }} kcal</p>
-                    </div>
-                  </div>
-                  <p v-if="friendProfile.todayWater > 0" class="text-xs font-black text-sky-400 pt-3 border-t border-white/[0.06]">
-                    Eau : {{ friendProfile.todayWater }} L
-                  </p>
-                </template>
-                <p v-else class="text-slate-600 text-sm font-black text-center py-2">Rien d'enregistré aujourd'hui</p>
-              </div>
-            </div>
+            <!-- Dépliants : ce qu'il a mangé et ses séances, ouverts d'un appui -->
+            <Depliant title="Son assiette aujourd'hui" :subtitle="mealsSummary(friendProfile)" icon="i-heroicons-fire" icon-color="#fb923c">
+              <AssietteJour :meals="friendProfile.todayMeals" :water="friendProfile.todayWater" />
+            </Depliant>
 
-            <!-- Dernières séances avec exercices -->
-            <div class="space-y-3">
-              <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Dernières séances</p>
-              <div v-if="friendProfile.recentSessions?.length > 0" class="space-y-3">
-                <div v-for="s in friendProfile.recentSessions" :key="s.id"
-                  class="bg-white/[0.04] rounded-[24px] border border-white/[0.08] overflow-hidden">
-
-                  <!-- Header : nom du programme + date -->
-                  <div class="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-white/[0.06]">
-                    <div class="flex-1 min-w-0">
-                      <p class="text-white font-black text-sm truncate">{{ s.data?.title || 'Séance' }}</p>
-                      <p class="text-slate-500 text-xs mt-0.5">{{ formatDate(s.date) }}</p>
-                    </div>
-                    <span v-if="s.data?.category" class="text-[10px] font-black px-2.5 py-1 rounded-full border shrink-0" :class="catClass(s.data.category)">
-                      {{ s.data.category }}
-                    </span>
-                  </div>
-
-                  <!-- Exercices tous visibles directement -->
-                  <div class="px-4 py-3 space-y-0">
-                    <div v-if="s.data?.exercises?.length">
-                      <div v-for="(ex, ei) in s.data.exercises" :key="ei"
-                        class="flex items-center gap-2 py-2.5 border-b border-white/[0.04] last:border-0">
-                        <span class="text-[10px] font-black text-slate-600 w-5 shrink-0">{{ ei + 1 }}</span>
-                        <p class="text-white font-bold text-sm flex-1 truncate">{{ ex.name }}</p>
-                        <div class="flex items-center gap-1 shrink-0 flex-wrap justify-end">
-                          <span v-if="ex.sets && ex.reps" class="text-xs font-black text-slate-400">
-                            {{ ex.sets }}×{{ ex.reps }}
-                          </span>
-                          <span v-else-if="ex.sets" class="text-xs font-black text-slate-400">{{ ex.sets }} séries</span>
-                          <span v-if="ex.weight" class="text-xs font-black px-2 py-0.5 rounded-full" style="background: color-mix(in srgb, var(--accent-solid) 15%, transparent); border: 1px solid color-mix(in srgb, var(--accent-solid) 25%, transparent); color: var(--accent-solid)">
-                            {{ ex.weight }} kg
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div v-else-if="s.data?.notes" class="text-slate-400 text-xs py-2 leading-relaxed">{{ s.data.notes }}</div>
-                    <p v-else class="text-slate-600 text-xs font-black text-center py-2">Aucun exercice enregistré</p>
-                  </div>
-                </div>
-              </div>
-              <p v-else class="text-slate-600 text-sm font-black text-center py-4">Aucune séance récente</p>
-            </div>
+            <Depliant title="Dernières séances" :subtitle="sessionsSummary(friendProfile)" icon="i-heroicons-bolt">
+              <SeancesRecentes :sessions="friendProfile.recentSessions" />
+            </Depliant>
 
             <!-- Actions -->
             <button
@@ -609,7 +520,7 @@ async function openFriendProfile(f) {
   showComparison.value = false
 
   const [{ data: recentSessions }, { data: allSessions }, { data: todayNutrition }] = await Promise.all([
-    supabase.from('sport_sessions').select('*').eq('user_id', f.friendId).order('date', { ascending: false }).limit(8),
+    supabase.from('sport_sessions').select('*').eq('user_id', f.friendId).lte('date', localDateStr(new Date())).order('date', { ascending: false }).limit(8),
     supabase.from('sport_sessions').select('data').eq('user_id', f.friendId),
     supabase.from('nutrition_daily').select('repas, eau').eq('user_id', f.friendId).eq('date', localDateStr(new Date())).limit(1),
   ])
@@ -623,8 +534,6 @@ async function openFriendProfile(f) {
     totalSessions: allSessions?.length || 0,
     totalVolume,
     todayMeals,
-    todayGroups: groupByMeal(todayMeals),
-    todayTotals: sumMeals(todayMeals),
     todayWater: Number(todayNutrition?.[0]?.eau) || 0
   }
 }
@@ -633,21 +542,16 @@ function localDateStr(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-function sumMeals(meals) {
-  const round1 = n => Math.round(n * 10) / 10
-  const t = meals.reduce((a, m) => ({
-    kcal: a.kcal + (Number(m.kcal) || 0),
-    prot: a.prot + (Number(m.prot) || 0),
-    carbs: a.carbs + (Number(m.carbs) || 0),
-    fats: a.fats + (Number(m.fats) || 0)
-  }), { kcal: 0, prot: 0, carbs: 0, fats: 0 })
-  return { kcal: Math.round(t.kcal), prot: round1(t.prot), carbs: round1(t.carbs), fats: round1(t.fats) }
+// Résumés affichés sur les dépliants fermés
+function mealsSummary(p) {
+  const n = p.todayMeals?.length || 0
+  if (!n) return 'Rien d\'enregistré aujourd\'hui'
+  return `${sumMeals(p.todayMeals).kcal} kcal · ${n} aliment${n > 1 ? 's' : ''}`
 }
 
-function onMealImageError(e) {
-  if (e.target.dataset.fallback) return
-  e.target.dataset.fallback = '1'
-  e.target.src = 'https://placehold.co/600x600/1e293b/94a3b8?text=Aliment'
+function sessionsSummary(p) {
+  const n = p.recentSessions?.length || 0
+  return n ? `${n} séance${n > 1 ? 's' : ''} récente${n > 1 ? 's' : ''}` : 'Aucune séance récente'
 }
 
 
@@ -769,19 +673,6 @@ function exoEmoji(name) {
 
 function formatDate(d) {
   return new Date(d).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })
-}
-
-function catClass(cat) {
-  const map = {
-    push: 'bg-orange-500/10 border-orange-500/20 text-orange-300',
-    pull: 'bg-blue-500/10 border-blue-500/20 text-blue-300',
-    jambes: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300',
-    'full-body': 'bg-purple-500/10 border-purple-500/20 text-purple-300',
-    cardio: 'bg-red-500/10 border-red-500/20 text-red-300',
-    haut: 'bg-cyan-500/10 border-cyan-500/20 text-cyan-300',
-    bas: 'bg-yellow-500/10 border-yellow-500/20 text-yellow-300',
-  }
-  return map[cat] || 'bg-white/[0.06] border-white/[0.08] text-slate-400'
 }
 </script>
 

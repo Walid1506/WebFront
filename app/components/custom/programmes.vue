@@ -73,18 +73,6 @@
               class="w-full bg-transparent text-white font-black text-2xl outline-none placeholder:text-slate-700" />
           </div>
 
-          <!-- Catégorie -->
-          <div class="bg-white/[0.04] rounded-[24px] border border-white/[0.08] p-5">
-            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-3">Catégorie</label>
-            <div class="flex flex-wrap gap-2">
-              <button v-for="cat in categories" :key="cat.value" @click="form.category = cat.value"
-                class="px-4 py-2 rounded-full text-xs font-black transition-all border"
-                :class="form.category === cat.value ? cat.activeClass : 'bg-white/[0.04] border-white/[0.08] text-slate-400'">
-                {{ cat.label }}
-              </button>
-            </div>
-          </div>
-
           <!-- Couleur -->
           <div class="bg-white/[0.04] rounded-[24px] border border-white/[0.08] p-5">
             <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-3">Couleur dans l'agenda</label>
@@ -136,16 +124,6 @@ const PRESET_COLORS = [
   '#22d3ee', '#3b82f6', '#8b5cf6', '#ec4899',
   '#ef4444', '#f97316', '#eab308', '#22c55e',
   '#14b8a6', '#94a3b8',
-]
-
-const categories = [
-  { value: 'push', label: 'Push', activeClass: 'bg-orange-500/20 border-orange-500/30 text-orange-300' },
-  { value: 'pull', label: 'Pull', activeClass: 'bg-blue-500/20 border-blue-500/30 text-blue-300' },
-  { value: 'jambes', label: 'Jambes', activeClass: 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300' },
-  { value: 'full-body', label: 'Full Body', activeClass: 'bg-purple-500/20 border-purple-500/30 text-purple-300' },
-  { value: 'cardio', label: 'Cardio', activeClass: 'bg-red-500/20 border-red-500/30 text-red-300' },
-  { value: 'haut', label: 'Haut', activeClass: 'bg-cyan-500/20 border-cyan-500/30 text-cyan-300' },
-  { value: 'bas', label: 'Bas', activeClass: 'bg-yellow-500/20 border-yellow-500/30 text-yellow-300' },
 ]
 
 // Couleurs stockées en localStorage (pas besoin de colonne DB)

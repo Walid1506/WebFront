@@ -1,16 +1,19 @@
 <template>
-  <div class="bg-white/[0.04] backdrop-blur-2xl rounded-[28px] border border-white/[0.08] p-5 shadow-2xl relative overflow-hidden">
-    <div class="absolute -top-12 -right-12 w-52 h-52 rounded-full blur-[80px] pointer-events-none" style="background: rgba(250,204,21,0.07)"></div>
+  <!-- embedded : sans carte ni titre, dans un dépliant du profil qui affiche déjà le titre et le total -->
+  <div :class="embedded ? '' : 'bg-white/[0.04] backdrop-blur-2xl rounded-[28px] border border-white/[0.08] p-5 shadow-2xl relative overflow-hidden'">
+    <template v-if="!embedded">
+      <div class="absolute -top-12 -right-12 w-52 h-52 rounded-full blur-[80px] pointer-events-none" style="background: rgba(250,204,21,0.07)"></div>
 
-    <!-- Header -->
-    <div class="flex items-center gap-2 mb-1">
-      <div class="w-2 h-2 rounded-full bg-yellow-400" style="box-shadow: 0 0 8px rgba(250,204,21,0.8)"></div>
-      <h2 class="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Médailles</h2>
-    </div>
-    <div class="flex items-center justify-between mb-5">
-      <p class="text-xl font-[1000] tracking-tighter text-white">Cette semaine</p>
-      <p class="text-xs font-black text-slate-500">{{ loading ? '...' : `${earnedCount}/4` }}</p>
-    </div>
+      <!-- Header -->
+      <div class="flex items-center gap-2 mb-1">
+        <div class="w-2 h-2 rounded-full bg-yellow-400" style="box-shadow: 0 0 8px rgba(250,204,21,0.8)"></div>
+        <h2 class="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Médailles</h2>
+      </div>
+      <div class="flex items-center justify-between mb-5">
+        <p class="text-xl font-[1000] tracking-tighter text-white">Cette semaine</p>
+        <p class="text-xs font-black text-slate-500">{{ loading ? '...' : `${earnedCount}/4` }}</p>
+      </div>
+    </template>
 
     <!-- Grid 2x2 -->
     <div class="grid grid-cols-2 gap-3">
@@ -106,8 +109,11 @@ const medals = computed(() => [
 const earnedCount = computed(() => medals.value.filter(m => m.level).length)
 
 const props = defineProps({
-  active: { type: Boolean, default: true }
+  active: { type: Boolean, default: true },
+  embedded: { type: Boolean, default: false }
 })
+
+const emit = defineEmits(['count'])
 
 onMounted(loadMedals)
 
@@ -159,5 +165,6 @@ async function loadMedals() {
   }
 
   loading.value = false
+  emit('count', earnedCount.value)
 }
 </script>

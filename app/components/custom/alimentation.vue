@@ -1283,26 +1283,7 @@ async function getUserId() {
 }
 
 // D'anciennes versions de l'app pouvaient créer plusieurs lignes pour le même jour (taps rapides) :
-// on les fusionne, un aliment présent dans plusieurs lignes n'étant compté qu'une fois
-function mergeRepas(lists) {
-  if (lists.length <= 1) return lists[0] || []
-  const kept = new Map()
-  const merged = []
-  for (const list of lists) {
-    const seen = new Map()
-    for (const item of list) {
-      const key = JSON.stringify([item.name, item.amount, item.kcal, item.meal])
-      const n = (seen.get(key) || 0) + 1
-      seen.set(key, n)
-      if (n > (kept.get(key) || 0)) {
-        kept.set(key, n)
-        merged.push(item)
-      }
-    }
-  }
-  return merged
-}
-
+// elles sont fusionnées par mergeRepas (app/utils/meals.ts)
 function fetchDaily() {
   const date = selectedDateStr.value
   // Déjà en cours pour ce jour : on attend le même chargement

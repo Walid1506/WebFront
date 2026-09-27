@@ -80,16 +80,18 @@
         <div class="relative p-6 md:p-10 rounded-[30px] md:rounded-[45px] bg-white/[0.04] backdrop-blur-2xl border border-white/[0.08] overflow-hidden shadow-2xl">
           <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none opacity-40" :style="{ backgroundColor: theme.blobs[0] }"></div>
           <div class="absolute -bottom-10 -left-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none opacity-30" :style="{ backgroundColor: theme.blobs[2] }"></div>
-          <div class="relative flex items-start justify-between gap-4">
-            <div>
-              <h1 class="text-3xl md:text-5xl font-[1000] tracking-tighter leading-none mb-2 md:mb-4 text-white">
-                Salut, <span class="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent">{{ userName }}</span> !
-              </h1>
-              <p class="text-slate-400 font-medium italic text-sm md:text-base">{{ dailyMessage }}</p>
-            </div>
-          </div>
+          <p class="relative text-2xl md:text-4xl font-[1000] tracking-tight leading-tight italic text-white">{{ dailyMessage }}</p>
         </div>
-        <ProgrammeWidget :today-session="todaySession" @open-today="openToday" @edit-today="openToday" />
+        <ProgrammeWidget
+          :today-session="todaySession"
+          :today-plan="todayPlan"
+          :validating="validatingIndex !== null"
+          @edit-today="openToday"
+          @go-plan="goToPlan"
+          @validate-today="validateDay(todayPlan)"
+        />
+
+        <PasWidget :user-id="currentUserId" :active="activeTab === 'accueil'" />
 
         <!-- Créer un programme -->
         <button @click="createProgrammeOpen = true"
@@ -116,25 +118,31 @@
           </div>
           <UIcon name="i-heroicons-chevron-right" class="text-slate-600 ml-auto" />
         </button>
-
-        <!-- Modal créer programme -->
-        <Transition name="slide-up">
-          <div v-if="createProgrammeOpen" class="fixed inset-0 z-[350]">
-            <ModalSeance mode="programme" @close="createProgrammeOpen = false" @saved-programme="createProgrammeOpen = false; refreshTemplates()" />
-          </div>
-        </Transition>
       </section>
 
       <!-- Agenda — monté à la première visite -->
       <section v-if="mountedTabs.has('agenda')" v-show="activeTab === 'agenda'" class="p-4 space-y-4 mt-4 md:mt-8">
-        <div class="flex items-center gap-3 px-1">
+        <!-- Objectif par semaine : « Planifier » depuis l'accueil arrive ici -->
+        <div id="objectif-semaine" class="flex items-center gap-3 px-1 scroll-mt-[calc(var(--app-header-h,60px)+16px)]">
+          <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-[var(--accent-from)] to-[var(--accent-to)] rounded-full"></div>
+          <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Objectif par semaine</h2>
+        </div>
+        <ObjectifSemaine
+          :week="week"
+          :templates="savedTemplates"
+          :busy-index="validatingIndex"
+          @validate="validateDay"
+          @unvalidate="unvalidateDay"
+          @create-template="createProgrammeOpen = true"
+        />
+
+        <div class="flex items-center gap-3 px-1 pt-2">
           <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-[var(--accent-from)] to-[var(--accent-to)] rounded-full"></div>
           <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Ton Planning</h2>
         </div>
         <div class="bg-white/[0.04] backdrop-blur-2xl p-2 rounded-[30px] md:rounded-[40px] border border-white/[0.08] shadow-inner">
           <Calendrier :db-sessions="sessions" :templates="savedTemplates" @select-date="onDateSelected" @delete-session="handleDeleteSession" />
         </div>
-        <Records />
       </section>
 
       <!-- Nutrition — monté à la première visite -->
@@ -156,74 +164,16 @@
       </section>
 
       <!-- Profil — monté à la première visite -->
-      <section v-if="mountedTabs.has('profil')" v-show="activeTab === 'profil'" class="p-4 space-y-5 mt-4 md:mt-8">
-        <div class="relative p-6 md:p-10 rounded-[30px] md:rounded-[45px] bg-white/[0.04] backdrop-blur-2xl border border-white/[0.08] shadow-2xl overflow-hidden">
-          <div class="absolute -top-16 -right-16 w-56 h-56 rounded-full blur-[80px] pointer-events-none opacity-50" :style="{ backgroundColor: theme.blobs[0] }"></div>
-          <div class="absolute -bottom-16 -left-16 w-56 h-56 rounded-full blur-[80px] pointer-events-none opacity-40" :style="{ backgroundColor: theme.blobs[1] }"></div>
-
-          <div class="relative flex items-center gap-5 mb-8">
-            <div class="relative shrink-0 group cursor-pointer" @click="triggerAvatarUpload">
-              <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-tr from-[var(--accent-from)] to-[var(--accent-to)] p-[2px]">
-                <div class="w-full h-full rounded-full overflow-hidden flex items-center justify-center transition-colors duration-700" :style="{ backgroundColor: theme.bg }">
-                  <img v-if="avatarUrl" :src="avatarUrl" class="w-full h-full object-cover" alt="Avatar" />
-                  <span v-else class="text-white font-black text-2xl md:text-3xl">{{ userName.charAt(0).toUpperCase() }}</span>
-                </div>
-              </div>
-              <div class="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <UIcon v-if="!uploadingAvatar" name="i-heroicons-camera" class="text-white text-xl" />
-                <div v-else class="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
-              </div>
-            </div>
-
-            <div>
-              <h2 class="text-2xl md:text-3xl font-black">{{ userName }}</h2>
-              <p class="text-slate-400 text-sm font-medium">Membre FitTrack</p>
-              <button @click="triggerAvatarUpload" class="mt-2 text-xs font-bold hover:opacity-80 transition flex items-center gap-1" :style="{ color: 'var(--accent-solid)' }">
-                <UIcon name="i-heroicons-arrow-up-tray" class="text-sm" />
-                {{ avatarUrl ? 'Changer la photo' : 'Ajouter une photo' }}
-              </button>
-            </div>
-          </div>
-
-          <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="handleAvatarUpload" />
-
-          <!-- Sélecteur de thème -->
-          <div class="mt-6 mb-6">
-            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Thème</p>
-            <div class="grid grid-cols-3 gap-2">
-              <button
-                v-for="t in Object.values(THEMES)"
-                :key="t.id"
-                @click="setTheme(t.id)"
-                class="relative flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-200 active:scale-95"
-                :class="themeId === t.id
-                  ? 'bg-white/10 border-white/30 shadow-lg'
-                  : 'bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.07]'"
-              >
-                <div v-if="themeId === t.id" class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-white/25 flex items-center justify-center">
-                  <UIcon name="i-heroicons-check" class="text-white text-[10px]" />
-                </div>
-                <div class="flex gap-1.5">
-                  <div v-for="(c, ci) in t.preview" :key="ci" class="w-4 h-4 rounded-full shadow-sm" :style="{ backgroundColor: c }"></div>
-                </div>
-                <div class="text-center leading-none">
-                  <div class="text-xl mb-0.5">{{ t.emoji }}</div>
-                  <div class="text-[9px] font-black text-slate-400 uppercase tracking-wider">{{ t.name }}</div>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          <button
-            @click="handleLogout"
-            class="relative w-full md:max-w-xs border border-red-500/30 bg-red-500/5 px-4 py-3 rounded-2xl text-red-400 font-bold text-sm uppercase tracking-widest active:scale-95 transition-all duration-150 hover:bg-red-500/10"
-          >
-            Se déconnecter
-          </button>
-        </div>
-
-        <!-- Médailles -->
-        <Medailles :active="activeTab === 'profil'" />
+      <section v-if="mountedTabs.has('profil')" v-show="activeTab === 'profil'" class="p-4 mt-4 md:mt-8">
+        <Profil
+          :user-id="currentUserId"
+          :user-name="userName"
+          :avatar-url="avatarUrl"
+          :sessions="sessions"
+          :active="activeTab === 'profil'"
+          @avatar-updated="avatarUrl = $event"
+          @logout="handleLogout"
+        />
       </section>
     </main>
 
@@ -296,6 +246,21 @@
       :saving="savingSession"
       @close="closeModal"
       @save="saveSession"
+    />
+
+    <!-- Créer un programme (depuis l'accueil ou le tableau de l'objectif) -->
+    <Transition name="slide-up">
+      <div v-if="createProgrammeOpen" class="fixed inset-0 z-[350]">
+        <ModalSeance mode="programme" @close="createProgrammeOpen = false" @saved-programme="createProgrammeOpen = false; refreshTemplates()" />
+      </div>
+    </Transition>
+
+    <!-- Séance validée : félicitations, confettis et chat mascotte -->
+    <Felicitations
+      v-if="celebration"
+      :session-name="celebration.name"
+      :date-label="celebration.dateLabel"
+      @close="celebration = null"
     />
 
     <!-- ── Picker de séance (calendrier) ── -->
@@ -387,16 +352,16 @@ import ProgrammeWidget from '~/components/custom/programme-widget.vue'
 const Calendrier = defineAsyncComponent(() => import('~/components/custom/calendrier.vue'))
 const ModalSeance = defineAsyncComponent(() => import('~/components/custom/seance.vue'))
 const AlimentationSection = defineAsyncComponent(() => import('~/components/custom/alimentation.vue'))
-const Records = defineAsyncComponent(() => import('~/components/custom/records.vue'))
 const Programmes = defineAsyncComponent(() => import('~/components/custom/programmes.vue'))
 const Amis = defineAsyncComponent(() => import('~/components/custom/amis.vue'))
-const Medailles = defineAsyncComponent(() => import('~/components/custom/medailles.vue'))
+const Profil = defineAsyncComponent(() => import('~/components/custom/profil.vue'))
+const Felicitations = defineAsyncComponent(() => import('~/components/custom/felicitations.vue'))
 
 const router = useRouter()
 const supabase = useSupabaseClient()
 const appReady = useAppReady()
 
-const { theme, themeId, setTheme, initTheme, THEMES } = useTheme()
+const { theme, initTheme } = useTheme()
 
 function bgAlpha(hex, alpha) {
   const r = parseInt(hex.slice(1, 3), 16)
@@ -466,8 +431,6 @@ const sessionToEdit = ref(null)
 const sessions = ref([])
 const userName = ref('Invité')
 const avatarUrl = ref('')
-const avatarInput = ref(null)
-const uploadingAvatar = ref(false)
 
 const pickerOpen = ref(false)
 const pickerDate = ref(null)
@@ -509,15 +472,94 @@ function localDateStr(d = new Date()) {
   return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-')
 }
 
-const todaySession = computed(() => {
-  return sessions.value.find(s => s.date === localDateStr()) || null
+// Jour courant, relu quand l'app revient au premier plan (une PWA peut rester ouverte après minuit)
+const todayStr = ref(localDateStr())
+function refreshToday() {
+  if (document.visibilityState === 'visible') todayStr.value = localDateStr()
+}
+onMounted(() => document.addEventListener('visibilitychange', refreshToday))
+onUnmounted(() => document.removeEventListener('visibilitychange', refreshToday))
+
+const todaySession = computed(() => sessions.value.find(s => s.date === todayStr.value) || null)
+
+// ── Objectif par semaine ──
+const { plan, loadPlan } = useWeeklyPlan()
+const templatesLoaded = ref(false)
+const validatingIndex = ref(null)
+const celebration = ref(null)
+
+// Lignes du tableau : modèle prévu et validation (= une séance ce jour-là dans le calendrier)
+const week = computed(() => {
+  const dates = weekDates(todayStr.value)
+  return WEEK_DAYS.map((label, index) => {
+    const entry = plan.value[index]
+    // Aperçu gardé dans le compte tant que les modèles ne sont pas chargés, ensuite le modèle à jour (supprimé : repos)
+    const template = entry ? (templatesLoaded.value ? savedTemplates.value.find(t => t.id === entry.id) || null : entry) : null
+    const session = sessions.value.find(s => s.date === dates[index]) || null
+    return { index, label, date: dates[index], template, session, validated: !!session, isToday: dates[index] === todayStr.value }
+  })
 })
+
+const todayPlan = computed(() => week.value.find(d => d.isToday) || null)
+
+// Valider un jour : la séance du modèle s'ajoute au calendrier à la date de ce jour, puis félicitations
+async function validateDay(day) {
+  if (!day || validatingIndex.value !== null || !currentUserId.value) return
+  if (sessions.value.some(s => s.date === day.date)) return
+  const planned = plan.value[day.index]
+  if (!planned) return
+
+  validatingIndex.value = day.index
+  try {
+    // Le modèle complet (exercices) est nécessaire : rechargé s'il manque
+    let template = savedTemplates.value.find(t => t.id === planned.id)
+    if (!template) {
+      await refreshTemplates()
+      template = savedTemplates.value.find(t => t.id === planned.id)
+    }
+    if (!template) {
+      alert(templatesLoaded.value
+        ? "Ce modèle n'existe plus : choisis-en un autre dans l'objectif de la semaine."
+        : "Le modèle n'a pas pu être chargé. Vérifie ta connexion et réessaie.")
+      return
+    }
+    if (await insertTemplateSession(day.date, template)) {
+      celebration.value = { name: template.name, dateLabel: formatDayLong(day.date) }
+    }
+  } finally {
+    validatingIndex.value = null
+  }
+}
+
+// Retirer une validation : la séance de ce jour est supprimée du calendrier
+async function unvalidateDay(day) {
+  if (!day?.session) return
+  const { error } = await supabase.from('sport_sessions').delete().eq('id', day.session.id)
+  if (error) {
+    console.error('Erreur retrait validation :', error)
+    alert("La séance n'a pas pu être retirée. Vérifie ta connexion et réessaie.")
+    return
+  }
+  await fetchSessions()
+}
+
+function formatDayLong(date) {
+  const label = new Date(`${date}T12:00:00`).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
+
+// « Planifier » depuis l'accueil : l'agenda s'ouvre directement sur le tableau
+async function goToPlan() {
+  changeTab('agenda')
+  await nextTick()
+  document.getElementById('objectif-semaine')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 
 const { join: joinPresence, leave: leavePresence } = usePresence()
 const { isSupported: pushSupported, subscribe: subscribePush, requestAndSubscribe, unsubscribe: unsubscribePush } = usePush()
 const showPushBanner = ref(false)
 
-let currentUserId = null
+const currentUserId = ref(null)
 
 onMounted(async () => {
   // Session locale (pas d'aller-retour réseau) : démarrage plus rapide, et hors ligne on n'est pas renvoyé vers la connexion
@@ -531,7 +573,8 @@ onMounted(async () => {
     }
     return router.push('/login')
   }
-  currentUserId = user.id
+  currentUserId.value = user.id
+  loadPlan(user)
 
   // Profil et séances en même temps : un aller-retour réseau de moins avant d'afficher l'accueil
   const [{ data: profile }] = await Promise.all([
@@ -562,6 +605,8 @@ onMounted(async () => {
   initTheme()
   appReady.value = true
   refreshTemplates()
+  // Le plan de la semaine a pu changer sur un autre appareil : relu depuis le serveur sans bloquer le démarrage
+  supabase.auth.getUser().then(({ data }) => { if (data?.user) loadPlan(data.user) }).catch(() => {})
   fetchPendingCount(user.id)
   fetchNotifications(user.id)
   joinPresence(user.id)
@@ -573,7 +618,7 @@ onMounted(async () => {
 
 function enablePush() {
   showPushBanner.value = false
-  if (currentUserId) requestAndSubscribe(currentUserId)
+  if (currentUserId.value) requestAndSubscribe(currentUserId.value)
 }
 
 function dismissPushBanner() {
@@ -582,40 +627,9 @@ function dismissPushBanner() {
 }
 
 
-function triggerAvatarUpload() {
-  avatarInput.value?.click()
-}
-
-async function handleAvatarUpload(event) {
-  const file = event.target.files?.[0]
-  if (!file || !currentUserId) return
-
-  const ext = file.name.split('.').pop()
-  const path = `${currentUserId}/avatar.${ext}`
-  uploadingAvatar.value = true
-
-  const { error: uploadError } = await supabase.storage
-    .from('avatars')
-    .upload(path, file, { upsert: true })
-
-  if (uploadError) {
-    console.error('Upload error:', uploadError)
-    uploadingAvatar.value = false
-    return
-  }
-
-  const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
-  const url = `${publicUrl}?t=${Date.now()}`
-
-  await supabase.from('profiles').upsert({ id: currentUserId, avatar_url: url })
-  avatarUrl.value = url
-  uploadingAvatar.value = false
-  event.target.value = ''
-}
-
 async function fetchSessions() {
-  if (!currentUserId) return
-  const { data, error } = await supabase.from('sport_sessions').select('*').eq('user_id', currentUserId).order('date', { ascending: true })
+  if (!currentUserId.value) return
+  const { data, error } = await supabase.from('sport_sessions').select('*').eq('user_id', currentUserId.value).order('date', { ascending: true })
   if (error) { console.error('Erreur fetchSessions:', error); return }
   sessions.value = data || []
 }
@@ -623,14 +637,14 @@ async function fetchSessions() {
 const savingSession = ref(false)
 
 async function saveSession(payload) {
-  if (savingSession.value || !currentUserId || !selectedDate.value) return
+  if (savingSession.value || !currentUserId.value || !selectedDate.value) return
   savingSession.value = true
   const date = selectedDate.value
   try {
     const existing = sessions.value.find(s => s.date === date)
     const { error } = existing
       ? await supabase.from('sport_sessions').update({ data: payload.data }).eq('id', existing.id)
-      : await supabase.from('sport_sessions').insert({ user_id: currentUserId, date, data: payload.data })
+      : await supabase.from('sport_sessions').insert({ user_id: currentUserId.value, date, data: payload.data })
     if (error) {
       console.error('Erreur saveSession:', error)
       alert("La séance n'a pas pu être enregistrée. Vérifie ta connexion et réessaie.")
@@ -665,15 +679,7 @@ async function onDateSelected(date) {
   pickerDate.value = date
   pickerOpen.value = true
   loadingPicker.value = true
-  if (currentUserId) {
-    const { data } = await supabase.from('workout_templates').select('*').eq('user_id', currentUserId).order('created_at', { ascending: false })
-    try {
-      const localColors = JSON.parse(localStorage.getItem('fittrack_tpl_colors') || '{}')
-      savedTemplates.value = (data || []).map(t => ({ ...t, color: t.color || localColors[t.id] || '' }))
-    } catch {
-      savedTemplates.value = data || []
-    }
-  }
+  await refreshTemplates()
   loadingPicker.value = false
 }
 
@@ -686,7 +692,12 @@ function openNewSession() {
 
 async function assignTemplate(template) {
   pickerOpen.value = false
-  if (!currentUserId || !pickerDate.value) return
+  if (!currentUserId.value || !pickerDate.value) return
+  await insertTemplateSession(pickerDate.value, template)
+}
+
+// Séance créée à partir d'un modèle (choix dans le calendrier ou validation de l'objectif de la semaine)
+async function insertTemplateSession(date, template) {
   const sessionData = {
     title: template.name,
     category: template.category || '',
@@ -695,13 +706,14 @@ async function assignTemplate(template) {
     color: template.color || '',
     templateId: template.id
   }
-  const { error } = await supabase.from('sport_sessions').insert({ user_id: currentUserId, date: pickerDate.value, data: sessionData })
+  const { error } = await supabase.from('sport_sessions').insert({ user_id: currentUserId.value, date, data: sessionData })
   if (error) {
-    console.error('Erreur assignTemplate:', error)
-    alert("Le programme n'a pas pu être ajouté. Vérifie ta connexion et réessaie.")
-    return
+    console.error('Erreur ajout séance :', error)
+    alert("La séance n'a pas pu être ajoutée. Vérifie ta connexion et réessaie.")
+    return false
   }
   await fetchSessions()
+  return true
 }
 
 function formatPickerDate(dateStr) {
@@ -744,23 +756,28 @@ async function fetchNotifications(uid) {
 
 async function acceptFromNotif(r) {
   await supabase.from('friendships').update({ status: 'accepted' }).eq('id', r.id).eq('status', 'pending')
-  await fetchNotifications(currentUserId)
+  await fetchNotifications(currentUserId.value)
 }
 
 async function declineFromNotif(r) {
   await supabase.from('friendships').delete().eq('id', r.id).eq('status', 'pending')
-  await fetchNotifications(currentUserId)
+  await fetchNotifications(currentUserId.value)
 }
 
 async function refreshTemplates() {
-  if (!currentUserId) return
-  const { data } = await supabase.from('workout_templates').select('*').eq('user_id', currentUserId).order('created_at', { ascending: false })
+  if (!currentUserId.value) return
+  const { data, error } = await supabase.from('workout_templates').select('*').eq('user_id', currentUserId.value).order('created_at', { ascending: false })
+  if (error) {
+    console.error('Erreur modèles :', error)
+    return
+  }
   try {
     const localColors = JSON.parse(localStorage.getItem('fittrack_tpl_colors') || '{}')
     savedTemplates.value = (data || []).map(t => ({ ...t, color: t.color || localColors[t.id] || '' }))
   } catch {
     savedTemplates.value = data || []
   }
+  templatesLoaded.value = true
 }
 
 function templateBg(cat) {
@@ -783,12 +800,12 @@ function closeModal() {
 }
 
 function openToday() {
-  onDateSelected(localDateStr())
+  onDateSelected(todayStr.value)
 }
 
 async function handleLogout() {
   leavePresence()
-  if (currentUserId) await unsubscribePush(currentUserId)
+  if (currentUserId.value) await unsubscribePush(currentUserId.value)
   await supabase.auth.signOut()
   window.location.href = '/login'
 }

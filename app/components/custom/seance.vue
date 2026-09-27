@@ -24,36 +24,9 @@
                 <p v-if="hasDraft" class="text-[10px] text-slate-600 font-black mt-0.5">Brouillon sauvegardé</p>
               </div>
 
-              <div class="grid grid-cols-2 gap-3 mt-4">
-                <div>
-                  <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">
-                    Catégorie
-                  </label>
-                  <select
-                    v-model="sessionData.category"
-                    class="w-full bg-white/[0.06] border border-white/10 text-white py-3 px-4 rounded-2xl outline-none focus:border-[var(--accent-solid)]"
-                  >
-                    <option value="">Choisir</option>
-                    <option value="haut">Haut</option>
-                    <option value="bas">Bas</option>
-                    <option value="push">Push</option>
-                    <option value="pull">Pull</option>
-                    <option value="jambes">Jambes</option>
-                    <option value="full-body">Full body</option>
-                    <option value="cardio">Cardio</option>
-                    <option value="mobilite">Mobilité</option>
-                    <option value="repos">Repos</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">
-                    Nombre d'exercices
-                  </label>
-                  <div class="h-[50px] rounded-2xl border border-white/10 bg-white/[0.06] px-4 flex items-center text-white font-black">
-                    {{ sessionData.exercises.length }}
-                  </div>
-                </div>
+              <div class="mt-4 h-[50px] rounded-2xl border border-white/10 bg-white/[0.06] px-4 flex items-center justify-between">
+                <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nombre d'exercices</span>
+                <span class="text-white font-black">{{ sessionData.exercises.length }}</span>
               </div>
 
               <div class="mt-4">
