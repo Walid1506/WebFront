@@ -61,21 +61,27 @@
       </div>
     </div>
 
-    <!-- Rien dans la ligne du jour : repos -->
-    <div v-else class="bg-white/[0.04] backdrop-blur-2xl rounded-[28px] border border-white/[0.08] p-5">
-      <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-3">Séance prévue · {{ dayLabel }}</p>
-      <div class="flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-11 h-11 rounded-2xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-xl shrink-0">😴</div>
-          <div class="min-w-0">
-            <p class="text-white font-black text-lg leading-tight">Repos</p>
-            <p class="text-slate-500 text-xs mt-0.5 truncate">Rien de prévu aujourd'hui</p>
-          </div>
+    <!-- Rien dans la ligne du jour : repos, le singe te le dit -->
+    <div v-else class="bg-white/[0.04] backdrop-blur-2xl rounded-[28px] border border-white/[0.08] p-5 overflow-hidden">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Séance prévue · {{ dayLabel }}</p>
+          <p class="text-white font-black text-lg leading-tight mt-1">Repos</p>
         </div>
         <button @click="$emit('go-plan')"
           class="shrink-0 bg-white/[0.08] border border-white/[0.12] text-white font-black text-sm px-4 py-2.5 rounded-2xl active:scale-95 transition-all">
           Planifier
         </button>
+      </div>
+      <div class="flex items-end gap-2 mt-2">
+        <button type="button" class="w-[92px] shrink-0 -ml-1 -mb-2" aria-label="Une autre phrase du singe" @click="nextRestMessage">
+          <Mascotte mood="repos" :talk-key="restIndex" />
+        </button>
+        <div class="flex-1 min-w-0 mb-7 rounded-2xl rounded-bl-sm bg-white/[0.08] border border-white/[0.10] px-4 py-3">
+          <Transition name="bubble-text" mode="out-in">
+            <p :key="restIndex" class="text-white font-bold text-sm leading-snug">{{ REST_MESSAGES[restIndex] }}</p>
+          </Transition>
+        </div>
       </div>
     </div>
 
@@ -184,6 +190,43 @@ const current = computed(() => {
 
 const previewExercises = computed(() => current.value?.exercises.slice(0, 3) || [])
 
+// Jour de repos : le singe dit une phrase qui change à chaque ouverture (jamais deux fois de suite la même),
+// et un appui sur lui en donne une autre
+const REST_MESSAGES = [
+  'Repose-toi bien, tu l\'as mérité ! 😌',
+  'Journée off : tes muscles se reconstruisent 💪',
+  'Le repos fait partie de l\'entraînement.',
+  'Recharge les batteries, on repart demain 🔋',
+  'Pense à bien dormir et à boire de l\'eau 💧',
+  'Un peu d\'étirements ? Tranquille 🧘',
+  'Chill aujourd\'hui, champion 😎',
+  'Tes muscles grandissent pendant que tu te reposes.',
+  'Profite de ta journée, pas de séance !',
+  'Détente totale, tu reviendras plus fort 🐒'
+]
+const LAST_REST_KEY = 'fittrack-last-repos'
+
+function saveRestIndex(index) {
+  try { localStorage.setItem(LAST_REST_KEY, String(index)) } catch {}
+}
+
+function pickRestIndex() {
+  let last = -1
+  try { last = Number(localStorage.getItem(LAST_REST_KEY) ?? -1) } catch {}
+  const hasLast = Number.isInteger(last) && last >= 0 && last < REST_MESSAGES.length
+  let index = Math.floor(Math.random() * (REST_MESSAGES.length - (hasLast ? 1 : 0)))
+  if (hasLast && index >= last) index++
+  saveRestIndex(index)
+  return index
+}
+
+const restIndex = ref(pickRestIndex())
+
+function nextRestMessage() {
+  restIndex.value = (restIndex.value + 1) % REST_MESSAGES.length
+  saveRestIndex(restIndex.value)
+}
+
 function onImgError(e) {
   if (e.target.dataset.fallback) return
   e.target.dataset.fallback = '1'
@@ -192,6 +235,9 @@ function onImgError(e) {
 </script>
 
 <style scoped>
+.bubble-text-enter-active, .bubble-text-leave-active { transition: opacity 0.18s ease, transform 0.18s ease; }
+.bubble-text-enter-from { opacity: 0; transform: translateY(6px); }
+.bubble-text-leave-to { opacity: 0; transform: translateY(-6px); }
 .slide-up-enter-active, .slide-up-leave-active { transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
 .slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(40px); }
 </style>

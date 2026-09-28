@@ -1,108 +1,132 @@
 <template>
-  <!-- Mascotte FitTrack : un chat roux qui fait coucou et « dit » le mot de la bulle -->
-  <svg class="cat" viewBox="0 0 200 212" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chat mascotte qui te félicite">
-    <g class="cat-bob">
+  <!-- Mascotte FitTrack : un singe. « fete » : il fait coucou et dit le mot de la bulle ; « repos » : yeux fermés, il somnole -->
+  <svg class="mascot" :class="`mood-${mood}`" viewBox="0 0 200 212" xmlns="http://www.w3.org/2000/svg" role="img" :aria-label="mood === 'repos' ? 'Singe mascotte qui se repose' : 'Singe mascotte qui te félicite'">
+    <g class="mascot-bob">
       <!-- Ombre -->
       <ellipse cx="100" cy="203" rx="60" ry="7" fill="#000" opacity="0.28" />
 
-      <!-- Queue -->
+      <!-- Queue enroulée -->
       <g class="tail">
-        <path d="M136 190 C 178 190, 192 152, 174 124 C 166 112, 152 114, 157 127" fill="none" stroke="#7A3E17" stroke-width="23" stroke-linecap="round" />
-        <path d="M136 190 C 178 190, 192 152, 174 124 C 166 112, 152 114, 157 127" fill="none" stroke="#F4A259" stroke-width="16" stroke-linecap="round" />
-        <path d="M174 124 C 166 112, 152 114, 157 127" fill="none" stroke="#D9782F" stroke-width="16" stroke-linecap="round" />
+        <path d="M134 184 C 172 188, 186 156, 170 136 C 160 124, 142 132, 148 146 C 152 155, 164 152, 164 144" fill="none" stroke="#3E2412" stroke-width="16" stroke-linecap="round" />
+        <path d="M134 184 C 172 188, 186 156, 170 136 C 160 124, 142 132, 148 146 C 152 155, 164 152, 164 144" fill="none" stroke="#8A5A34" stroke-width="10" stroke-linecap="round" />
       </g>
 
       <!-- Corps -->
-      <path d="M58 194 Q54 138 100 126 Q146 138 142 194 Z" fill="#F4A259" stroke="#7A3E17" stroke-width="3.5" stroke-linejoin="round" />
-      <ellipse cx="100" cy="168" rx="25" ry="23" fill="#FFE8CC" />
-      <path d="M68 152 q6 4 4 12 M132 152 q-6 4 -4 12" fill="none" stroke="#D9782F" stroke-width="4" stroke-linecap="round" />
+      <path d="M60 194 Q56 140 100 128 Q144 140 140 194 Z" fill="#8A5A34" stroke="#3E2412" stroke-width="3.5" stroke-linejoin="round" />
+      <ellipse cx="100" cy="170" rx="26" ry="22" fill="#F4D2A8" />
 
-      <!-- Pattes du bas -->
-      <ellipse cx="82" cy="194" rx="14" ry="8.5" fill="#FFE8CC" stroke="#7A3E17" stroke-width="3.5" />
-      <ellipse cx="118" cy="194" rx="14" ry="8.5" fill="#FFE8CC" stroke="#7A3E17" stroke-width="3.5" />
+      <!-- Pieds -->
+      <ellipse cx="80" cy="195" rx="15" ry="8" fill="#F4D2A8" stroke="#3E2412" stroke-width="3.5" />
+      <ellipse cx="120" cy="195" rx="15" ry="8" fill="#F4D2A8" stroke="#3E2412" stroke-width="3.5" />
 
-      <!-- Patte levée qui fait coucou -->
-      <g class="paw">
-        <path d="M126 148 L154 108" stroke="#7A3E17" stroke-width="24" stroke-linecap="round" />
-        <path d="M126 148 L154 108" stroke="#F4A259" stroke-width="17" stroke-linecap="round" />
-        <circle cx="156" cy="102" r="13" fill="#FFE8CC" stroke="#7A3E17" stroke-width="3.5" />
-        <ellipse cx="156" cy="106" rx="5" ry="4" fill="#F59EB0" />
-        <circle cx="149.5" cy="98" r="2.4" fill="#F59EB0" />
-        <circle cx="156" cy="95.5" r="2.4" fill="#F59EB0" />
-        <circle cx="162.5" cy="98" r="2.4" fill="#F59EB0" />
+      <!-- Bras gauche le long du corps -->
+      <path d="M70 146 Q56 164 70 182" fill="none" stroke="#3E2412" stroke-width="16" stroke-linecap="round" />
+      <path d="M70 146 Q56 164 70 182" fill="none" stroke="#8A5A34" stroke-width="10" stroke-linecap="round" />
+      <circle cx="71" cy="184" r="8" fill="#F4D2A8" stroke="#3E2412" stroke-width="3" />
+
+      <!-- Bras droit : levé pour faire coucou (fête) ou posé sur le ventre (repos) -->
+      <g v-if="mood === 'fete'" class="paw">
+        <path d="M128 146 L156 106" stroke="#3E2412" stroke-width="17" stroke-linecap="round" />
+        <path d="M128 146 L156 106" stroke="#8A5A34" stroke-width="11" stroke-linecap="round" />
+        <circle cx="158" cy="100" r="11" fill="#F4D2A8" stroke="#3E2412" stroke-width="3.5" />
+      </g>
+      <g v-else>
+        <path d="M130 146 Q144 166 118 172" fill="none" stroke="#3E2412" stroke-width="16" stroke-linecap="round" />
+        <path d="M130 146 Q144 166 118 172" fill="none" stroke="#8A5A34" stroke-width="10" stroke-linecap="round" />
+        <circle cx="115" cy="172" r="8" fill="#F4D2A8" stroke="#3E2412" stroke-width="3" />
       </g>
 
       <!-- Tête -->
       <g class="head">
-        <path d="M54 66 L61 16 L99 46 Z" fill="#F4A259" stroke="#7A3E17" stroke-width="3.5" stroke-linejoin="round" />
-        <path d="M63 57 L66.5 30 L88 47 Z" fill="#F59EB0" />
-        <path d="M146 66 L139 16 L101 46 Z" fill="#F4A259" stroke="#7A3E17" stroke-width="3.5" stroke-linejoin="round" />
-        <path d="M137 57 L133.5 30 L112 47 Z" fill="#F59EB0" />
+        <circle cx="46" cy="84" r="19" fill="#8A5A34" stroke="#3E2412" stroke-width="3.5" />
+        <circle cx="46" cy="84" r="11" fill="#F4D2A8" />
+        <circle cx="154" cy="84" r="19" fill="#8A5A34" stroke="#3E2412" stroke-width="3.5" />
+        <circle cx="154" cy="84" r="11" fill="#F4D2A8" />
 
-        <ellipse cx="100" cy="83" rx="58" ry="48" fill="#F4A259" stroke="#7A3E17" stroke-width="3.5" />
-        <path d="M100 37 v11 M87 39.5 l2.5 9 M113 39.5 l-2.5 9" stroke="#D9782F" stroke-width="4.5" stroke-linecap="round" />
+        <ellipse cx="100" cy="80" rx="52" ry="48" fill="#8A5A34" stroke="#3E2412" stroke-width="3.5" />
+        <path d="M97 34 C 94 22, 109 20, 109 29 C 109 35, 101 36, 101 30" fill="none" stroke="#3E2412" stroke-width="3" stroke-linecap="round" />
 
-        <ellipse cx="100" cy="102" rx="25" ry="16" fill="#FFE8CC" />
+        <!-- Visage clair (deux cercles autour des yeux + museau) -->
+        <circle cx="84" cy="78" r="22" fill="#F4D2A8" />
+        <circle cx="116" cy="78" r="22" fill="#F4D2A8" />
+        <ellipse cx="100" cy="104" rx="36" ry="24" fill="#F4D2A8" />
 
-        <!-- Yeux (clignent) -->
-        <g class="eye">
-          <ellipse cx="76" cy="80" rx="10" ry="12.5" fill="#2B1B12" />
-          <circle cx="79.5" cy="75" r="4" fill="#fff" />
-          <circle cx="72.5" cy="85.5" r="1.8" fill="#fff" />
+        <!-- Yeux : ouverts (clignent) ou fermés -->
+        <template v-if="mood === 'fete'">
+          <g class="eye">
+            <ellipse cx="86" cy="80" rx="8.5" ry="10.5" fill="#241510" />
+            <circle cx="89" cy="76" r="3.2" fill="#fff" />
+            <circle cx="83.5" cy="84.5" r="1.5" fill="#fff" />
+          </g>
+          <g class="eye">
+            <ellipse cx="114" cy="80" rx="8.5" ry="10.5" fill="#241510" />
+            <circle cx="117" cy="76" r="3.2" fill="#fff" />
+            <circle cx="111.5" cy="84.5" r="1.5" fill="#fff" />
+          </g>
+        </template>
+        <path v-else d="M78 81 Q86 88 94 81 M106 81 Q114 88 122 81" fill="none" stroke="#241510" stroke-width="3.2" stroke-linecap="round" />
+
+        <ellipse cx="72" cy="100" rx="8" ry="5" fill="#F4978E" opacity="0.55" />
+        <ellipse cx="128" cy="100" rx="8" ry="5" fill="#F4978E" opacity="0.55" />
+
+        <!-- Narines et bouche (elle bouge quand le singe parle) -->
+        <ellipse cx="95" cy="97" rx="2.4" ry="1.7" fill="#6E4424" />
+        <ellipse cx="105" cy="97" rx="2.4" ry="1.7" fill="#6E4424" />
+        <g :key="talkKey" class="mouth" :class="{ talking }">
+          <path d="M88 105 Q100 123 112 105 Q100 110 88 105 Z" fill="#6B2323" stroke="#3E2412" stroke-width="2" stroke-linejoin="round" />
+          <ellipse cx="100" cy="114" rx="5.5" ry="3.5" fill="#F28B98" />
         </g>
-        <g class="eye">
-          <ellipse cx="124" cy="80" rx="10" ry="12.5" fill="#2B1B12" />
-          <circle cx="127.5" cy="75" r="4" fill="#fff" />
-          <circle cx="120.5" cy="85.5" r="1.8" fill="#fff" />
-        </g>
-
-        <ellipse cx="59" cy="99" rx="9" ry="5.5" fill="#FF7D98" opacity="0.45" />
-        <ellipse cx="141" cy="99" rx="9" ry="5.5" fill="#FF7D98" opacity="0.45" />
-
-        <!-- Moustaches -->
-        <path d="M60 99 L30 92 M60 105 L28 107 M140 99 L170 92 M140 105 L172 107" stroke="#7A3E17" stroke-width="2.2" stroke-linecap="round" opacity="0.55" />
-
-        <!-- Nez et bouche ouverte (elle bouge quand le chat parle) -->
-        <path d="M93.5 92 Q100 88 106.5 92 Q103.5 98.5 100 99.5 Q96.5 98.5 93.5 92 Z" fill="#F59EB0" stroke="#7A3E17" stroke-width="2" stroke-linejoin="round" />
-        <g class="mouth" :class="{ talking }">
-          <path d="M91 104.5 Q100 123 109 104.5 Q100 108.5 91 104.5 Z" fill="#6B2323" stroke="#7A3E17" stroke-width="2" stroke-linejoin="round" />
-          <ellipse cx="100" cy="114" rx="5.5" ry="3.6" fill="#F59EB0" />
-        </g>
-        <path d="M100 99.5 Q100 104.5 94 105.5 M100 99.5 Q100 104.5 106 105.5" fill="none" stroke="#7A3E17" stroke-width="2.2" stroke-linecap="round" />
       </g>
 
-      <!-- Étincelles de fête autour de la patte -->
-      <path class="spark s1" d="M178 70 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 Z" fill="#FFD166" />
-      <path class="spark s2" d="M140 60 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 Z" fill="#fff" />
-      <path class="spark s3" d="M186 112 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 Z" fill="#FF8FB1" />
+      <!-- Fête : étincelles autour de la main -->
+      <template v-if="mood === 'fete'">
+        <path class="spark s1" d="M180 68 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 Z" fill="#FFD166" />
+        <path class="spark s2" d="M142 58 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 Z" fill="#fff" />
+        <path class="spark s3" d="M186 112 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 Z" fill="#FF8FB1" />
+      </template>
+      <!-- Repos : petits « z » qui s'envolent -->
+      <g v-else class="zzz" fill="#C7D2FE" font-family="system-ui, sans-serif" font-weight="900">
+        <text class="z z1" x="146" y="52" font-size="16">z</text>
+        <text class="z z2" x="158" y="38" font-size="20">z</text>
+        <text class="z z3" x="172" y="22" font-size="24">Z</text>
+      </g>
     </g>
   </svg>
 </template>
 
 <script setup>
 defineProps({
-  // Bouche qui s'ouvre et se ferme quelques fois à l'apparition : le chat « dit » le mot
-  talking: { type: Boolean, default: true }
+  mood: { type: String, default: 'fete' },
+  // Bouche qui s'ouvre et se ferme quelques fois : le singe « dit » le texte de la bulle
+  talking: { type: Boolean, default: true },
+  // Change à chaque nouvelle phrase : l'animation de la bouche repart
+  talkKey: { type: [Number, String], default: 0 }
 })
 </script>
 
 <style scoped>
-.cat { overflow: visible; animation: cat-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both; }
-.cat-bob { animation: cat-bob 2.4s ease-in-out 0.9s infinite; }
-.tail { transform-box: view-box; transform-origin: 136px 190px; animation: tail-wag 1.3s ease-in-out infinite alternate; }
-.paw { transform-box: view-box; transform-origin: 126px 148px; animation: paw-wave 0.45s ease-in-out infinite alternate; }
+.mascot { overflow: visible; animation: mascot-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both; }
+.mascot-bob { animation: mascot-bob 2.4s ease-in-out 0.9s infinite; }
+.mood-repos .mascot-bob { animation-duration: 3.6s; }
+.tail { transform-box: view-box; transform-origin: 134px 184px; animation: tail-wag 1.3s ease-in-out infinite alternate; }
+.mood-repos .tail { animation-duration: 2.6s; }
+.paw { transform-box: view-box; transform-origin: 128px 146px; animation: paw-wave 0.45s ease-in-out infinite alternate; }
 .eye { transform-box: fill-box; transform-origin: center; animation: blink 3.6s ease-in-out 1.2s infinite; }
 .mouth { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0.55); }
+.mood-repos .mouth { transform: scaleY(0.3); }
 .mouth.talking { animation: talk 0.26s ease-in-out 0.45s 8 alternate backwards; }
 .spark { transform-box: fill-box; transform-origin: center; animation: twinkle 1.4s ease-in-out infinite; }
 .s2 { animation-delay: 0.45s; }
 .s3 { animation-delay: 0.9s; }
+.z { opacity: 0; animation: float-z 3s ease-in-out infinite; }
+.z2 { animation-delay: 1s; }
+.z3 { animation-delay: 2s; }
 
-@keyframes cat-pop {
+@keyframes mascot-pop {
   from { opacity: 0; transform: translateY(40px) scale(0.6); }
   to { opacity: 1; transform: none; }
 }
-@keyframes cat-bob {
+@keyframes mascot-bob {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-5px); }
 }
@@ -119,15 +143,21 @@ defineProps({
   94% { transform: scaleY(0.1); }
 }
 @keyframes talk {
-  from { transform: scaleY(0.25); }
+  from { transform: scaleY(0.2); }
   to { transform: scaleY(1); }
 }
 @keyframes twinkle {
   0%, 100% { opacity: 0.2; transform: scale(0.6) rotate(0deg); }
   50% { opacity: 1; transform: scale(1.1) rotate(20deg); }
 }
+@keyframes float-z {
+  0% { opacity: 0; transform: translate(0, 6px); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translate(10px, -14px); }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .cat, .cat-bob, .tail, .paw, .eye, .mouth.talking, .spark { animation: none; }
+  .mascot, .mascot-bob, .tail, .paw, .eye, .mouth.talking, .spark, .z { animation: none; }
+  .z { opacity: 1; }
 }
 </style>

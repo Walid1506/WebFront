@@ -80,7 +80,7 @@
         <div class="relative p-6 md:p-10 rounded-[30px] md:rounded-[45px] bg-white/[0.04] backdrop-blur-2xl border border-white/[0.08] overflow-hidden shadow-2xl">
           <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none opacity-40" :style="{ backgroundColor: theme.blobs[0] }"></div>
           <div class="absolute -bottom-10 -left-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none opacity-30" :style="{ backgroundColor: theme.blobs[2] }"></div>
-          <p class="relative text-2xl md:text-4xl font-[1000] tracking-tight leading-tight italic text-white">{{ dailyMessage }}</p>
+          <p class="relative text-center text-2xl md:text-4xl font-[1000] tracking-tight leading-tight italic text-white">{{ dailyMessage }}</p>
         </div>
         <ProgrammeWidget
           :today-session="todaySession"
@@ -122,8 +122,16 @@
 
       <!-- Agenda — monté à la première visite -->
       <section v-if="mountedTabs.has('agenda')" v-show="activeTab === 'agenda'" class="p-4 space-y-4 mt-4 md:mt-8">
+        <div class="flex items-center gap-3 px-1">
+          <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-[var(--accent-from)] to-[var(--accent-to)] rounded-full"></div>
+          <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Ton Planning</h2>
+        </div>
+        <div class="bg-white/[0.04] backdrop-blur-2xl p-2 rounded-[30px] md:rounded-[40px] border border-white/[0.08] shadow-inner">
+          <Calendrier :db-sessions="sessions" :templates="savedTemplates" @select-date="onDateSelected" @delete-session="handleDeleteSession" />
+        </div>
+
         <!-- Objectif par semaine : « Planifier » depuis l'accueil arrive ici -->
-        <div id="objectif-semaine" class="flex items-center gap-3 px-1 scroll-mt-[calc(var(--app-header-h,60px)+16px)]">
+        <div id="objectif-semaine" class="flex items-center gap-3 px-1 pt-2 scroll-mt-[calc(var(--app-header-h,60px)+16px)]">
           <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-[var(--accent-from)] to-[var(--accent-to)] rounded-full"></div>
           <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Objectif par semaine</h2>
         </div>
@@ -135,14 +143,6 @@
           @unvalidate="unvalidateDay"
           @create-template="createProgrammeOpen = true"
         />
-
-        <div class="flex items-center gap-3 px-1 pt-2">
-          <div class="w-2 h-6 md:h-8 bg-gradient-to-b from-[var(--accent-from)] to-[var(--accent-to)] rounded-full"></div>
-          <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter">Ton Planning</h2>
-        </div>
-        <div class="bg-white/[0.04] backdrop-blur-2xl p-2 rounded-[30px] md:rounded-[40px] border border-white/[0.08] shadow-inner">
-          <Calendrier :db-sessions="sessions" :templates="savedTemplates" @select-date="onDateSelected" @delete-session="handleDeleteSession" />
-        </div>
       </section>
 
       <!-- Nutrition — monté à la première visite -->
@@ -197,8 +197,6 @@
         </button>
       </div>
     </nav>
-
-    <TimerRepos />
 
     <!-- ── Panel notifications ── -->
     <Transition name="fade">
@@ -255,7 +253,7 @@
       </div>
     </Transition>
 
-    <!-- Séance validée : félicitations, confettis et chat mascotte -->
+    <!-- Séance validée : félicitations, confettis et singe mascotte -->
     <Felicitations
       v-if="celebration"
       :session-name="celebration.name"
@@ -344,7 +342,6 @@
 <script setup>
 definePageMeta({ layout: false })
 
-import TimerRepos from '~/components/custom/timer.vue'
 import ProgrammeWidget from '~/components/custom/programme-widget.vue'
 
 // Onglets et fenêtres chargés à la première ouverture : le démarrage ne charge que l'accueil

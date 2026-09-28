@@ -12,7 +12,7 @@
       <div class="backdrop absolute inset-0 bg-black/75 backdrop-blur-md" @click="close" />
 
       <div class="relative w-full max-w-[360px] sm:max-w-[520px] flex flex-col sm:flex-row-reverse sm:items-end">
-        <!-- La carte est la bulle du chat : c'est lui qui « dit » le mot -->
+        <!-- La carte est la bulle du singe : c'est lui qui « dit » le mot -->
         <div class="bubble relative flex-1 rounded-[32px] border border-white/[0.12] px-6 pt-7 pb-6 text-center shadow-2xl" :style="{ backgroundColor: bubbleBg }">
           <p
             class="word font-[1000] tracking-tighter leading-none pb-1 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent"
@@ -30,11 +30,11 @@
           >
             Merci
           </button>
-          <!-- Pointe de la bulle, tournée vers le chat -->
+          <!-- Pointe de la bulle, tournée vers le singe -->
           <span class="bubble-tail absolute w-6 h-6 rotate-45 border-white/[0.12]" :style="{ backgroundColor: bubbleBg }" />
         </div>
 
-        <Mascotte class="cat-slot w-[128px] h-auto shrink-0 ml-7 -mt-1 sm:ml-0 sm:mt-0 sm:mr-1 sm:mb-[-6px]" />
+        <Mascotte class="mascotte-slot w-[128px] h-auto shrink-0 ml-7 -mt-1 sm:ml-0 sm:mt-0 sm:mr-1 sm:mb-[-6px]" />
       </div>
 
       <canvas ref="canvas" class="fixed inset-0 pointer-events-none" aria-hidden="true" />
@@ -104,7 +104,7 @@ function close() {
 .bubble { animation: bubble-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 .word { animation: word-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s both; }
 
-/* Pointe en bas à gauche (téléphone), à gauche en bas sur grand écran : toujours vers le chat.
+/* Pointe en bas à gauche (téléphone), à gauche en bas sur grand écran : toujours vers le singe.
    Sous le contenu de la carte (z-index -1 dans la carte isolée) : la lueur du bouton la teinte comme le reste */
 .bubble { isolation: isolate; }
 .bubble-tail { z-index: -1; left: 72px; bottom: -12.5px; border-right-width: 1px; border-bottom-width: 1px; }
@@ -112,7 +112,7 @@ function close() {
   .bubble-tail { left: -12.5px; bottom: 44px; border-right-width: 0; border-left-width: 1px; }
 }
 
-.closing .backdrop, .closing .cat-slot { animation: fade-out 0.2s ease forwards; }
+.closing .backdrop, .closing .mascotte-slot { animation: fade-out 0.2s ease forwards; }
 .closing .bubble { animation: bubble-out 0.2s ease forwards; }
 
 @keyframes fade-in {

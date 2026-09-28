@@ -25,19 +25,6 @@
               >
                 <UIcon name="i-heroicons-qr-code" class="text-2xl text-slate-400 group-hover:text-white" />
               </button>
-
-              <button
-                @click="currentScreen = 'cart'"
-                class="w-12 h-12 bg-white/[0.08] rounded-2xl flex items-center justify-center hover:bg-white/[0.12] transition-colors border border-white/[0.08] relative group"
-              >
-                <UIcon name="i-heroicons-shopping-cart" class="text-2xl text-slate-400 group-hover:text-white" />
-                <span
-                  v-if="shoppingList.length > 0"
-                  class="absolute -top-2 -right-2 bg-blue-500 text-white text-[11px] font-black w-6 h-6 rounded-full flex items-center justify-center shadow-lg"
-                >
-                  {{ shoppingList.length }}
-                </span>
-              </button>
             </div>
           </div>
 
@@ -809,58 +796,6 @@
           </div>
         </div>
       </div>
-
-      <div v-else-if="currentScreen === 'cart'" key="cart" class="fixed inset-0 z-[110] backdrop-blur-2xl flex flex-col items-center px-2 pb-2 sm:px-6 sm:pb-6 pt-[calc(0.5rem+env(safe-area-inset-top))] sm:pt-[calc(1.5rem+env(safe-area-inset-top))]">
-        <div class="w-full max-w-3xl bg-[#111111] rounded-[28px] sm:rounded-[40px] border border-white/10 flex flex-col h-full overflow-hidden">
-          <div class="px-4 py-4 sm:p-8 flex justify-between items-center border-b border-white/5 bg-black/50">
-            <div class="flex items-center gap-3 sm:gap-6">
-              <button @click="currentScreen = 'main'" class="text-slate-400 hover:text-white transition p-1">
-                <UIcon name="i-heroicons-arrow-left" class="text-2xl sm:text-3xl" />
-              </button>
-              <h2 class="text-2xl sm:text-3xl font-[1000] text-white">Courses</h2>
-            </div>
-            <button v-if="shoppingList.length > 0" @click="clearCart" class="text-red-500 font-bold bg-red-500/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-sm sm:text-base">
-              Vider tout
-            </button>
-          </div>
-
-          <div class="px-3 py-3 sm:p-8 flex gap-2 sm:gap-4 border-b border-white/5">
-            <input
-              v-model="newCartItem"
-              @keyup.enter="addCustomCartItem"
-              type="text"
-              placeholder="Ajouter produit..."
-              class="flex-1 bg-slate-900 border border-white/10 text-white font-bold py-3 px-4 sm:py-4 sm:px-6 rounded-2xl outline-none focus:border-[color:var(--accent-solid)] text-sm sm:text-base"
-            />
-            <button @click="addCustomCartItem" class="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black px-4 sm:px-8 rounded-2xl active:scale-95 transition-all text-sm sm:text-base whitespace-nowrap">Ajouter</button>
-          </div>
-
-          <div class="flex-1 overflow-y-auto p-3 sm:p-8 space-y-2 sm:space-y-3 custom-scrollbar">
-            <div
-              v-for="(item, index) in shoppingList"
-              :key="index"
-              class="flex justify-between items-center p-3 sm:p-5 bg-[#0a0a0a] rounded-2xl sm:rounded-3xl border border-white/5"
-              :class="item.checked ? 'opacity-40' : ''"
-            >
-              <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                <button
-                  @click="toggleCheck(index)"
-                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center shrink-0"
-                  :class="item.checked ? 'bg-green-500 border-green-500 text-black' : 'border-slate-600'"
-                >
-                  <UIcon v-if="item.checked" name="i-heroicons-check" class="font-black text-sm" />
-                </button>
-                <h4 class="font-black text-base sm:text-xl flex-1 truncate" :class="item.checked ? 'line-through' : ''">
-                  {{ item.name }}
-                </h4>
-              </div>
-              <button @click="removeCartItem(index)" class="text-red-500/50 hover:text-red-500 ml-2 sm:ml-4 shrink-0">
-                <UIcon name="i-heroicons-trash" class="text-xl sm:text-2xl" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
     </Transition>
 
     <!-- Objectifs du jour : ceux calculés par l'app, ou les siens -->
@@ -1075,7 +1010,6 @@ const catFilters = ['Tout', 'Protéines', 'Glucides', 'Lipides', 'Fruits & Légu
 const selectedFood = ref(null)
 const amount = ref(100)
 const eau = ref(0)
-const shoppingList = ref([])
 const consumed = ref([])
 const frozenBesoins = ref(null)
 // Image des produits sans photo (fichier local : s'affiche aussi hors ligne)
@@ -1097,7 +1031,6 @@ function showMeal(key) {
   if (!openMeals.value.has(key)) openMeals.value = new Set([...openMeals.value, key])
 }
 
-const newCartItem = ref('')
 const scanResult = ref(null)
 const scanError = ref('')
 const manualInputOpen = ref(false)
@@ -1231,7 +1164,6 @@ onMounted(async () => {
 
   if (globals) {
     if (globals.profil) Object.assign(profil, globals.profil)
-    if (globals.shopping_list) shoppingList.value = globals.shopping_list
   }
 })
 
@@ -1377,8 +1309,7 @@ async function saveGlobals() {
 
   const payload = {
     user_id: user.id,
-    profil: JSON.parse(JSON.stringify(profil)),
-    shopping_list: JSON.parse(JSON.stringify(shoppingList.value))
+    profil: JSON.parse(JSON.stringify(profil))
   }
 
   const { data: exists } = await supabase
@@ -2244,31 +2175,6 @@ async function saveItemEdit() {
   itemEditOpen.value = false
   saveDaily()
   if (photoFailed) alert("La photo n'a pas pu être envoyée (connexion ?). Le reste est enregistré.")
-}
-
-function toggleCheck(i) {
-  shoppingList.value[i].checked = !shoppingList.value[i].checked
-  saveGlobals()
-}
-
-function removeCartItem(i) {
-  shoppingList.value.splice(i, 1)
-  saveGlobals()
-}
-
-function addCustomCartItem() {
-  if (newCartItem.value) {
-    shoppingList.value.push({ name: newCartItem.value, checked: false })
-    newCartItem.value = ''
-    saveGlobals()
-  }
-}
-
-function clearCart() {
-  if (confirm('Tout vider ?')) {
-    shoppingList.value = []
-    saveGlobals()
-  }
 }
 
 const filteredDb = computed(() => {

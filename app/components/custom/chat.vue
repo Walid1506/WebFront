@@ -53,7 +53,12 @@
               </div>
             </div>
 
-            <div class="max-w-[75%] flex flex-col gap-0.5" :class="isMine(msg) ? 'items-end' : 'items-start'">
+            <!-- Appui long (ou clic droit) sur un de ses messages : le modifier ou le supprimer -->
+            <div
+              class="max-w-[75%] flex flex-col gap-0.5"
+              :class="isMine(msg) ? 'items-end msg-press' : 'items-start'"
+              v-on="isMine(msg) ? pressHandlers(msg) : {}"
+            >
               <!-- Audio -->
               <div v-if="msg.media_url && isAudioMsg(msg.media_url)"
                 class="rounded-[18px] overflow-hidden border border-white/[0.08] p-2"
@@ -64,7 +69,7 @@
               <!-- Image -->
               <div v-else-if="msg.media_url" class="rounded-[18px] overflow-hidden border border-white/[0.08] cursor-pointer"
                 :class="isMine(msg) ? 'rounded-tr-sm' : 'rounded-tl-sm'"
-                @click="viewImage = msg.media_url">
+                @click="openImage(msg.media_url)">
                 <img :src="msg.media_url" class="max-w-[220px] max-h-[300px] object-cover block" loading="lazy" />
               </div>
 
@@ -79,6 +84,7 @@
               <!-- Heure + accusé de réception (mes messages seulement) -->
               <div class="flex items-center gap-1 px-1" :class="isMine(msg) ? 'flex-row-reverse' : ''">
                 <span class="text-[10px] text-slate-700 font-bold">{{ formatTime(msg.created_at) }}</span>
+                <span v-if="msg.edited_at" class="text-[10px] text-slate-600 font-bold">modifié</span>
                 <!-- Accusé de réception -->
                 <span v-if="isMine(msg)" class="text-[10px] font-black flex items-center gap-0.5 transition-colors duration-300"
                   :style="{ color: msg.read ? 'var(--accent-solid)' : 'rgba(100,116,139,0.6)' }">
@@ -119,20 +125,35 @@
 
     <!-- Input -->
     <div v-if="!isRecording" class="shrink-0 px-3 py-3 border-t border-white/[0.08] backdrop-blur-xl" :style="{ backgroundColor: bgAlpha(theme.bg, 0.92) }">
+      <!-- Modification d'un message : son texte est dans la barre, ✓ pour valider -->
+      <div v-if="editingMsg" class="flex items-center gap-2 px-1 pb-2">
+        <UIcon name="i-heroicons-pencil-square" class="text-base shrink-0" :style="{ color: 'var(--accent-solid)' }" />
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-black" :style="{ color: 'var(--accent-solid)' }">Modifier le message</p>
+          <p class="text-xs text-slate-500 truncate">{{ editingMsg.content }}</p>
+        </div>
+        <button @click="cancelEdit" class="p-1.5 text-slate-500 hover:text-white transition shrink-0" aria-label="Annuler la modification">
+          <UIcon name="i-heroicons-x-mark" class="text-lg" />
+        </button>
+      </div>
       <div class="flex items-end gap-2">
         <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="sendPhoto" />
-        <button @click="fileInput?.click()"
+        <button v-if="!editingMsg" @click="fileInput?.click()"
           class="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center shrink-0 active:scale-90 transition-all">
           <UIcon name="i-heroicons-photo" class="text-slate-400 text-lg" />
         </button>
         <div class="flex-1 bg-white/[0.06] border border-white/[0.08] rounded-[20px] px-4 py-2.5 flex items-end gap-2 min-h-[44px]">
-          <textarea ref="textareaEl" v-model="newMessage" @keydown.enter.exact.prevent="sendMessage"
+          <textarea ref="textareaEl" v-model="newMessage" @keydown.enter.exact.prevent="editingMsg ? saveEdit() : sendMessage()"
             rows="1" placeholder="Message..."
             class="flex-1 bg-transparent text-white text-sm outline-none resize-none placeholder:text-slate-700 leading-relaxed max-h-32"
             @input="autoResize" />
         </div>
-        <!-- Envoyer ou micro -->
-        <button v-if="newMessage.trim()" @click="sendMessage" :disabled="sending"
+        <!-- Valider la modification, envoyer ou micro -->
+        <button v-if="editingMsg" @click="saveEdit" :disabled="sending || !newMessage.trim()" aria-label="Enregistrer la modification"
+          class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 active:scale-90 transition-all bg-gradient-to-br from-[var(--accent-from)] to-[var(--accent-to)] disabled:opacity-40">
+          <UIcon name="i-heroicons-check" class="text-white text-lg" />
+        </button>
+        <button v-else-if="newMessage.trim()" @click="sendMessage" :disabled="sending"
           class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 active:scale-90 transition-all bg-gradient-to-br from-[var(--accent-from)] to-[var(--accent-to)] shadow-lg shadow-[color:var(--accent-solid)]/15">
           <UIcon name="i-heroicons-paper-airplane" class="text-white text-lg" />
         </button>
@@ -142,6 +163,27 @@
         </button>
       </div>
     </div>
+
+    <!-- Actions sur un de ses messages -->
+    <Transition name="sheet">
+      <div v-if="actionMsg" class="fixed inset-0 z-[450] flex items-end justify-center bg-black/50" @click.self="closeActions">
+        <div class="sheet-panel w-full max-w-lg rounded-t-[28px] border-t border-white/[0.08] px-4 pt-4 pb-[max(20px,env(safe-area-inset-bottom))] space-y-2" :style="{ backgroundColor: bgAlpha(theme.bg, 0.98) }">
+          <p class="text-slate-500 text-sm font-bold px-2 pb-1 truncate">{{ messagePreview(actionMsg) }}</p>
+          <button v-if="actionMsg.content && !actionMsg.media_url" @click="startEdit"
+            class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/[0.06] text-white font-black text-sm active:scale-[0.98] transition-transform">
+            <UIcon name="i-heroicons-pencil-square" class="text-lg" />
+            Modifier
+          </button>
+          <button @click="confirmDelete ? deleteMessage() : (confirmDelete = true)"
+            class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-black text-sm active:scale-[0.98] transition-all"
+            :class="confirmDelete ? 'bg-red-500 text-white' : 'bg-red-500/10 text-red-400'">
+            <UIcon name="i-heroicons-trash" class="text-lg" />
+            {{ confirmDelete ? 'Supprimer pour tout le monde' : 'Supprimer' }}
+          </button>
+          <button @click="closeActions" class="w-full py-3 rounded-2xl text-slate-400 font-black text-sm">Annuler</button>
+        </div>
+      </div>
+    </Transition>
 
     <!-- Viewer image plein écran -->
     <Transition name="fade">
@@ -194,6 +236,14 @@ let audioChunks = []
 let recordingTimer = null
 let recordingMimeType = 'audio/webm'
 
+// Actions sur ses propres messages (appui long) : modification et suppression
+const actionMsg = ref(null)
+const confirmDelete = ref(false)
+const editingMsg = ref(null)
+let pressTimer = null
+let pressStart = null
+let suppressClick = false
+
 onMounted(async () => {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
@@ -237,6 +287,7 @@ function addMessage(message) {
 }
 
 async function fetchMessages() {
+  const startedAt = Date.now()
   const { data, error } = await supabase.from('messages')
     .select('*')
     .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${props.friendId}),and(sender_id.eq.${props.friendId},receiver_id.eq.${currentUserId})`)
@@ -246,8 +297,10 @@ async function fetchMessages() {
     console.error('Erreur fetchMessages:', error)
     return
   }
+  // Messages arrivés pendant le chargement gardés ; les autres absents de la réponse ont été supprimés
   const ids = new Set(data.map(m => m.id))
-  messages.value = [...data, ...messages.value.filter(m => !ids.has(m.id))]
+  const arrivedMeanwhile = messages.value.filter(m => !ids.has(m.id) && new Date(m.created_at).getTime() > startedAt - 5000)
+  messages.value = [...data, ...arrivedMeanwhile]
     .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
 }
 
@@ -273,10 +326,16 @@ function subscribeRealtime() {
     .on('postgres_changes', {
       event: 'UPDATE', schema: 'public', table: 'messages',
       filter: `sender_id=eq.${currentUserId}`
-    }, payload => {
-      const idx = messages.value.findIndex(m => m.id === payload.new.id)
-      if (idx !== -1) messages.value[idx] = { ...messages.value[idx], ...payload.new }
-    })
+    }, payload => replaceMessage(payload.new))
+    // L'ami a modifié un de ses messages
+    .on('postgres_changes', {
+      event: 'UPDATE', schema: 'public', table: 'messages',
+      filter: `receiver_id=eq.${currentUserId}`
+    }, payload => replaceMessage(payload.new))
+    // Message supprimé (la suppression ne transmet que l'identifiant)
+    .on('postgres_changes', {
+      event: 'DELETE', schema: 'public', table: 'messages'
+    }, payload => removeMessage(payload.old?.id))
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') catchUp()
     })
@@ -335,6 +394,136 @@ async function sendPhoto(event) {
     triggerPush({ receiver_id: props.friendId, content: null, media_url: publicUrl })
   }
   sendingPhoto.value = false
+}
+
+function replaceMessage(message) {
+  const idx = messages.value.findIndex(m => m.id === message.id)
+  if (idx !== -1) messages.value[idx] = { ...messages.value[idx], ...message }
+}
+
+function removeMessage(id) {
+  if (!id) return
+  messages.value = messages.value.filter(m => m.id !== id)
+  if (editingMsg.value?.id === id) cancelEdit()
+}
+
+// Appui long (ou clic droit) sur un de ses messages : feuille « Modifier / Supprimer »
+function pressHandlers(msg) {
+  return {
+    pointerdown: e => startPress(e, msg),
+    pointermove: movePress,
+    pointerup: cancelPress,
+    pointercancel: cancelPress,
+    pointerleave: cancelPress,
+    contextmenu: (e) => {
+      e.preventDefault()
+      openActions(msg)
+    }
+  }
+}
+
+function startPress(e, msg) {
+  cancelPress()
+  pressStart = { x: e.clientX, y: e.clientY }
+  pressTimer = setTimeout(() => openActions(msg), 450)
+}
+
+// Le doigt bouge : c'est un défilement, pas un appui long
+function movePress(e) {
+  if (pressStart && Math.hypot(e.clientX - pressStart.x, e.clientY - pressStart.y) > 10) cancelPress()
+}
+
+function cancelPress() {
+  clearTimeout(pressTimer)
+  pressTimer = null
+  pressStart = null
+}
+
+function openActions(msg) {
+  cancelPress()
+  // Le relâchement après l'appui long ne doit pas ouvrir la photo en grand
+  suppressClick = true
+  setTimeout(() => { suppressClick = false }, 500)
+  confirmDelete.value = false
+  actionMsg.value = msg
+}
+
+function closeActions() {
+  actionMsg.value = null
+  confirmDelete.value = false
+}
+
+function openImage(url) {
+  if (!suppressClick) viewImage.value = url
+}
+
+function messagePreview(msg) {
+  if (msg.content) return msg.content
+  return isAudioMsg(msg.media_url) ? '🎤 Message vocal' : '📷 Photo'
+}
+
+function startEdit() {
+  const msg = actionMsg.value
+  closeActions()
+  if (!msg) return
+  editingMsg.value = msg
+  newMessage.value = msg.content
+  nextTick(() => {
+    if (!textareaEl.value) return
+    textareaEl.value.focus()
+    autoResize({ target: textareaEl.value })
+  })
+}
+
+function cancelEdit() {
+  editingMsg.value = null
+  newMessage.value = ''
+  if (textareaEl.value) textareaEl.value.style.height = 'auto'
+}
+
+async function saveEdit() {
+  const msg = editingMsg.value
+  const content = newMessage.value.trim()
+  if (!msg || !content || sending.value) return
+  if (content === msg.content) return cancelEdit()
+
+  sending.value = true
+  const { data, error } = await supabase.from('messages')
+    .update({ content, edited_at: new Date().toISOString() })
+    .eq('id', msg.id).eq('sender_id', currentUserId)
+    .select().maybeSingle()
+  sending.value = false
+
+  // Aucune ligne renvoyée : la modification a été refusée
+  if (error || !data) {
+    console.error('Erreur modification message :', error)
+    alert("Le message n'a pas pu être modifié. Vérifie ta connexion et réessaie.")
+    return
+  }
+  replaceMessage(data)
+  cancelEdit()
+}
+
+async function deleteMessage() {
+  const msg = actionMsg.value
+  closeActions()
+  if (!msg) return
+
+  const { data, error } = await supabase.from('messages')
+    .delete().eq('id', msg.id).eq('sender_id', currentUserId).select('id')
+  if (error || !data?.length) {
+    console.error('Erreur suppression message :', error)
+    alert("Le message n'a pas pu être supprimé. Vérifie ta connexion et réessaie.")
+    return
+  }
+  removeMessage(msg.id)
+  if (msg.media_url) removeMediaFile(msg.media_url)
+}
+
+// Photo ou vocal d'un message supprimé : fichier retiré du stockage (sans bloquer si ce n'est pas permis)
+function removeMediaFile(url) {
+  const match = url.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/)
+  if (match) supabase.storage.from(match[1]).remove([decodeURIComponent(match[2])])
 }
 
 function scrollToBottom() {
@@ -482,4 +671,12 @@ function showDateSep(i) {
 <style scoped>
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+/* Appui long sur ses messages : pas de sélection de texte ni de menu iOS (« Copier », « Enregistrer l'image ») */
+.msg-press, .msg-press * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+
+.sheet-enter-active, .sheet-leave-active { transition: opacity 0.3s ease; }
+.sheet-enter-active .sheet-panel, .sheet-leave-active .sheet-panel { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.sheet-enter-from, .sheet-leave-to { opacity: 0; }
+.sheet-enter-from .sheet-panel, .sheet-leave-to .sheet-panel { transform: translateY(100%); }
 </style>
