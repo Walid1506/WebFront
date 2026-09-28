@@ -607,22 +607,33 @@
         </div>
       </div>
 
-      <!-- ── PRODUIT REMPLI À LA MAIN (code-barres introuvable ou valeurs manquantes) ── -->
+      <!-- ── PRODUIT REMPLI À LA MAIN (code-barres introuvable ou valeurs manquantes) ──
+           ── ou PLAT ANALYSÉ PAR L'IA : valeurs pour 100 g vérifiées avant d'entrer dans la bibliothèque ── -->
       <div v-else-if="currentScreen === 'customFood'" key="customFood" class="fixed inset-0 z-[120] backdrop-blur-2xl overflow-y-auto">
         <div class="relative min-h-full flex flex-col items-center justify-center px-6 pt-[calc(5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
-          <button @click="currentScreen = 'scanner'" class="absolute top-[calc(2rem+env(safe-area-inset-top))] left-8 text-slate-400 hover:text-white transition">
+          <button @click="currentScreen = customFood.source === 'ia' ? 'camera' : 'scanner'" class="absolute top-[calc(2rem+env(safe-area-inset-top))] left-8 text-slate-400 hover:text-white transition">
             <UIcon name="i-heroicons-arrow-left" class="text-4xl" />
           </button>
 
           <form class="w-full max-w-md space-y-4" @submit.prevent="submitCustomFood" @input="customFoodError = ''">
-            <div class="text-center space-y-1">
+            <div v-if="customFood.source === 'ia'" class="text-center space-y-2">
+              <div class="flex items-center justify-center gap-3">
+                <img v-if="customFood.imgPreview" :src="customFood.imgPreview" class="w-14 h-14 rounded-2xl object-cover bg-slate-900" alt="" />
+                <span v-if="AI_CONFIDENCE[customFood.confidence]" class="text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest" :class="AI_CONFIDENCE[customFood.confidence].class">
+                  Estimation IA · {{ AI_CONFIDENCE[customFood.confidence].label }}
+                </span>
+              </div>
+              <h3 class="text-3xl font-[1000] text-white">Vérifie les valeurs</h3>
+              <p class="text-slate-400 text-sm font-bold">Pour 100 g, estimées par l'IA d'après ta photo. Corrige-les si besoin : elles seront enregistrées dans la bibliothèque.</p>
+            </div>
+            <div v-else class="text-center space-y-1">
               <h3 class="text-3xl font-[1000] text-white">{{ customFood.editing ? 'Corriger le produit' : 'Nouveau produit' }}</h3>
               <p class="text-slate-400 text-sm font-bold">Recopie les valeurs « pour 100 g » du tableau sur l'emballage.</p>
               <p v-if="customFood.barcode" class="text-slate-500 text-xs font-black">Code-barres {{ customFood.barcode }}</p>
             </div>
 
             <label class="block">
-              <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nom du produit</span>
+              <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">{{ customFood.source === 'ia' ? 'Nom du plat' : 'Nom du produit' }}</span>
               <input
                 v-model="customFood.name"
                 type="text"
@@ -650,6 +661,22 @@
               </label>
             </div>
 
+            <!-- Plat IA : les calories doivent correspondre aux macros (4 kcal/g protéines et glucides, 9 kcal/g lipides) -->
+            <template v-if="customFood.source === 'ia' && aiEnergyCheck.expected !== null">
+              <div v-if="aiEnergyCheck.ok" class="flex items-center justify-center gap-2 text-emerald-400 text-sm font-bold">
+                <UIcon name="i-heroicons-check-circle" class="text-lg shrink-0" />
+                Calories cohérentes avec les macros
+              </div>
+              <div v-else class="bg-amber-500/10 border border-amber-500/25 rounded-2xl p-4 space-y-3">
+                <p class="text-amber-200 text-sm font-bold leading-snug">
+                  Les calories ne collent pas aux macros : ces protéines, glucides et lipides font environ {{ aiEnergyCheck.expected }} kcal pour 100 g.
+                </p>
+                <button type="button" class="w-full py-2.5 rounded-xl bg-amber-500/20 text-amber-100 font-black text-sm active:scale-95 transition-transform" @click="customFood.k = String(aiEnergyCheck.expected)">
+                  Utiliser {{ aiEnergyCheck.expected }} kcal
+                </button>
+              </div>
+            </template>
+
             <p v-if="customFoodError" class="text-red-400 text-sm font-bold text-center">{{ customFoodError }}</p>
 
             <button
@@ -657,7 +684,7 @@
               :disabled="customFoodSaving"
               class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-xl py-5 rounded-[26px] shadow-lg active:scale-95 transition-all disabled:opacity-50"
             >
-              {{ customFoodSaving ? 'Enregistrement…' : 'Continuer' }}
+              {{ customFoodSaving ? 'Enregistrement…' : (customFood.source === 'ia' ? 'Enregistrer et continuer' : 'Continuer') }}
             </button>
           </form>
         </div>
@@ -734,13 +761,9 @@
               <h3 class="text-2xl font-black text-white leading-tight flex-1">{{ aiResult.name }}</h3>
               <span
                 class="shrink-0 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest"
-                :class="{
-                  'bg-green-500/20 text-green-400 border border-green-500/30': aiResult.confidence === 'haute',
-                  'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30': aiResult.confidence === 'moyenne',
-                  'bg-red-500/20 text-red-400 border border-red-500/30': aiResult.confidence === 'basse'
-                }"
+                :class="(AI_CONFIDENCE[aiResult.confidence] || AI_CONFIDENCE.basse).class"
               >
-                {{ aiResult.confidence === 'haute' ? 'Fiable' : aiResult.confidence === 'moyenne' ? 'Approximatif' : 'Incertain' }}
+                {{ (AI_CONFIDENCE[aiResult.confidence] || AI_CONFIDENCE.basse).label }}
               </span>
             </div>
 
@@ -767,10 +790,10 @@
             <p class="text-slate-500 text-sm text-center">Portion estimée : ~{{ aiResult.portion }}g • tu peux ajuster</p>
 
             <button
-              @click="addAiResult"
+              @click="openAiReview"
               class="w-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black text-xl py-5 rounded-[25px] shadow-lg shadow-[color:var(--accent-solid)]/20 active:scale-95 transition-all"
             >
-              Ajouter au journal
+              Vérifier et ajouter
             </button>
 
             <button @click="clearAiState" class="w-full text-slate-500 font-bold py-2 hover:text-slate-300 transition">
@@ -1249,7 +1272,7 @@ async function saveScannedFoodToSharedLibrary(barcode, food) {
     p: Number(food.p || 0),
     c: Number(food.c || 0),
     f: Number(food.f || 0),
-    cat: 'Scannés'
+    cat: food.cat || 'Scannés'
   }
 
   const { error } = await supabase
@@ -1762,13 +1785,22 @@ const CUSTOM_FIELDS = [
   { key: 'f', label: 'Lipides', unit: 'g', color: 'text-[#9DFF00]' }
 ]
 const notFoundBarcode = ref('')
-const customFood = reactive({ barcode: '', name: '', img: '', k: '', p: '', c: '', f: '', editing: false })
+// source 'scan' : produit à code-barres ; 'ia' : plat analysé par l'IA (photo, fiabilité et portion estimée en plus)
+const customFood = reactive({
+  source: 'scan', barcode: '', name: '', img: '', k: '', p: '', c: '', f: '', editing: false,
+  imgPreview: '', imgUpload: null, confidence: '', portion: 100
+})
 const customFoodError = ref('')
 const customFoodSaving = ref(false)
 
 function openCustomFood(barcode, base = null) {
   const value = (n) => (Number(n) > 0 ? String(n) : '')
   Object.assign(customFood, {
+    source: 'scan',
+    imgPreview: '',
+    imgUpload: null,
+    confidence: '',
+    portion: 100,
     barcode,
     editing: !!base,
     name: base?.name && base.name !== 'Produit inconnu' ? base.name : '',
@@ -1809,20 +1841,37 @@ async function submitCustomFood() {
     return
   }
 
+  const fromAi = customFood.source === 'ia'
+  // Plat de l'IA : vérifié avant d'entrer dans la bibliothèque partagée
+  if (fromAi && k <= 0) {
+    customFoodError.value = 'Un plat à 0 kcal ne peut pas être enregistré : corrige les valeurs ou analyse une autre photo.'
+    return
+  }
+  if (fromAi && !aiEnergyCheck.value.ok) {
+    customFoodError.value = `Corrige les valeurs : les macros font environ ${aiEnergyCheck.value.expected} kcal pour 100 g.`
+    return
+  }
+
   const round1 = n => Math.round(n * 10) / 10
   const food = {
-    barcode: customFood.barcode,
+    barcode: fromAi ? aiLibraryKey(name) : customFood.barcode,
     name,
     img: customFood.img || CUSTOM_FOOD_IMG,
-    k: Math.round(k),
+    // Plat de l'IA : calories au dixième, la portion estimée redonne les chiffres de l'analyse
+    k: fromAi ? round1(k) : Math.round(k),
     p: round1(p),
     c: round1(c),
     f: round1(f),
-    cat: 'Scannés'
+    cat: fromAi ? 'Plats IA' : 'Scannés'
   }
 
   customFoodSaving.value = true
   try {
+    // Photo du plat envoyée dans le stockage : son adresse sert d'image dans la bibliothèque et le journal
+    // (8 s au plus : sans réseau, l'image par défaut)
+    if (fromAi && customFood.imgUpload) {
+      food.img = (await Promise.race([customFood.imgUpload, new Promise(r => setTimeout(() => r(null), 8000))])) || CUSTOM_FOOD_IMG
+    }
     if (food.barcode) await saveScannedFoodToSharedLibrary(food.barcode, food)
   } finally {
     customFoodSaving.value = false
@@ -1831,9 +1880,25 @@ async function submitCustomFood() {
   notFoundBarcode.value = ''
   lastScreenBeforeQuantity.value = 'customFood'
   selectedFood.value = food
-  amount.value = 100
+  amount.value = fromAi ? customFood.portion : 100
   currentScreen.value = 'quantity'
 }
+
+// Les plats de l'IA n'ont pas de code-barres : clé « ia:nom-du-plat » dans la colonne barcode (unique).
+// Un même plat n'a qu'une fiche, mise à jour avec les dernières valeurs vérifiées
+function aiLibraryKey(name) {
+  const slug = normalizeSearch(name).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+  return `ia:${slug || Date.now()}`
+}
+
+// Calories attendues d'après les macros (4 kcal/g protéines et glucides, 9 kcal/g lipides) :
+// un écart de plus de 20 % (ou 25 kcal) signale une estimation de l'IA à corriger
+const aiEnergyCheck = computed(() => {
+  const [k, p, c, f] = ['k', 'p', 'c', 'f'].map(key => parseNutrient(customFood[key]))
+  if (![k, p, c, f].every(Number.isFinite) || k <= 0) return { ok: true, expected: null }
+  const expected = Math.round(4 * p + 4 * c + 9 * f)
+  return { ok: Math.abs(k - expected) <= Math.max(25, 0.2 * Math.max(k, expected)), expected }
+})
 
 const imc = computed(() => profil.poids && profil.taille ? (profil.poids / Math.pow(profil.taille / 100, 2)).toFixed(1) : 0)
 
@@ -2355,27 +2420,41 @@ async function uploadMealPhoto(dataUrl) {
   }
 }
 
-function addAiResult() {
+const AI_CONFIDENCE = {
+  haute: { label: 'Fiable', class: 'bg-green-500/20 text-green-400 border border-green-500/30' },
+  moyenne: { label: 'Approximatif', class: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' },
+  basse: { label: 'Incertain', class: 'bg-red-500/20 text-red-400 border border-red-500/30' }
+}
+
+// Plat analysé : ses valeurs ramenées à 100 g sont d'abord vérifiées (écran du produit rempli à la main),
+// puis il est enregistré dans la bibliothèque partagée et ajouté au journal avec la portion estimée
+function openAiReview() {
   if (!aiResult.value) return
 
   if (aiPhotoUpload.image !== aiImage.value) {
     aiPhotoUpload = { image: aiImage.value, promise: aiImage.value ? uploadMealPhoto(aiImage.value) : Promise.resolve(null) }
   }
-  const per100 = aiResult.value.portion / 100
-  lastScreenBeforeQuantity.value = 'camera'
-  selectedFood.value = {
-    name: aiResult.value.name,
-    // Aperçu immédiat avec la photo prise ; l'adresse envoyée la remplace à l'ajout au journal
-    img: aiImage.value || CUSTOM_FOOD_IMG,
+  // Portion à 0 quand l'IA ne reconnaît pas de nourriture : les valeurs (nulles) sont alors prises pour 100 g
+  const portion = Number(aiResult.value.portion) > 0 ? Number(aiResult.value.portion) : 100
+  const per100 = portion / 100
+  const value = n => String(Math.round((Number(n) || 0) / per100 * 10) / 10)
+  Object.assign(customFood, {
+    source: 'ia',
+    barcode: '',
+    editing: false,
+    name: aiResult.value.name || '',
+    img: '',
+    imgPreview: aiImage.value || '',
     imgUpload: aiPhotoUpload.promise,
-    // Valeurs pour 100 g gardées précises : la portion estimée redonne exactement les chiffres de l'IA
-    k: +(aiResult.value.calories / per100).toFixed(1),
-    p: +(aiResult.value.proteins / per100).toFixed(2),
-    c: +(aiResult.value.carbs / per100).toFixed(2),
-    f: +(aiResult.value.fats / per100).toFixed(2)
-  }
-  amount.value = aiResult.value.portion
-  currentScreen.value = 'quantity'
+    confidence: aiResult.value.confidence || '',
+    portion,
+    k: value(aiResult.value.calories),
+    p: value(aiResult.value.proteins),
+    c: value(aiResult.value.carbs),
+    f: value(aiResult.value.fats)
+  })
+  customFoodError.value = ''
+  currentScreen.value = 'customFood'
 }
 </script>
 

@@ -121,23 +121,36 @@
                     <span>
                       Ajoute l'action <b class="text-white">Rechercher des échantillons de santé</b> (tape « santé » dans la recherche) :
                       type <b class="text-white">Nombre de pas</b>, date de début <b class="text-white">aujourd'hui</b>, grouper par <b class="text-white">jour</b>.
+                      Touche ensuite <b class="text-white">Ajouter un filtre</b> → <b class="text-white">Source</b> → <b class="text-white">est</b> → ton <b class="text-white">iPhone</b> :
+                      sans ce filtre, les pas de l'iPhone et de l'Apple Watch s'additionnent.
                       Autorise l'accès à Santé si l'iPhone le demande.
                     </span>
                   </li>
                   <li class="flex gap-3">
                     <span class="step-num">3</span>
-                    <span>Ajoute <b class="text-white">Calculer des statistiques</b> et choisis <b class="text-white">Somme</b>.</span>
+                    <span>
+                      Ajoute l'action de statistiques (tape « statistiques » dans la recherche) et choisis <b class="text-white">Somme</b> :
+                      elle s'affiche <b class="text-white">Calculer l'opération Somme de Échantillons de Santé</b>.
+                    </span>
                   </li>
                   <li class="flex gap-3">
                     <span class="step-num">4</span>
-                    <span>Ajoute <b class="text-white">Obtenir le contenu de l'URL</b>, colle ton lien, puis insère la variable <b class="text-white">Statistiques</b> juste après <b class="text-white">pas=</b>.</span>
+                    <span>
+                      Ajoute <b class="text-white">Obtenir le contenu de l'URL</b> et colle ton lien. Touche ensuite juste après <b class="text-white">pas=</b>
+                      et choisis <b class="text-white">Statistiques</b> dans la barre au-dessus du clavier : une pastille bleue
+                      <b class="text-white">Statistiques</b> doit apparaître à la fin du lien.
+                    </span>
+                  </li>
+                  <li class="flex gap-3">
+                    <span class="step-num">5</span>
+                    <span>Ajoute <b class="text-white">Afficher le résultat</b> : chaque envoi affichera « … pas envoyés à FitTrack ✅ ».</span>
                   </li>
                 </ol>
               </div>
 
               <!-- 3. Automatisation -->
               <div class="bg-white/[0.04] rounded-[24px] border border-white/[0.08] p-5">
-                <p class="text-[10px] font-black uppercase tracking-widest mb-3" :style="{ color: 'var(--accent-solid)' }">3 · Envoi automatique</p>
+                <p class="text-[10px] font-black uppercase tracking-widest mb-3" :style="{ color: 'var(--accent-solid)' }">3 · Envoi automatique (facultatif)</p>
                 <p class="text-sm text-slate-300 leading-relaxed">
                   Dans Raccourcis, onglet <b class="text-white">Automatisation</b> → <b class="text-white">+</b> → <b class="text-white">Heure de la journée</b>
                   (par exemple 12:00), <b class="text-white">Quotidiennement</b>, <b class="text-white">Exécuter immédiatement</b>, puis choisis
