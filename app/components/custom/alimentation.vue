@@ -476,6 +476,32 @@
                 </button>
               </div>
               <p v-if="cookedMode && amount > 0" class="text-slate-500 text-xs font-bold">≈ {{ Math.round(amount / cookFactor) }} g cru</p>
+              <button v-if="!cookingPickerOpen" type="button" class="text-slate-600 text-xs font-bold underline" @click="cookingPickerOpen = true">Pas le bon type d'aliment ?</button>
+            </div>
+            <!-- Nom non reconnu (« Le Kamaris ») : on choisit le type, retenu pour la prochaine fois -->
+            <button v-else-if="!cookingPickerOpen" type="button" class="mt-4 text-xs font-black" :style="{ color: 'var(--accent-solid)' }" @click="cookingPickerOpen = true">
+              Pesé cuit ? Choisis le type d'aliment
+            </button>
+            <div v-if="cookingPickerOpen" class="mt-3 flex flex-wrap justify-center gap-1.5">
+              <button
+                v-for="t in cookingTypes"
+                :key="t.id"
+                type="button"
+                class="px-3 py-1.5 rounded-xl text-xs font-black transition-colors"
+                :class="cookingChoice === t.id ? 'text-white' : 'bg-white/[0.06] text-slate-300'"
+                :style="cookingChoice === t.id ? { background: 'linear-gradient(to right, var(--accent-from), var(--accent-to))' } : {}"
+                @click="chooseCookingType(t.id)"
+              >
+                {{ t.label }}
+              </button>
+              <button
+                type="button"
+                class="px-3 py-1.5 rounded-xl text-xs font-black"
+                :class="cookingChoice === 'aucun' ? 'bg-white text-black' : 'bg-white/[0.06] text-slate-300'"
+                @click="chooseCookingType('aucun')"
+              >
+                Se pèse tel quel
+              </button>
             </div>
 
             <div class="flex justify-between border-t border-white/5 mt-6 pt-6 text-center">
@@ -2244,7 +2270,30 @@ function setCookedMode(cooked) {
   cookedMode.value = cooked
   try { localStorage.setItem(COOKED_PREF_KEY, cooked ? '1' : '0') } catch {}
 }
-const cookFactor = computed(() => cookingFactor(selectedFood.value))
+// Type choisi à la main pour un aliment (par nom), prioritaire sur la détection : 'aucun' = se pèse tel quel
+const COOKING_CHOICES_KEY = 'fittrack-cuisson'
+const cookingTypes = COOKING_TYPES
+const cookingChoices = ref({})
+try { cookingChoices.value = JSON.parse(localStorage.getItem(COOKING_CHOICES_KEY) || '{}') } catch {}
+const cookingPickerOpen = ref(false)
+const cookingChoice = computed(() => (selectedFood.value ? cookingChoices.value[normalizeFoodName(selectedFood.value.name)] : undefined))
+
+function chooseCookingType(id) {
+  const key = normalizeFoodName(selectedFood.value?.name)
+  if (!key) return
+  cookingChoices.value = { ...cookingChoices.value, [key]: id }
+  try { localStorage.setItem(COOKING_CHOICES_KEY, JSON.stringify(cookingChoices.value)) } catch {}
+  cookingPickerOpen.value = false
+  if (id !== 'aucun') setCookedMode(true)
+}
+
+watch(selectedFood, () => { cookingPickerOpen.value = false })
+
+const cookFactor = computed(() => {
+  if (cookingChoice.value === 'aucun') return null
+  const chosen = COOKING_TYPES.find(t => t.id === cookingChoice.value)
+  return chosen ? chosen.factor : cookingFactor(selectedFood.value)
+})
 const rawAmount = computed(() => (cookFactor.value && cookedMode.value ? amount.value / cookFactor.value : amount.value))
 
 const calculatedMacros = computed(() => selectedFood.value ? macrosFor(selectedFood.value, rawAmount.value) : {})
