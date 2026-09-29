@@ -45,7 +45,7 @@
           <div v-for="{ item: meal, index } in group.entries" :key="index" class="flex items-center gap-3">
             <img :src="meal.img" class="w-10 h-10 rounded-xl object-cover bg-white shrink-0" loading="lazy" decoding="async" width="40" height="40" @error="onMealImageError" />
             <p class="flex-1 min-w-0 text-white font-bold text-sm truncate">{{ meal.name }}</p>
-            <p class="text-xs font-black text-slate-400 shrink-0">{{ meal.amount }} g · {{ meal.kcal }} kcal</p>
+            <p class="text-xs font-black text-slate-400 shrink-0">{{ meal.amount }} g{{ meal.cuit ? ' cuit' : '' }} · {{ meal.kcal }} kcal</p>
           </div>
         </div>
       </div>

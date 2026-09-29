@@ -301,7 +301,7 @@
                               @click="openItemEdit(index)"
                               class="text-[#2F6BFF] font-black text-xs mt-1 -my-2 py-2 pr-1 flex items-center gap-1 max-w-full hover:text-white transition-colors"
                             >
-                              <span class="truncate">{{ item.amount }} g • {{ item.kcal }} kcal</span>
+                              <span class="truncate">{{ item.amount }} g{{ item.cuit ? ' cuit' : '' }} • {{ item.kcal }} kcal</span>
                               <UIcon name="i-heroicons-pencil-square" class="text-sm shrink-0" />
                             </button>
                           </div>
@@ -458,7 +458,25 @@
               class="bg-transparent text-white font-[1000] text-7xl text-center w-full outline-none mb-4"
               placeholder="0"
             />
-            <p class="text-blue-500 font-black">Grammes</p>
+            <p class="text-blue-500 font-black">{{ cookFactor ? (cookedMode ? 'Grammes cuits' : 'Grammes crus') : 'Grammes' }}</p>
+
+            <!-- Pâtes, riz, viandes… : on pèse cuit, les valeurs (pour 100 g cru) sont converties -->
+            <div v-if="cookFactor" class="mt-4 space-y-2">
+              <div class="inline-flex rounded-2xl bg-white/[0.06] border border-white/[0.08] p-1">
+                <button
+                  v-for="opt in [{ cooked: true, label: 'Cuit' }, { cooked: false, label: 'Cru' }]"
+                  :key="opt.label"
+                  type="button"
+                  class="px-5 py-2 rounded-xl text-sm font-black transition-colors"
+                  :class="cookedMode === opt.cooked ? 'text-white' : 'text-slate-400'"
+                  :style="cookedMode === opt.cooked ? { background: 'linear-gradient(to right, var(--accent-from), var(--accent-to))' } : {}"
+                  @click="setCookedMode(opt.cooked)"
+                >
+                  {{ opt.label }}
+                </button>
+              </div>
+              <p v-if="cookedMode && amount > 0" class="text-slate-500 text-xs font-bold">≈ {{ Math.round(amount / cookFactor) }} g cru</p>
+            </div>
 
             <div class="flex justify-between border-t border-white/5 mt-6 pt-6 text-center">
               <div>
@@ -936,7 +954,7 @@
             </div>
 
             <label class="block">
-              <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Quantité</span>
+              <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Quantité{{ itemEdit.cuit ? ' (poids cuit)' : '' }}</span>
               <span class="relative block mt-1">
                 <input
                   v-model="itemEdit.amount"
@@ -2014,6 +2032,7 @@ async function addFood() {
   if (addingFood.value || !selectedFood.value) return
   const { name, img, k, p, c, f, imgUpload } = selectedFood.value
   const item = { name, img, amount: amount.value, meal: targetMeal.value, base: { k, p, c, f }, ...calculatedMacros.value }
+  if (cookFactor.value && cookedMode.value) item.cuit = cookFactor.value
 
   addingFood.value = true
   try {
@@ -2054,17 +2073,18 @@ function moveItem(i, meal) {
 function per100Of(item) {
   const libFood = !item.base && mergedFoodLibrary.value.find(f => f.name === item.name)
   const base = item.base || (libFood && { k: libFood.k, p: libFood.p, c: libFood.c, f: libFood.f })
-  return base || (item.amount > 0 ? {
-    k: item.kcal * 100 / item.amount,
-    p: item.prot * 100 / item.amount,
-    c: item.carbs * 100 / item.amount,
-    f: item.fats * 100 / item.amount
+  const rawGrams = item.amount / (item.cuit || 1)
+  return base || (rawGrams > 0 ? {
+    k: item.kcal * 100 / rawGrams,
+    p: item.prot * 100 / rawGrams,
+    c: item.carbs * 100 / rawGrams,
+    f: item.fats * 100 / rawGrams
   } : null)
 }
 
 // Modifier un aliment du journal : photo, nom, repas, quantité et valeurs de la portion
 const itemEditOpen = ref(false)
-const itemEdit = reactive({ index: -1, name: '', meal: '', amount: '', kcal: '', prot: '', carbs: '', fats: '', img: '', photo: '', touched: false })
+const itemEdit = reactive({ index: -1, name: '', meal: '', amount: '', kcal: '', prot: '', carbs: '', fats: '', img: '', photo: '', touched: false, cuit: 0 })
 const itemEditError = ref('')
 const itemEditSaving = ref(false)
 const itemPhotoInput = ref(null)
@@ -2087,7 +2107,8 @@ function openItemEdit(i) {
     fats: String(item.fats),
     img: item.img,
     photo: '',
-    touched: false
+    touched: false,
+    cuit: item.cuit || 0
   })
   itemEditError.value = ''
   itemEditOpen.value = true
@@ -2097,7 +2118,7 @@ function openItemEdit(i) {
 function onItemEditAmount() {
   const grams = parseNutrient(itemEdit.amount)
   if (itemEdit.touched || !itemEditPer100 || !(grams > 0)) return
-  const m = macrosFor(itemEditPer100, grams)
+  const m = macrosFor(itemEditPer100, grams / (itemEdit.cuit || 1))
   Object.assign(itemEdit, { kcal: String(m.kcal), prot: String(m.prot), carbs: String(m.carbs), fats: String(m.fats) })
 }
 
@@ -2157,7 +2178,8 @@ async function saveItemEdit() {
   }
 
   const round1 = n => Math.round(n * 10) / 10
-  const r = grams / 100
+  // Aliment pesé cuit : les valeurs pour 100 g restent celles du cru
+  const r = grams / (itemEditTarget.cuit || 1) / 100
   consumed.value[i] = {
     ...itemEditTarget,
     name,
@@ -2214,7 +2236,18 @@ function macrosFor(per100, grams) {
   }
 }
 
-const calculatedMacros = computed(() => selectedFood.value ? macrosFor(selectedFood.value, amount.value) : {})
+// Poids cuit ou cru (app/utils/cuisson.ts) : le choix est retenu d'un aliment à l'autre, cuit par défaut
+const COOKED_PREF_KEY = 'fittrack-poids-cuit'
+const cookedMode = ref(true)
+try { cookedMode.value = localStorage.getItem(COOKED_PREF_KEY) !== '0' } catch {}
+function setCookedMode(cooked) {
+  cookedMode.value = cooked
+  try { localStorage.setItem(COOKED_PREF_KEY, cooked ? '1' : '0') } catch {}
+}
+const cookFactor = computed(() => cookingFactor(selectedFood.value))
+const rawAmount = computed(() => (cookFactor.value && cookedMode.value ? amount.value / cookFactor.value : amount.value))
+
+const calculatedMacros = computed(() => selectedFood.value ? macrosFor(selectedFood.value, rawAmount.value) : {})
 
 function onImageError(e) {
   // Une seule tentative : hors ligne, l'image de secours échoue aussi et bouclerait
