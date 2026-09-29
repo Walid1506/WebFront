@@ -23,7 +23,33 @@
       </button>
       <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="handleAvatarUpload" />
 
-      <p class="relative text-white font-black text-xl">{{ userName }}</p>
+      <!-- Pseudo : un appui sur le crayon pour le modifier -->
+      <form v-if="editingName" class="relative flex items-center justify-center gap-2 max-w-xs mx-auto" @submit.prevent="saveUsername">
+        <input
+          ref="nameInput"
+          v-model="nameDraft"
+          type="text"
+          maxlength="20"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          class="flex-1 min-w-0 bg-white/[0.08] border border-white/[0.14] rounded-xl px-3 py-2 text-white font-black text-center outline-none focus:border-[color:var(--accent-solid)]"
+          @input="nameError = ''"
+          @keydown.esc="editingName = false"
+        />
+        <button type="submit" :disabled="savingName" class="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-white bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] disabled:opacity-50" aria-label="Enregistrer le pseudo">
+          <span v-if="savingName" class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
+          <UIcon v-else name="i-heroicons-check" class="text-lg" />
+        </button>
+        <button type="button" class="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center bg-white/[0.06] text-slate-400" aria-label="Annuler" @click="editingName = false">
+          <UIcon name="i-heroicons-x-mark" class="text-lg" />
+        </button>
+      </form>
+      <button v-else type="button" class="relative inline-flex items-center gap-2 text-white font-black text-xl active:opacity-70" aria-label="Modifier le pseudo" @click="startEditName">
+        {{ userName }}
+        <UIcon name="i-heroicons-pencil-square" class="text-base text-slate-500" />
+      </button>
+      <p v-if="nameError" class="relative text-red-400 text-xs font-bold mt-1.5">{{ nameError }}</p>
       <p class="relative text-xs text-slate-500 mt-1">
         {{ recentSessions[0] ? `Dernière séance : ${formatDate(recentSessions[0].date)}` : 'Membre FitTrack' }}
       </p>
@@ -60,8 +86,8 @@
       <SeancesRecentes :sessions="recentSessions" empty-text="Aucune séance pour l'instant" />
     </Depliant>
 
-    <Depliant title="Médailles" :subtitle="medalCount === null ? 'Cette semaine' : `${medalCount}/4 cette semaine`" icon="i-heroicons-trophy" icon-color="#facc15">
-      <Medailles embedded :active="active" @count="medalCount = $event" />
+    <Depliant title="Médailles" :subtitle="medalCount === null ? 'Missions et médailles' : `${medalCount} médaille${medalCount > 1 ? 's' : ''} gagnée${medalCount > 1 ? 's' : ''}`" icon="i-heroicons-trophy" icon-color="#facc15">
+      <Medailles :active="active" @count="medalCount = $event" />
     </Depliant>
 
     <button
@@ -126,7 +152,7 @@ const props = defineProps({
   active: { type: Boolean, default: true }
 })
 
-const emit = defineEmits(['avatar-updated', 'logout'])
+const emit = defineEmits(['avatar-updated', 'username-updated', 'logout'])
 
 const supabase = useSupabaseClient()
 const { theme, themeId, setTheme, THEMES } = useTheme()
@@ -199,6 +225,55 @@ watch(() => props.userId, fetchTodayMeals)
 
 // ── Médailles ──
 const medalCount = ref(null)
+
+// ── Pseudo ──
+const editingName = ref(false)
+const nameDraft = ref('')
+const nameError = ref('')
+const savingName = ref(false)
+const nameInput = ref(null)
+
+function startEditName() {
+  nameDraft.value = props.userName
+  nameError.value = ''
+  editingName.value = true
+  nextTick(() => nameInput.value?.select())
+}
+
+// 3 à 20 caractères : lettres, chiffres, point, tiret et tiret bas (c'est ce que les amis tapent pour te trouver)
+async function saveUsername() {
+  const username = nameDraft.value.trim()
+  if (username === props.userName) {
+    editingName.value = false
+    return
+  }
+  if (!/^[\p{L}\p{N}._-]{3,20}$/u.test(username)) {
+    nameError.value = '3 à 20 caractères : lettres, chiffres, point, tiret ou tiret bas.'
+    return
+  }
+  if (!props.userId || savingName.value) return
+
+  savingName.value = true
+  try {
+    // La recherche d'amis ne tient pas compte des majuscules : « Walid » et « walid » seraient confondus
+    const { data: taken } = await supabase.from('profiles').select('id').ilike('username', username).neq('id', props.userId).limit(1)
+    if (taken?.length) {
+      nameError.value = 'Ce pseudo est déjà pris, choisis-en un autre.'
+      return
+    }
+    const { error } = await supabase.from('profiles').update({ username }).eq('id', props.userId)
+    if (error) {
+      nameError.value = error.code === '23505' ? 'Ce pseudo est déjà pris, choisis-en un autre.' : "Le pseudo n'a pas pu être enregistré. Réessaie."
+      return
+    }
+    // Aussi dans le compte : c'est lui qui recrée le profil s'il venait à manquer
+    supabase.auth.updateUser({ data: { username } })
+    emit('username-updated', username)
+    editingName.value = false
+  } finally {
+    savingName.value = false
+  }
+}
 
 // ── Thème ──
 const themeOpen = ref(false)

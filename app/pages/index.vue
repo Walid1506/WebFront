@@ -172,6 +172,7 @@
           :sessions="sessions"
           :active="activeTab === 'profil'"
           @avatar-updated="avatarUrl = $event"
+          @username-updated="userName = $event"
           @logout="handleLogout"
         />
       </section>
