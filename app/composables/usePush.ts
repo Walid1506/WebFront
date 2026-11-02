@@ -1,4 +1,4 @@
-const VAPID_PUBLIC_KEY = 'BCDSxtsrIF2goDbtYoj9jxIVnB_Ukf3BirOpe3ZCxOVj0Kvn6RtNHxV0tZo045Lxe-qKAIDfZA0ph8Nh7ih0gjQ'
+const VAPID_PUBLIC_KEY = 'BBGUUcUG8--MI10Gg2WfkbneQFLgpVp2B0LPwqBRm3OvGyg2StLEVyFO43rxXglBDmh8AV56NNBfT1Cz3AY5DrA'
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
@@ -17,11 +17,15 @@ export function usePush() {
   async function subscribe(userId: string) {
     try {
       const reg = await navigator.serviceWorker.ready
-      const existing = await reg.pushManager.getSubscription()
-      const subscription = existing || await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-      })
+      const key = urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      let subscription = await reg.pushManager.getSubscription()
+      // Abonnement créé avec une ancienne clé : le serveur ne pourrait pas lui envoyer de notifications
+      const oldKey = subscription?.options.applicationServerKey
+      if (subscription && (!oldKey || new Uint8Array(oldKey).join() !== key.join())) {
+        await subscription.unsubscribe()
+        subscription = null
+      }
+      subscription ||= await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key })
       const { error } = await supabase.from('push_subscriptions').upsert(
         { user_id: userId, subscription: JSON.parse(JSON.stringify(subscription)), updated_at: new Date().toISOString() },
         { onConflict: 'user_id' }

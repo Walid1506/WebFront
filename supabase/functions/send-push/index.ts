@@ -1,7 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import webpush from 'https://esm.sh/web-push@3.6.7'
 
-const VAPID_PUBLIC = 'BCDSxtsrIF2goDbtYoj9jxIVnB_Ukf3BirOpe3ZCxOVj0Kvn6RtNHxV0tZo045Lxe-qKAIDfZA0ph8Nh7ih0gjQ'
+const VAPID_PUBLIC = 'BBGUUcUG8--MI10Gg2WfkbneQFLgpVp2B0LPwqBRm3OvGyg2StLEVyFO43rxXglBDmh8AV56NNBfT1Cz3AY5DrA'
 const VAPID_PRIVATE = Deno.env.get('VAPID_PRIVATE_KEY') || ''
 const VAPID_EMAIL = 'mailto:aliwalid97600@gmail.com'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i

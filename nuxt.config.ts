@@ -28,6 +28,8 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
         { rel: 'apple-touch-startup-image', href: '/pwa-512x512.png' },
+        // Écrit dans le HTML : l'iPhone lit le manifest au moment de l'ajout à l'écran d'accueil
+        { rel: 'manifest', href: '/manifest.webmanifest' },
       ]
     }
   },
