@@ -6,10 +6,10 @@
 
 /* ── Thème ── */
 :root {
-  --theme-bg: #060d1a;
-  --accent-from: #22d3ee;
-  --accent-to: #34d399;
-  --accent-solid: #22d3ee;
+  --theme-bg: #09090b;
+  --accent-from: #c6ff00;
+  --accent-to: #c6ff00;
+  --accent-solid: #c6ff00;
 }
 html, body { background-color: var(--theme-bg); }
 
@@ -41,7 +41,7 @@ input, textarea, select {
 html, body { overflow-x: clip; }
 
 @theme static {
-  --font-sans: 'Public Sans', sans-serif;
+  --font-sans: 'Barlow', sans-serif;
 
   --color-green-50: #EFFDF5;
   --color-green-100: #D9FBE8;

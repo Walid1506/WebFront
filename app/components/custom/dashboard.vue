@@ -40,25 +40,25 @@
     <Teleport to="body">
     <Transition name="fade">
       <div v-if="isModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-        <div class="w-full max-w-sm bg-white rounded-[40px] p-10 shadow-2xl relative animate-in zoom-in-95 duration-300">
-          <button @click="closeModal" class="absolute top-6 right-6 text-slate-300 hover:text-slate-900 transition">
+        <div class="w-full max-w-sm bg-[var(--arena-surface)] border border-[var(--arena-line)] p-8 shadow-2xl relative animate-in zoom-in-95 duration-300">
+          <button @click="closeModal" class="absolute top-6 right-6 text-slate-400 hover:text-white transition">
             <UIcon name="i-heroicons-x-mark" class="text-2xl" />
           </button>
 
           <div class="text-center mb-8">
-            <h3 class="text-3xl font-[1000] tracking-tighter text-slate-900 mb-2">Nouvelle pesée</h3>
+            <h3 class="text-4xl font-[1000] text-white mb-2">Nouvelle pesée</h3>
             <p class="text-slate-400 font-medium italic">Ta rigueur paiera, continue.</p>
           </div>
 
           <div class="relative mb-8 group">
             <input v-model.number="newWeight" type="number" step="0.1" 
-              class="w-full bg-slate-50 text-slate-900 text-center text-5xl py-8 rounded-[30px] font-black border-none focus:ring-4 ring-green-100 transition-all outline-none" 
+              class="w-full bg-[#0e0e10] text-white text-center text-5xl py-8 rounded-[30px] font-black border-none focus:ring-2 ring-[var(--accent-solid)] transition-all outline-none" 
               placeholder="0.0" autofocus />
             <span class="absolute bottom-4 left-1/2 -translate-x-1/2 text-slate-300 font-black uppercase text-xs tracking-widest">Kilogrammes</span>
           </div>
 
           <button @click="saveWeight" :disabled="!newWeight || loading"
-            class="w-full bg-black text-white font-black py-5 rounded-2xl shadow-xl hover:bg-slate-800 active:scale-95 transition-all disabled:opacity-30">
+            class="arena-primary w-full bg-[var(--accent-solid)] text-[var(--accent-ink)] py-5 hover:brightness-110 active:scale-95 transition-all disabled:opacity-30">
             {{ loading ? 'Enregistrement...' : 'Confirmer' }}
           </button>
         </div>
@@ -157,13 +157,13 @@ const chartData = computed(() => {
       {
         label: 'Poids (kg)',
         data: dataPoints,
-        borderColor: '#22d3ee',
-        backgroundColor: '#060d1a',
+        borderColor: theme.value.accentSolid,
+        backgroundColor: theme.value.bg,
         borderWidth: 3,
         pointRadius: 4,
         pointBorderWidth: 2,
         pointHoverRadius: 7,
-        pointHoverBackgroundColor: '#22d3ee',
+        pointHoverBackgroundColor: theme.value.accentSolid,
         tension: 0.4 // Arrondit légèrement la courbe
       }
     ]
@@ -182,8 +182,8 @@ const chartOptions = computed(() => {
     plugins: {
       legend: { display: false }, // Cache la légende inutile
       tooltip: {
-        backgroundColor: '#0f172a', // Tooltip Dark
-        titleColor: '#22d3ee',
+        backgroundColor: '#1f1f23', // Tooltip Dark
+        titleColor: theme.value.accentSolid,
         bodyColor: '#ffffff',
         bodyFont: { weight: 'bold', size: 14 },
         padding: 12,

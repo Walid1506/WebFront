@@ -9,7 +9,7 @@ export default defineNuxtConfig({
   },
   compatibilityDate: '2025-01-15',
   devtools: { enabled: true },
-  css: ['~/assets/css/main.css'],
+  css: ['~/assets/css/main.css', '~/assets/css/arena.css'],
 
   app: {
     head: {
@@ -20,8 +20,8 @@ export default defineNuxtConfig({
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
         { name: 'apple-mobile-web-app-title', content: 'FitTrack' },
         { name: 'mobile-web-app-capable', content: 'yes' },
-        { name: 'theme-color', content: '#060d1a' },
-        { name: 'msapplication-TileColor', content: '#060d1a' },
+        { name: 'theme-color', content: '#09090b' },
+        { name: 'msapplication-TileColor', content: '#09090b' },
       ],
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
@@ -45,10 +45,22 @@ export default defineNuxtConfig({
     '@nuxtjs/supabase'
   ],
   
+  // Polices du style Arena, téléchargées à la compilation (aucun appel à Google depuis l'app).
+  // global : elles sont citées via des variables CSS, que le module ne détecte pas tout seul
+  fonts: {
+    families: [
+      { name: 'Anton', provider: 'google', weights: [400], global: true },
+      { name: 'Barlow', provider: 'google', weights: [500, 600, 700, 800], global: true },
+      { name: 'Barlow Condensed', provider: 'google', weights: [500, 600, 700, 800], global: true }
+    ]
+  },
+
   // 👇 Configuration Supabase 👇
   supabase: {
     // On gère les redirections nous-mêmes dans les pages pour éviter les conflits
-    redirect: false 
+    redirect: false,
+    // En local (http) le navigateur refuserait le cookie de connexion : on ne resterait pas connecté depuis l'iPhone
+    cookieOptions: { secure: process.env.NODE_ENV !== 'development' }
   },
 
   // 👇 Toute la configuration de l'application mobile (PWA) 👇
@@ -59,8 +71,8 @@ export default defineNuxtConfig({
       name: 'FitTrack',
       short_name: 'FitTrack',
       description: 'Application de suivi sportif FitTrack',
-      theme_color: '#060d1a',
-      background_color: '#060d1a',
+      theme_color: '#09090b',
+      background_color: '#09090b',
       display: 'standalone',
       orientation: 'portrait',
       icons: [

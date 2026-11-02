@@ -4,38 +4,18 @@
     <div
       role="button"
       tabindex="0"
-      class="relative bg-white/[0.04] backdrop-blur-2xl rounded-[28px] border border-white/[0.08] p-5 overflow-hidden cursor-pointer active:scale-[0.99] transition-transform"
+      class="relative bg-white/[0.04] border-l-[5px] border-l-[var(--accent-hot)] p-4 overflow-hidden cursor-pointer active:scale-[0.99] transition-transform"
       @click="guideOpen = true"
       @keydown.enter="guideOpen = true"
     >
-      <div class="absolute -bottom-12 -right-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none opacity-40" :style="{ backgroundColor: theme.blobs[1] }"></div>
-      <div class="relative flex items-center gap-4">
-        <!-- Anneau : progression vers l'objectif de pas -->
-        <div class="relative w-16 h-16 shrink-0">
-          <svg viewBox="0 0 64 64" class="w-full h-full -rotate-90" aria-hidden="true">
-            <defs>
-              <linearGradient id="pas-anneau" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" style="stop-color: var(--accent-from)" />
-                <stop offset="1" style="stop-color: var(--accent-to)" />
-              </linearGradient>
-            </defs>
-            <circle cx="32" cy="32" r="27" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="7" />
-            <circle
-              cx="32" cy="32" r="27" fill="none" stroke="url(#pas-anneau)" stroke-width="7" stroke-linecap="round"
-              :stroke-dasharray="RING"
-              :stroke-dashoffset="RING * (1 - progress)"
-              class="transition-[stroke-dashoffset] duration-1000 ease-out"
-            />
-          </svg>
-          <UIcon name="i-lucide-footprints" class="absolute inset-0 m-auto text-xl" :style="{ color: 'var(--accent-solid)' }" />
-        </div>
-
+      <div class="flex items-center gap-3">
         <div class="flex-1 min-w-0">
-          <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Pas aujourd'hui</p>
-          <p class="text-white font-[1000] text-3xl tracking-tighter leading-none mt-1">
-            {{ steps === null ? '—' : formatNumber(steps) }}
-            <span v-if="steps !== null" class="text-sm font-black text-slate-500 tracking-normal">/ {{ formatNumber(GOAL) }}</span>
-          </p>
+          <div class="flex items-baseline gap-2">
+            <p class="text-sm font-bold uppercase text-slate-400 mr-auto">Pas</p>
+            <p class="arena-display not-italic text-3xl leading-none text-white">{{ steps === null ? '—' : formatNumber(steps) }}</p>
+            <p v-if="steps !== null" class="text-base font-bold text-slate-400 whitespace-nowrap">/ {{ formatNumber(GOAL) }}</p>
+          </div>
+          <div class="arena-ticks mt-2"><span :style="{ width: `${progress * 100}%` }"></span></div>
           <p class="text-xs font-bold mt-1.5 truncate" :class="linked ? 'text-slate-500' : ''" :style="linked ? {} : { color: 'var(--accent-solid)' }">
             {{ subtitle }}
           </p>
@@ -44,7 +24,7 @@
         <button
           v-if="linked"
           type="button"
-          class="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center shrink-0 active:scale-90 transition-all"
+          class="arena-slant w-11 h-10 bg-[var(--arena-surface-2)] flex items-center justify-center shrink-0 active:scale-90 transition-all"
           aria-label="Actualiser les pas avec le raccourci"
           @click.stop="runShortcut"
         >
@@ -183,7 +163,6 @@ const props = defineProps({
 })
 
 const GOAL = 10000
-const RING = 2 * Math.PI * 27
 // Nom exact du raccourci : le bouton ↻ le lance par son nom
 const SHORTCUT_NAME = 'FitTrack Pas'
 

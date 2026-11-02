@@ -1,0 +1,110 @@
+/* ── Style Arena ──
+   Hors des couches Tailwind : ces règles passent devant les classes utilitaires des composants,
+   sans !important (sauf contre les styles en ligne). Retirer ce fichier de nuxt.config.ts enlève tout le style. */
+
+:root {
+  --accent-ink: #09090b;
+  --accent-hot: #ff4d1c;
+  --arena-surface: #141417;
+  --arena-surface-2: #1f1f23;
+  --arena-line: #2a2a2f;
+  --arena-condensed: 'Barlow Condensed', sans-serif;
+  --arena-display: 'Anton', sans-serif;
+
+  /* Gris neutres : les bleutés de Tailwind jurent avec le noir pur */
+  --color-slate-300: #d4d4d8;
+  --color-slate-400: #a8a8b0;
+  --color-slate-500: #8e8e96;
+  --color-slate-600: #74747c;
+  --color-slate-700: #4a4a50;
+  --color-slate-800: #27272a;
+  --color-slate-900: #18181b;
+}
+
+body { font-family: 'Barlow', sans-serif; font-weight: 500; }
+
+/* ── Typographie ── */
+.arena-display,
+.font-\[1000\],
+h2.font-black, h3.font-black {
+  font-family: var(--arena-display);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.arena-display, .font-\[1000\], h2.uppercase { font-style: italic; }
+.font-black { font-weight: 700; }
+.uppercase { font-family: var(--arena-condensed); }
+.uppercase:not(.font-\[1000\], h2, h3) { letter-spacing: 0.12em; }
+.tracking-tighter, .tracking-tight { letter-spacing: 0.01em; }
+.text-\[9px\], .text-\[10px\] { font-size: 12px; }
+
+/* ── Formes : angles nets, plus de verre ni de halos ── */
+[class*='rounded-['], .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl { border-radius: 3px; }
+.shadow-sm, .shadow-lg, .shadow-xl, .shadow-2xl, .shadow-inner { box-shadow: none; }
+.backdrop-blur, .backdrop-blur-md, .backdrop-blur-xl, .backdrop-blur-2xl { backdrop-filter: none; }
+[class*='blur-['], .logo-glow { display: none; }
+
+.bg-white\/\[0\.03\], .bg-white\/\[0\.04\] { background-color: var(--arena-surface); }
+.bg-white\/\[0\.06\], .bg-white\/\[0\.08\] { background-color: var(--arena-surface-2); }
+.border-white\/\[0\.06\], .border-white\/\[0\.08\], .border-white\/\[0\.10\], .border-white\/\[0\.12\] { border-color: var(--arena-line); }
+
+/* Sans flou, ces fonds (aucun, ou bgAlpha du thème) laisseraient voir la page derrière : tout devient opaque */
+.fixed.inset-0.backdrop-blur-2xl,
+[style*='background-color: rgba(9, 9, 11'],
+[class*='sticky'][style*='background-color'] { background-color: var(--theme-bg) !important; }
+
+/* Barres verticales des titres, penchées comme les boutons */
+.w-2.bg-gradient-to-b { transform: skewX(-14deg); border-radius: 0; }
+
+/* ── Boutons principaux : encre sombre sur l'accent, coin coupé ──
+   p-[…] : anneaux des avatars, dont l'intérieur reste sur le fond du thème */
+.arena-primary,
+button:is([class*='from-[var(--accent-from)]'], [style*='var(--accent-from)']):not([class*='p-[']) {
+  color: var(--accent-ink);
+  font-family: var(--arena-display);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+}
+button:is([class*='from-[var(--accent-from)]'], [style*='var(--accent-from)']):not([class*='p-[']) :is(.text-white, span, p),
+:is([class*='from-[var(--accent-from)]'], [style*='var(--accent-from)'], [style*='background-color: var(--accent-solid)'], [style*='background: var(--accent-solid)']).text-white:not(.bg-clip-text, [class*='p-[']) {
+  color: var(--accent-ink);
+}
+
+/* ── Formes réutilisées dans les écrans ── */
+.arena-slant { clip-path: polygon(22% 0, 100% 0, 78% 100%, 0 100%); }
+.arena-slant-soft { clip-path: polygon(12% 0, 100% 0, 88% 100%, 0 100%); }
+.arena-cut { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%); }
+
+.arena-stripes {
+  background: repeating-linear-gradient(115deg, color-mix(in srgb, var(--accent-solid) 6%, transparent) 0 3px, transparent 3px 24px);
+  -webkit-mask-image: linear-gradient(200deg, #000, transparent 55%);
+  mask-image: linear-gradient(200deg, #000, transparent 55%);
+}
+
+/* Bulle du singe : pointe anguleuse tournée vers lui */
+.arena-bubble { position: relative; background-color: var(--arena-surface); }
+.arena-bubble::before {
+  content: '';
+  position: absolute;
+  left: -13px;
+  bottom: 20px;
+  width: 14px;
+  height: 24px;
+  background-color: inherit;
+  clip-path: polygon(100% 0, 0 100%, 100% 100%);
+}
+
+/* Barre de progression en segments */
+.arena-ticks {
+  height: 14px;
+  background: repeating-linear-gradient(90deg, var(--arena-line) 0 11px, transparent 11px 15px);
+}
+.arena-ticks > span {
+  display: block;
+  height: 100%;
+  background: repeating-linear-gradient(90deg, var(--accent-hot) 0 11px, transparent 11px 15px);
+  transition: width 0.8s ease-out;
+}

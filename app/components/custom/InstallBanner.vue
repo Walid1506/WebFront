@@ -1,7 +1,7 @@
 <template>
   <Transition name="banner-up">
     <div v-if="show"
-      class="fixed bottom-0 left-0 right-0 z-[8000] bg-[#0a1525]/98 backdrop-blur-2xl border-t border-white/[0.10] px-5 pt-4 pb-safe">
+      class="fixed bottom-0 left-0 right-0 z-[8000] bg-[var(--arena-surface)] backdrop-blur-2xl border-t border-white/[0.10] px-5 pt-4 pb-safe">
       <div class="flex items-start gap-4 max-w-lg mx-auto">
         <!-- Logo -->
         <div class="w-12 h-12 rounded-[14px] overflow-hidden border border-white/10 shrink-0">

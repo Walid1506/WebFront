@@ -1,41 +1,29 @@
 <template>
   <div class="min-h-screen text-white font-sans" :style="{ backgroundColor: theme.bg }">
 
-    <!-- Blobs de fond (thème dynamique) -->
-    <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-      <div class="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full blur-[130px] transition-colors duration-700" :style="{ backgroundColor: theme.blobs[0] }"></div>
-      <div class="absolute top-10 right-0 w-[400px] h-[400px] rounded-full blur-[110px] transition-colors duration-700" :style="{ backgroundColor: theme.blobs[1] }"></div>
-      <div class="absolute top-1/3 left-1/4 w-[300px] h-[300px] rounded-full blur-[100px] transition-colors duration-700" :style="{ backgroundColor: theme.blobs[2] }"></div>
-      <div class="absolute bottom-1/3 right-1/4 w-[350px] h-[350px] rounded-full blur-[120px] transition-colors duration-700" :style="{ backgroundColor: theme.blobs[3] }"></div>
-      <div class="absolute bottom-0 left-0 w-[400px] h-[300px] rounded-full blur-[100px] transition-colors duration-700" :style="{ backgroundColor: theme.blobs[4] }"></div>
-    </div>
+    <!-- Rayures de fond (couleur du thème) -->
+    <div class="arena-stripes fixed inset-0 pointer-events-none -z-10"></div>
 
     <!-- Header -->
     <nav ref="topNavEl" class="px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] md:px-6 md:pb-4 md:pt-[calc(1rem+env(safe-area-inset-top))] flex justify-between items-center backdrop-blur-2xl sticky top-0 z-50 border-b border-white/[0.06] transition-colors duration-700" :style="{ backgroundColor: bgAlpha(theme.bg, 0.75) }">
-      <div class="flex items-center gap-3">
-        <div class="bg-white/10 backdrop-blur p-1.5 rounded-xl border border-white/10">
-          <img src="/images/logo.jpg" alt="Logo" class="h-7 w-7 md:h-8 md:w-8 rounded-lg" />
-        </div>
-        <h1 class="text-lg md:text-xl font-[1000] tracking-tighter uppercase italic">
-          Fit<span class="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent">Track</span>
-        </h1>
-      </div>
+      <h1 class="arena-display text-2xl md:text-3xl leading-none">
+        Fit<span style="color: var(--accent-solid)">Track</span>
+      </h1>
 
-      <div class="flex items-center gap-2">
-        <!-- Cloche notifications -->
-        <button @click="notifOpen = !notifOpen; if(notifOpen) fetchNotifications(currentUserId)" class="relative w-9 h-9 rounded-2xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center shrink-0 active:scale-95 transition-all">
-          <UIcon name="i-heroicons-bell" class="text-slate-400 text-lg" />
+      <div class="flex items-center gap-1.5">
+        <!-- Cloche notifications (le fond penché est à part : la pastille doit pouvoir dépasser) -->
+        <button aria-label="Notifications" @click="notifOpen = !notifOpen; if(notifOpen) fetchNotifications(currentUserId)" class="relative w-11 h-10 flex items-center justify-center shrink-0 active:scale-95 transition-all">
+          <span class="arena-slant absolute inset-0 bg-[var(--arena-surface-2)]"></span>
+          <UIcon name="i-heroicons-bell" class="relative text-white text-xl" />
           <span v-if="totalBadge > 0"
-            class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
+            class="absolute -top-1 -right-0.5 w-4 h-4 bg-[var(--accent-hot)] rounded-full flex items-center justify-center">
             <span class="text-white text-[9px] font-black">{{ totalBadge > 9 ? '9+' : totalBadge }}</span>
           </span>
         </button>
 
-        <button @click="changeTab('profil')" class="w-9 h-9 rounded-full bg-gradient-to-tr from-[var(--accent-from)] to-[var(--accent-to)] p-[2px] shrink-0">
-          <div class="w-full h-full rounded-full overflow-hidden flex items-center justify-center transition-colors duration-700" :style="{ backgroundColor: theme.bg }">
-            <img v-if="avatarUrl" :src="avatarUrl" class="w-full h-full object-cover" alt="Avatar" />
-            <span v-else class="text-white font-black text-sm">{{ userName.charAt(0).toUpperCase() }}</span>
-          </div>
+        <button aria-label="Mon profil" class="arena-slant w-11 h-10 overflow-hidden flex items-center justify-center shrink-0 bg-[var(--accent-solid)]" @click="changeTab('profil')">
+          <img v-if="avatarUrl" :src="avatarUrl" class="w-full h-full object-cover" alt="Avatar" />
+          <span v-else class="arena-display text-lg text-[var(--accent-ink)]">{{ userName.charAt(0).toUpperCase() }}</span>
         </button>
       </div>
     </nav>
@@ -77,10 +65,15 @@
             <UIcon name="i-heroicons-x-mark" class="text-lg" />
           </button>
         </div>
-        <div class="relative p-6 md:p-10 rounded-[30px] md:rounded-[45px] bg-white/[0.04] backdrop-blur-2xl border border-white/[0.08] overflow-hidden shadow-2xl">
-          <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none opacity-40" :style="{ backgroundColor: theme.blobs[0] }"></div>
-          <div class="absolute -bottom-10 -left-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none opacity-30" :style="{ backgroundColor: theme.blobs[2] }"></div>
-          <p class="relative text-center text-2xl md:text-4xl font-[1000] tracking-tight leading-tight italic text-white">{{ dailyMessage }}</p>
+        <!-- Le singe dit la citation du jour (les jours de repos, il somnole) -->
+        <div class="flex items-end gap-1.5">
+          <Mascotte class="w-[100px] md:w-[140px] h-auto shrink-0 -ml-1" :mood="restToday ? 'repos' : 'fete'" :talk-key="dailyMessage" />
+          <div class="arena-bubble flex-1 min-w-0 p-4 mb-4">
+            <p class="text-sm font-bold uppercase" style="color: var(--accent-hot)">Mot du jour</p>
+            <p class="arena-display mt-1 leading-[1.08] text-white" :class="dailyMessageSize">
+              {{ dailyMessageWords.start }} <span style="color: var(--accent-solid)">{{ dailyMessageWords.last }}</span>
+            </p>
+          </div>
         </div>
         <ProgrammeWidget
           :today-session="todaySession"
@@ -93,31 +86,22 @@
 
         <PasWidget :user-id="currentUserId" :active="activeTab === 'accueil'" />
 
-        <!-- Créer un programme -->
-        <button @click="createProgrammeOpen = true"
-          class="w-full flex items-center gap-4 bg-white/[0.04] backdrop-blur-2xl rounded-[24px] border border-white/[0.08] p-4 active:scale-[0.98] transition-all hover:bg-white/[0.07]">
-          <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 bg-gradient-to-br from-[var(--accent-from)] to-[var(--accent-to)] shadow-lg">
-            <UIcon name="i-heroicons-plus" class="text-white text-xl" />
-          </div>
-          <div class="text-left">
-            <p class="text-white font-black text-sm">Créer un programme</p>
-            <p class="text-slate-500 text-xs mt-0.5">Choisis tes exercices et enregistre en modèle</p>
-          </div>
-          <UIcon name="i-heroicons-chevron-right" class="text-slate-600 ml-auto" />
-        </button>
+        <div class="grid grid-cols-2 gap-2.5">
+          <!-- Créer un programme -->
+          <button class="flex items-center gap-2.5 bg-white/[0.04] p-3.5 text-left active:scale-[0.98] transition-all" @click="createProgrammeOpen = true">
+            <UIcon name="i-heroicons-plus" class="text-2xl shrink-0" style="color: var(--accent-solid)" />
+            <span class="arena-display text-[17px] leading-tight text-white not-italic">Créer un programme</span>
+          </button>
 
-        <!-- Mes modèles -->
-        <button @click="manageSessionsOpen = true"
-          class="w-full flex items-center gap-4 bg-white/[0.04] backdrop-blur-2xl rounded-[24px] border border-white/[0.08] p-4 active:scale-[0.98] transition-all hover:bg-white/[0.07]">
-          <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 bg-white/[0.08] border border-white/[0.12]">
-            <UIcon name="i-heroicons-rectangle-stack" class="text-white text-xl" />
-          </div>
-          <div class="text-left">
-            <p class="text-white font-black text-sm">Mes modèles</p>
-            <p class="text-slate-500 text-xs mt-0.5">{{ savedTemplates.length ? `${savedTemplates.length} programme${savedTemplates.length > 1 ? 's' : ''} enregistré${savedTemplates.length > 1 ? 's' : ''}` : 'Aucun modèle pour l\'instant' }}</p>
-          </div>
-          <UIcon name="i-heroicons-chevron-right" class="text-slate-600 ml-auto" />
-        </button>
+          <!-- Mes modèles -->
+          <button class="flex items-center gap-2.5 bg-white/[0.04] p-3.5 text-left active:scale-[0.98] transition-all" @click="manageSessionsOpen = true">
+            <UIcon name="i-heroicons-rectangle-stack" class="text-2xl shrink-0" style="color: var(--accent-solid)" />
+            <span class="min-w-0">
+              <span class="arena-display block text-[17px] leading-tight text-white not-italic">Mes modèles</span>
+              <span class="block text-slate-500 text-xs mt-0.5">{{ savedTemplates.length ? `${savedTemplates.length} enregistré${savedTemplates.length > 1 ? 's' : ''}` : 'Aucun modèle' }}</span>
+            </span>
+          </button>
+        </div>
       </section>
 
       <!-- Agenda — monté à la première visite -->
@@ -184,17 +168,15 @@
         <button
           v-for="tab in tabs"
           :key="tab.id"
-          class="flex flex-col items-center gap-1 px-4 py-1.5 rounded-xl transition-all duration-200 min-w-[60px]"
-          :class="activeTab === tab.id ? '' : 'text-slate-500'"
-          :style="activeTab === tab.id ? { color: 'var(--accent-solid)' } : {}"
+          class="arena-slant-soft flex flex-col items-center gap-1 px-3.5 py-1.5 min-w-[76px] transition-colors duration-200"
+          :class="activeTab === tab.id ? 'bg-[var(--accent-solid)] text-[var(--accent-ink)]' : 'text-slate-500'"
           @click="changeTab(tab.id)"
         >
           <span class="relative">
-            <UIcon :name="tab.icon" class="text-2xl transition-transform duration-200" :class="activeTab === tab.id ? 'scale-110' : 'scale-100'" />
-            <span v-if="tab.id === 'amis' && unreadMsgCount > 0" class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />
+            <UIcon :name="tab.icon" class="text-2xl" />
+            <span v-if="tab.id === 'amis' && unreadMsgCount > 0" class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[var(--accent-hot)] rounded-full" />
           </span>
-          <span class="text-[10px] font-bold uppercase tracking-wider leading-none">{{ tab.label }}</span>
-          <div class="h-0.5 rounded-full mt-0.5 transition-all duration-300" :class="activeTab === tab.id ? 'w-5' : 'bg-transparent w-3'" :style="activeTab === tab.id ? { backgroundColor: 'var(--accent-solid)' } : {}" />
+          <span class="text-[13px] font-bold uppercase leading-none">{{ tab.label }}</span>
         </button>
       </div>
     </nav>
@@ -458,6 +440,17 @@ const dailyMessage = computed(() => {
   const day = Math.floor(Date.now() / 86400000)
   return DAILY_MESSAGES[day % DAILY_MESSAGES.length]
 })
+// Le dernier mot prend la couleur du thème, et plus la phrase est longue, plus la police est petite
+const dailyMessageWords = computed(() => {
+  const words = dailyMessage.value.split(' ')
+  return { start: words.slice(0, -1).join(' '), last: words.at(-1) }
+})
+const dailyMessageSize = computed(() => {
+  const { length } = dailyMessage.value
+  if (length <= 24) return 'text-[40px] md:text-6xl'
+  if (length <= 40) return 'text-[34px] md:text-5xl'
+  return 'text-[28px] md:text-4xl'
+})
 
 const pendingCount = ref(0)
 const notifOpen = ref(false)
@@ -499,6 +492,7 @@ const week = computed(() => {
 })
 
 const todayPlan = computed(() => week.value.find(d => d.isToday) || null)
+const restToday = computed(() => !todaySession.value && !todayPlan.value?.template)
 
 // Valider un jour : la séance du modèle s'ajoute au calendrier à la date de ce jour, puis félicitations
 async function validateDay(day) {

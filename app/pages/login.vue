@@ -1,18 +1,12 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-black p-4">
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-green-500/10 via-transparent to-transparent pointer-events-none"></div>
+  <div class="relative flex items-center justify-center min-h-screen p-4">
+    <div class="arena-stripes absolute inset-0 pointer-events-none"></div>
 
-    <div class="w-full max-w-sm bg-white rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden relative z-10 p-10">
+    <div class="w-full max-w-sm relative z-10 p-2">
       
-      <div class="flex justify-center mb-8">
-        <div class="p-3 bg-white rounded-3xl shadow-xl border border-gray-50">
-          <img src="/images/logo.jpg" alt="Logo" class="h-16 w-auto rounded-2xl" />
-        </div>
-      </div>
-
       <div class="text-center mb-10">
-        <h2 class="text-4xl font-[1000] tracking-tighter text-slate-900">
-          Fit<span class="text-green-500">Track</span>
+        <h2 class="arena-display text-7xl leading-none text-white">
+          Fit<span class="text-[var(--accent-solid)]">Track</span>
         </h2>
         <p class="text-slate-400 text-sm font-medium mt-1">Prêt à changer de vie ?</p>
       </div>
@@ -21,31 +15,31 @@
       <form v-if="!forgotMode" @submit.prevent="handleLogin" class="space-y-6">
         <div>
           <div class="relative group">
-            <UIcon name="i-heroicons-envelope" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-500 transition-colors" />
+            <UIcon name="i-heroicons-envelope" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[var(--accent-solid)] transition-colors" />
             <input v-model="email" type="email" placeholder="Email"
-              class="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-green-500 transition-all font-semibold text-slate-900" required />
+              class="w-full pl-12 pr-4 py-4 bg-[#0e0e10] border-none rounded-2xl focus:ring-2 focus:ring-[var(--accent-solid)] transition-all font-semibold text-white" required />
           </div>
         </div>
 
         <div>
           <div class="relative group">
-            <UIcon name="i-heroicons-lock-closed" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-500 transition-colors" />
+            <UIcon name="i-heroicons-lock-closed" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[var(--accent-solid)] transition-colors" />
             <input v-model="password" type="password" placeholder="Mot de passe"
-              class="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-green-500 transition-all font-semibold text-slate-900" required />
+              class="w-full pl-12 pr-4 py-4 bg-[#0e0e10] border-none rounded-2xl focus:ring-2 focus:ring-[var(--accent-solid)] transition-all font-semibold text-white" required />
           </div>
         </div>
 
         <button type="submit" :disabled="loading"
-          class="w-full bg-slate-900 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-black hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-3">
+          class="w-full arena-primary bg-[var(--accent-solid)] text-[var(--accent-ink)] py-5 rounded-2xl shadow-xl hover:brightness-110 hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-3">
           <UIcon v-if="loading" name="i-heroicons-arrow-path" class="animate-spin" />
           {{ loading ? 'Connexion...' : 'Se connecter' }}
         </button>
 
         <div class="flex justify-between items-center">
-          <button type="button" @click="forgotMode = true" class="text-sm font-bold text-slate-400 hover:text-slate-600 transition">
+          <button type="button" @click="forgotMode = true" class="text-sm font-bold text-slate-400 hover:text-white transition">
             Mot de passe oublié ?
           </button>
-          <NuxtLink to="/register" class="text-sm font-bold text-green-600 hover:text-green-700 transition">
+          <NuxtLink to="/register" class="text-sm font-bold text-[var(--accent-solid)] hover:text-white transition">
             Créer un compte
           </NuxtLink>
         </div>
@@ -54,27 +48,27 @@
       <!-- Formulaire mot de passe oublié -->
       <div v-else class="space-y-6">
         <div class="text-center mb-2">
-          <p class="text-slate-600 text-sm">Entre ton email pour recevoir un lien de réinitialisation.</p>
+          <p class="text-slate-400 text-sm">Entre ton email pour recevoir un lien de réinitialisation.</p>
         </div>
 
         <div class="relative group">
-          <UIcon name="i-heroicons-envelope" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-500 transition-colors" />
+          <UIcon name="i-heroicons-envelope" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[var(--accent-solid)] transition-colors" />
           <input v-model="email" type="email" placeholder="Email"
-            class="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-green-500 transition-all font-semibold text-slate-900" />
+            class="w-full pl-12 pr-4 py-4 bg-[#0e0e10] border-none rounded-2xl focus:ring-2 focus:ring-[var(--accent-solid)] transition-all font-semibold text-white" />
         </div>
 
-        <div v-if="resetSent" class="bg-green-50 border border-green-200 rounded-2xl p-4 text-center">
-          <p class="text-green-700 font-bold text-sm">Email envoyé ! Vérifie ta boîte mail.</p>
+        <div v-if="resetSent" class="bg-[var(--arena-surface-2)] border border-[var(--arena-line)] rounded-2xl p-4 text-center">
+          <p class="text-[var(--accent-solid)] font-bold text-sm">Email envoyé ! Vérifie ta boîte mail.</p>
         </div>
 
         <button @click="handleForgot" :disabled="loading || resetSent"
-          class="w-full bg-slate-900 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50">
+          class="w-full arena-primary bg-[var(--accent-solid)] text-[var(--accent-ink)] py-5 rounded-2xl shadow-xl hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50">
           <UIcon v-if="loading" name="i-heroicons-arrow-path" class="animate-spin" />
           {{ loading ? 'Envoi...' : 'Envoyer le lien' }}
         </button>
 
         <div class="text-center">
-          <button @click="forgotMode = false; resetSent = false" class="text-sm font-bold text-slate-400 hover:text-slate-600 transition">
+          <button @click="forgotMode = false; resetSent = false" class="text-sm font-bold text-slate-400 hover:text-white transition">
             ← Retour à la connexion
           </button>
         </div>

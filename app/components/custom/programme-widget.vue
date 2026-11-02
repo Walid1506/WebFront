@@ -1,88 +1,71 @@
 <template>
   <div>
     <!-- Séance du jour : déjà dans le calendrier (validée), sinon le modèle prévu dans l'objectif de la semaine -->
-    <div v-if="current" class="relative bg-white/[0.04] backdrop-blur-2xl rounded-[28px] overflow-hidden shadow-lg" style="border: 1px solid color-mix(in srgb, var(--accent-solid) 20%, transparent)">
-      <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--accent-from)] via-[var(--accent-to)] to-[var(--accent-from)]"></div>
-      <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[60px] pointer-events-none" style="background: color-mix(in srgb, var(--accent-solid) 10%, transparent)"></div>
-
-      <div class="p-5">
-        <div class="flex items-start justify-between gap-3 mb-4">
-          <div class="min-w-0">
-            <div class="flex items-center gap-2 mb-1">
-              <div class="w-2 h-2 rounded-full animate-pulse" style="background: var(--accent-solid); box-shadow: 0 0 8px color-mix(in srgb, var(--accent-solid) 80%, transparent)"></div>
-              <span class="text-[10px] font-black uppercase tracking-[0.2em]" style="color: var(--accent-solid)">Séance prévue · {{ dayLabel }}</span>
-            </div>
-            <h3 class="text-white font-black text-lg truncate">{{ current.title }}</h3>
-            <p class="text-slate-500 text-xs mt-0.5">
-              <template v-if="current.exercises.length > 0">{{ current.exercises.length }} exercice{{ current.exercises.length > 1 ? 's' : '' }} prévu{{ current.exercises.length > 1 ? 's' : '' }}</template>
-              <template v-else-if="current.notes">Notes disponibles</template>
-              <template v-else>Séance planifiée</template>
-            </p>
-          </div>
-          <span v-if="validated" class="shrink-0 inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/25 text-emerald-300">
-            <UIcon name="i-heroicons-check" class="text-xs" />
+    <div v-if="current" class="space-y-2.5">
+      <div class="arena-cut bg-[var(--accent-solid)] text-[var(--accent-ink)] p-5">
+        <div class="flex items-start justify-between gap-3">
+          <p class="text-sm font-bold uppercase">Séance prévue · {{ dayLabel }}</p>
+          <span v-if="validated" class="shrink-0 inline-flex items-center gap-1 text-sm font-bold uppercase">
+            <UIcon name="i-heroicons-check" class="text-base" />
             Validée
           </span>
         </div>
+        <h3 class="arena-display text-5xl leading-none mt-1 line-clamp-2 break-words">{{ current.title }}</h3>
+        <p class="font-bold mt-1">
+          <template v-if="current.exercises.length > 0">{{ current.exercises.length }} exercice{{ current.exercises.length > 1 ? 's' : '' }}</template>
+          <template v-else-if="current.notes">Notes disponibles</template>
+          <template v-else>Séance planifiée</template>
+        </p>
 
-        <!-- Notes (si pas d'exercices) -->
-        <div v-if="current.exercises.length === 0 && current.notes" class="mb-4 bg-white/[0.04] rounded-2xl p-4 border border-white/[0.06]">
-          <p class="text-slate-300 text-sm whitespace-pre-wrap leading-relaxed line-clamp-4">{{ current.notes }}</p>
-        </div>
-
-        <!-- Exercices preview -->
-        <div v-else-if="current.exercises.length > 0" class="space-y-2 mb-4">
-          <div v-for="(ex, i) in previewExercises" :key="ex.id || `${ex.name}-${i}`" class="flex items-center gap-3 bg-white/[0.04] rounded-2xl p-2.5 border border-white/[0.06]">
-            <img :src="ex.mediaUrl" class="w-10 h-10 rounded-xl object-cover bg-slate-800 shrink-0" @error="onImgError" />
-            <div class="flex-1 min-w-0">
-              <p class="text-white font-bold text-sm truncate">{{ ex.name }}</p>
-              <p class="text-slate-500 text-xs">{{ ex.sets }} séries × {{ ex.reps }} rép.</p>
-            </div>
-          </div>
-          <p v-if="current.exercises.length > 3" class="text-slate-600 text-xs text-center font-bold py-1">
-            + {{ current.exercises.length - 3 }} autres exercices
-          </p>
-        </div>
-
-        <div class="flex gap-2">
-          <button @click="showFull = true"
-            class="flex-1 font-black py-3.5 rounded-2xl text-sm active:scale-95 transition-all flex items-center justify-center gap-2"
-            :class="validated ? 'bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white shadow-lg' : 'bg-white/[0.08] border border-white/[0.12] text-white'">
+        <div class="flex gap-2 mt-4 pr-4">
+          <button class="flex-1 flex items-center justify-center gap-1.5 border-2 border-[var(--accent-ink)] py-2.5 font-bold uppercase active:scale-95 transition-all" @click="showFull = true">
             <UIcon name="i-heroicons-play" />
-            Voir la séance
+            Voir
           </button>
-          <button v-if="!validated" @click="$emit('validate-today')" :disabled="validating"
-            class="flex-1 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white font-black py-3.5 rounded-2xl text-sm shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60">
+          <button v-if="!validated" :disabled="validating" class="arena-display not-italic flex-1 flex items-center justify-center gap-2 bg-[var(--accent-ink)] text-[var(--accent-solid)] py-2.5 text-lg arena-slant-soft active:scale-95 transition-all disabled:opacity-50" @click="$emit('validate-today')">
             <span v-if="validating" class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
-            <UIcon v-else name="i-heroicons-check-circle" class="text-base" />
             Valider
           </button>
         </div>
       </div>
+
+      <!-- Notes (si pas d'exercices) -->
+    <div v-if="current.exercises.length === 0 && current.notes" class="bg-white/[0.04] rounded-2xl p-4 border border-white/[0.06]">
+      <p class="text-slate-300 text-sm whitespace-pre-wrap leading-relaxed line-clamp-4">{{ current.notes }}</p>
     </div>
 
-    <!-- Rien dans la ligne du jour : repos, le singe te le dit -->
-    <div v-else class="bg-white/[0.04] backdrop-blur-2xl rounded-[28px] border border-white/[0.08] p-5 overflow-hidden">
+    <!-- Exercices preview -->
+    <div v-else-if="current.exercises.length > 0" class="space-y-2">
+      <div v-for="(ex, i) in previewExercises" :key="ex.id || `${ex.name}-${i}`" class="flex items-center gap-3 bg-white/[0.04] rounded-2xl p-2.5 border border-white/[0.06]">
+        <img :src="ex.mediaUrl" class="w-10 h-10 rounded-xl object-cover bg-slate-800 shrink-0" @error="onImgError" />
+        <div class="flex-1 min-w-0">
+          <p class="text-white font-bold text-sm truncate">{{ ex.name }}</p>
+          <p class="text-slate-500 text-xs">{{ ex.sets }} séries × {{ ex.reps }} rép.</p>
+        </div>
+      </div>
+      <p v-if="current.exercises.length > 3" class="text-slate-600 text-xs text-center font-bold py-1">
+        + {{ current.exercises.length - 3 }} autres exercices
+      </p>
+    </div>
+    </div>
+
+    <!-- Rien dans la ligne du jour : repos (le singe somnole au-dessus, près de la citation) -->
+    <div v-else class="bg-white/[0.04] border-l-[5px] border-l-[var(--accent-solid)] p-5 overflow-hidden">
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
-          <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Séance prévue · {{ dayLabel }}</p>
-          <p class="text-white font-black text-lg leading-tight mt-1">Repos</p>
+          <p class="text-sm font-bold uppercase text-slate-400">Séance prévue · {{ dayLabel }}</p>
+          <p class="arena-display text-5xl leading-none mt-1 text-white">Repos</p>
         </div>
         <button @click="$emit('go-plan')"
           class="shrink-0 bg-white/[0.08] border border-white/[0.12] text-white font-black text-sm px-4 py-2.5 rounded-2xl active:scale-95 transition-all">
           Planifier
         </button>
       </div>
-      <div class="flex items-end gap-2 mt-2">
-        <button type="button" class="w-[92px] shrink-0 -ml-1 -mb-2" aria-label="Une autre phrase du singe" @click="nextRestMessage">
-          <Mascotte mood="repos" :talk-key="restIndex" />
-        </button>
-        <div class="flex-1 min-w-0 mb-7 rounded-2xl rounded-bl-sm bg-white/[0.08] border border-white/[0.10] px-4 py-3">
-          <Transition name="bubble-text" mode="out-in">
-            <p :key="restIndex" class="text-white font-bold text-sm leading-snug">{{ REST_MESSAGES[restIndex] }}</p>
-          </Transition>
-        </div>
-      </div>
+      <button type="button" class="block w-full text-left mt-3 bg-white/[0.08] px-4 py-3" aria-label="Une autre phrase" @click="nextRestMessage">
+        <Transition name="bubble-text" mode="out-in">
+          <span :key="restIndex" class="block text-white font-bold text-sm leading-snug">{{ REST_MESSAGES[restIndex] }}</span>
+        </Transition>
+      </button>
     </div>
 
     <!-- Overlay séance complète -->
@@ -190,8 +173,8 @@ const current = computed(() => {
 
 const previewExercises = computed(() => current.value?.exercises.slice(0, 3) || [])
 
-// Jour de repos : le singe dit une phrase qui change à chaque ouverture (jamais deux fois de suite la même),
-// et un appui sur lui en donne une autre
+// Jour de repos : une phrase qui change à chaque ouverture (jamais deux fois de suite la même),
+// et un appui dessus en donne une autre
 const REST_MESSAGES = [
   'Repose-toi bien, tu l\'as mérité ! 😌',
   'Journée off : tes muscles se reconstruisent 💪',
