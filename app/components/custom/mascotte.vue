@@ -1,9 +1,10 @@
 <template>
-  <!-- Mascotte FitTrack : un singe. « fete » : il fait coucou (un bisou en thème Sakura) et dit le mot de la bulle ; « repos » : yeux fermés, il somnole -->
+  <!-- Mascotte FitTrack : un singe. « fete » : il fait coucou (un bisou en thème Sakura) et dit le mot de la bulle ; « repos » : yeux fermés, il somnole ; « triste » : il pleure -->
   <svg class="mascot" :class="`mood-${mood}`" viewBox="0 0 200 212" xmlns="http://www.w3.org/2000/svg" role="img" :aria-label="label">
     <g class="mascot-bob">
       <!-- Ombre -->
       <ellipse cx="100" cy="203" rx="60" ry="7" fill="#000" opacity="0.28" />
+      <ellipse v-if="crying" class="puddle" cx="100" cy="204" rx="66" ry="8" fill="#7FD4FF" opacity="0.6" />
 
       <!-- Queue enroulée -->
       <g class="tail">
@@ -70,6 +71,14 @@
             <circle cx="111.5" cy="84.5" r="1.5" fill="#fff" />
           </g>
         </template>
+        <template v-else-if="crying">
+          <path d="M70 69 L91 60 M130 69 L109 60" fill="none" stroke="#3E2412" stroke-width="4" stroke-linecap="round" />
+          <ellipse cx="86" cy="82" rx="8.5" ry="10" fill="#241510" />
+          <ellipse cx="114" cy="82" rx="8.5" ry="10" fill="#241510" />
+          <circle cx="89" cy="77" r="3.8" fill="#fff" />
+          <circle cx="117" cy="77" r="3.8" fill="#fff" />
+          <path d="M78 86 Q86 96 94 86 Z M106 86 Q114 96 122 86 Z" fill="#7FD4FF" />
+        </template>
         <path v-else d="M78 81 Q86 88 94 81 M106 81 Q114 88 122 81" fill="none" stroke="#241510" stroke-width="3.2" stroke-linecap="round" />
 
         <ellipse cx="72" cy="100" rx="8" ry="5" fill="#F4978E" opacity="0.55" />
@@ -79,6 +88,7 @@
         <ellipse cx="95" cy="97" rx="2.4" ry="1.7" fill="#6E4424" />
         <ellipse cx="105" cy="97" rx="2.4" ry="1.7" fill="#6E4424" />
         <ellipse v-if="kissing" class="pucker" cx="102" cy="110" rx="7" ry="6" fill="#F28B98" stroke="#6B2323" stroke-width="2.4" />
+        <path v-else-if="crying" class="sob" d="M86 118 Q100 98 114 118 Q100 112 86 118 Z" fill="#6B2323" stroke="#3E2412" stroke-width="2.4" stroke-linejoin="round" />
         <g v-else :key="talkKey" class="mouth" :class="{ talking }">
           <path d="M88 105 Q100 123 112 105 Q100 110 88 105 Z" fill="#6B2323" stroke="#3E2412" stroke-width="2" stroke-linejoin="round" />
           <ellipse cx="100" cy="114" rx="5.5" ry="3.5" fill="#F28B98" />
@@ -103,6 +113,13 @@
         <path class="spark s2" d="M142 58 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 Z" fill="#fff" />
         <path class="spark s3" d="M186 112 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 Z" fill="#FF8FB1" />
       </template>
+      <!-- Triste : larmes sur les joues, gouttes qui tombent -->
+      <template v-else-if="crying">
+        <path d="M80 92 C 76 100, 76 108, 73 116 M120 92 C 124 100, 124 108, 127 116" fill="none" stroke="#7FD4FF" stroke-width="6" stroke-linecap="round" />
+        <g transform="translate(72 122)"><path class="tear" d="M0 -8 C 3 -3 5 0 5 3 A 5 5 0 1 1 -5 3 C -5 0 -3 -3 0 -8 Z" fill="#7FD4FF" /></g>
+        <g transform="translate(128 122)"><path class="tear t2" d="M0 -8 C 3 -3 5 0 5 3 A 5 5 0 1 1 -5 3 C -5 0 -3 -3 0 -8 Z" fill="#7FD4FF" /></g>
+        <g transform="translate(66 132)"><path class="tear t3" d="M0 -6 C 2 -2 4 0 4 2 A 4 4 0 1 1 -4 2 C -4 0 -2 -2 0 -6 Z" fill="#B5E6FF" /></g>
+      </template>
       <!-- Repos : petits « z » qui s'envolent -->
       <g v-else class="zzz" fill="#C7D2FE" font-family="system-ui, sans-serif" font-weight="900">
         <text class="z z1" x="146" y="52" font-size="16">z</text>
@@ -125,8 +142,10 @@ const props = defineProps({
 const { themeId } = useTheme()
 const kissing = computed(() => props.mood === 'fete' && themeId.value === 'sakura')
 const waving = computed(() => props.mood === 'fete' && !kissing.value)
+const crying = computed(() => props.mood === 'triste')
 const label = computed(() => {
   if (props.mood === 'repos') return 'Singe mascotte qui se repose'
+  if (crying.value) return 'Singe mascotte qui pleure'
   return kissing.value ? 'Singe mascotte qui t\'envoie un bisou' : 'Singe mascotte qui te félicite'
 })
 </script>
@@ -154,6 +173,32 @@ const label = computed(() => {
 .h1 { --heart-x: 14px; --heart-y: -58px; }
 .h2 { --heart-x: 26px; --heart-y: -38px; animation-delay: 1.15s; }
 .h3 { --heart-x: 2px; --heart-y: -48px; animation-delay: 1.4s; }
+.mood-triste .mascot-bob { animation: sob 0.6s ease-in-out infinite; }
+.mood-triste .tail { animation-duration: 3.2s; }
+.sob { transform-box: fill-box; transform-origin: center; animation: sob-mouth 0.3s ease-in-out infinite alternate; }
+.tear { opacity: 0; animation: tear-fall 1.3s ease-in infinite; }
+.t2 { animation-delay: 0.45s; }
+.t3 { animation-delay: 0.9s; }
+.puddle { transform-box: fill-box; transform-origin: center; animation: puddle 1.3s ease-in-out infinite alternate; }
+
+@keyframes sob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+}
+@keyframes sob-mouth {
+  from { transform: scale(1, 0.85); }
+  to { transform: scale(0.92, 1.15); }
+}
+@keyframes tear-fall {
+  0% { opacity: 0; transform: translateY(0) scale(0.5); }
+  18% { opacity: 1; transform: translateY(6px) scale(1); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(70px) scale(0.9); }
+}
+@keyframes puddle {
+  from { transform: scaleX(0.9); }
+  to { transform: scaleX(1.04); }
+}
 
 @keyframes kiss-throw {
   0%, 30%, 100% { transform: rotate(0deg); }
@@ -206,7 +251,8 @@ const label = computed(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mascot, .mascot-bob, .tail, .paw, .eye, .mouth.talking, .spark, .z, .kiss-paw, .pucker, .heart { animation: none; }
-  .z, .heart { opacity: 1; }
+  .mascot, .mascot-bob, .tail, .paw, .eye, .mouth.talking, .spark, .z, .kiss-paw, .pucker, .heart, .sob, .tear, .puddle { animation: none; }
+  .mood-triste .mascot-bob { animation: none; }
+  .z, .heart, .tear { opacity: 1; }
 }
 </style>

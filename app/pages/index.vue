@@ -65,12 +65,11 @@
             <UIcon name="i-heroicons-x-mark" class="text-lg" />
           </button>
         </div>
-        <!-- Le singe dit la citation du jour (les jours de repos, il somnole) -->
+        <!-- Le singe dit la citation du jour : il pleure tant que la séance prévue n'est pas validée, il somnole les jours de repos -->
         <div class="flex items-end gap-1.5">
-          <Mascotte class="w-[100px] md:w-[140px] h-auto shrink-0 -ml-1" :mood="restToday ? 'repos' : 'fete'" :talk-key="dailyMessage" />
+          <Mascotte class="w-[100px] md:w-[140px] h-auto shrink-0 -ml-1" :mood="mascotMood" :talk-key="dailyMessage" />
           <div class="arena-bubble flex-1 min-w-0 p-4 mb-4">
-            <p class="text-sm font-bold uppercase" style="color: var(--accent-hot)">Mot du jour</p>
-            <p class="arena-display mt-1 leading-[1.08] text-white" :class="dailyMessageSize">
+            <p class="arena-display leading-[1.08] text-white" :class="dailyMessageSize">
               {{ dailyMessageWords.start }} <span style="color: var(--accent-solid)">{{ dailyMessageWords.last }}</span>
             </p>
           </div>
@@ -463,13 +462,23 @@ function localDateStr(d = new Date()) {
   return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-')
 }
 
-// Jour courant, relu quand l'app revient au premier plan (une PWA peut rester ouverte après minuit)
+// Retour dans l'app (une PWA peut rester ouverte des jours, même après minuit) : jour courant relu, ainsi que ce
+// qu'affichent l'accueil et l'agenda, qui a pu changer sur un autre appareil (au plus toutes les 30 secondes)
 const todayStr = ref(localDateStr())
-function refreshToday() {
-  if (document.visibilityState === 'visible') todayStr.value = localDateStr()
+let lastRefresh = Date.now()
+function onAppVisible() {
+  if (document.visibilityState !== 'visible') return
+  todayStr.value = localDateStr()
+  if (!currentUserId.value || Date.now() - lastRefresh < 30000) return
+  lastRefresh = Date.now()
+  fetchSessions()
+  refreshTemplates()
+  fetchPendingCount(currentUserId.value)
+  fetchNotifications(currentUserId.value)
+  supabase.auth.getUser().then(({ data }) => { if (data?.user) loadPlan(data.user) }).catch(() => {})
 }
-onMounted(() => document.addEventListener('visibilitychange', refreshToday))
-onUnmounted(() => document.removeEventListener('visibilitychange', refreshToday))
+onMounted(() => document.addEventListener('visibilitychange', onAppVisible))
+onUnmounted(() => document.removeEventListener('visibilitychange', onAppVisible))
 
 const todaySession = computed(() => sessions.value.find(s => s.date === todayStr.value) || null)
 
@@ -492,7 +501,10 @@ const week = computed(() => {
 })
 
 const todayPlan = computed(() => week.value.find(d => d.isToday) || null)
-const restToday = computed(() => !todaySession.value && !todayPlan.value?.template)
+const mascotMood = computed(() => {
+  if (todaySession.value) return 'fete'
+  return todayPlan.value?.template ? 'triste' : 'repos'
+})
 
 // Valider un jour : la séance du modèle s'ajoute au calendrier à la date de ce jour, puis félicitations
 async function validateDay(day) {
