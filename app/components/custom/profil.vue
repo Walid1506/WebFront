@@ -79,7 +79,7 @@
     </div>
 
     <Depliant title="Mon assiette aujourd'hui" :subtitle="mealsSummary" icon="i-heroicons-fire" icon-color="#fb923c">
-      <AssietteJour :meals="todayMeals" :water="todayWater" />
+      <AssietteJour :meals="todayMeals" :water="todayWater" :cibles="todayCibles" />
     </Depliant>
 
     <Depliant title="Dernières séances" :subtitle="sessionsSummary" icon="i-heroicons-bolt">
@@ -192,26 +192,34 @@ const sessionsSummary = computed(() => {
 // ── Assiette du jour ──
 const todayMeals = ref([])
 const todayWater = ref(0)
+const todayCibles = ref(null)
 const mealsLoaded = ref(false)
 
 const mealsSummary = computed(() => {
   if (!mealsLoaded.value) return 'Chargement...'
   if (!todayMeals.value.length) return 'Rien d\'enregistré aujourd\'hui'
   const n = todayMeals.value.length
-  return `${sumMeals(todayMeals.value).kcal} kcal · ${n} aliment${n > 1 ? 's' : ''}`
+  const target = todayCibles.value?.kcal ? ` / ${Math.round(todayCibles.value.kcal)}` : ''
+  return `${sumMeals(todayMeals.value).kcal}${target} kcal · ${n} aliment${n > 1 ? 's' : ''}`
 })
 
 async function fetchTodayMeals() {
   if (!props.userId) return
+  const today = localDateStr()
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
   const { data: rows, error } = await supabase.from('nutrition_daily')
-    .select('repas, eau').eq('user_id', props.userId).eq('date', localDateStr())
+    .select('date, repas, eau, cibles').eq('user_id', props.userId).in('date', [today, localDateStr(yesterday)])
   if (error) {
     console.error('Erreur assiette du jour :', error)
     return
   }
   // Plusieurs lignes possibles pour un même jour (anciennes versions) : fusionnées comme dans le journal
-  todayMeals.value = mergeRepas((rows || []).map(r => r.repas || []))
-  todayWater.value = Math.max(0, ...(rows || []).map(r => Number(r.eau) || 0))
+  const todayRows = (rows || []).filter(r => r.date === today)
+  todayMeals.value = mergeRepas(todayRows.map(r => r.repas || []))
+  todayWater.value = Math.max(0, ...todayRows.map(r => Number(r.eau) || 0))
+  // Besoins enregistrés avec la journée, ceux d'hier si Nutrition n'a pas encore été ouvert aujourd'hui
+  todayCibles.value = todayRows.find(r => r.cibles)?.cibles || (rows || []).find(r => r.cibles)?.cibles || null
   mealsLoaded.value = true
 }
 

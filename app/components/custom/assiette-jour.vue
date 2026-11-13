@@ -1,7 +1,19 @@
 <template>
   <div>
-    <template v-if="meals.length">
-      <div class="grid grid-cols-4 gap-2 text-center pb-3">
+    <template v-if="meals.length || gauges.length">
+      <!-- Jauges : ce qui est mangé par rapport aux besoins du jour (les mêmes que dans Nutrition) -->
+      <div v-if="gauges.length" class="space-y-3 pb-3">
+        <div v-for="g in gauges" :key="g.key">
+          <div class="flex items-baseline justify-between gap-2">
+            <span class="text-white font-black text-sm">{{ g.label }}</span>
+            <span class="text-xs font-black text-slate-400"><span class="text-white">{{ g.value }}</span> / {{ g.target }} {{ g.unit }}</span>
+          </div>
+          <div class="h-2 mt-1.5 rounded-full bg-white/[0.08] overflow-hidden">
+            <div class="h-full rounded-full transition-[width] duration-700" :style="{ width: `${g.pct}%`, backgroundColor: g.color }" />
+          </div>
+        </div>
+      </div>
+      <div v-else class="grid grid-cols-4 gap-2 text-center pb-3">
         <div>
           <p class="text-white font-black text-lg leading-none">{{ totals.kcal }}</p>
           <p class="text-[10px] text-slate-500 font-black uppercase mt-1">kcal</p>
@@ -62,12 +74,28 @@
 const props = defineProps({
   meals: { type: Array, default: () => [] },
   water: { type: Number, default: 0 },
+  // Besoins du jour ({ kcal, prot, carbs, fats }) enregistrés avec le journal ; sans eux, juste les totaux
+  cibles: { type: Object, default: null },
   emptyText: { type: String, default: "Rien d'enregistré aujourd'hui" }
 })
 
 // Repas et totaux : app/utils/meals.ts
 const groups = computed(() => groupByMeal(props.meals))
 const totals = computed(() => sumMeals(props.meals))
+
+const GAUGES = [
+  { key: 'kcal', label: 'Calories', unit: 'kcal', color: '#FF2A5F' },
+  { key: 'prot', label: 'Protéines', unit: 'g', color: '#2F6BFF' },
+  { key: 'carbs', label: 'Glucides', unit: 'g', color: '#FF9500' },
+  { key: 'fats', label: 'Lipides', unit: 'g', color: '#9DFF00' }
+]
+const gauges = computed(() => GAUGES
+  .filter(g => Number(props.cibles?.[g.key]) > 0)
+  .map((g) => {
+    const target = Math.round(Number(props.cibles[g.key]))
+    const value = totals.value[g.key]
+    return { ...g, target, value, pct: Math.min(100, Math.round(value / target * 100)) }
+  }))
 
 const openGroups = ref(new Set())
 function toggleGroup(key) {

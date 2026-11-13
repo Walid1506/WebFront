@@ -283,7 +283,7 @@
 
             <!-- Dépliants : ce qu'il a mangé et ses séances, ouverts d'un appui -->
             <Depliant title="Son assiette aujourd'hui" :subtitle="mealsSummary(friendProfile)" icon="i-heroicons-fire" icon-color="#fb923c">
-              <AssietteJour :meals="friendProfile.todayMeals" :water="friendProfile.todayWater" />
+              <AssietteJour :meals="friendProfile.todayMeals" :water="friendProfile.todayWater" :cibles="friendProfile.cibles" />
             </Depliant>
 
             <Depliant title="Dernières séances" :subtitle="sessionsSummary(friendProfile)" icon="i-heroicons-bolt">
@@ -518,23 +518,30 @@ function formatVolume(kg) {
 
 async function openFriendProfile(f) {
   showComparison.value = false
+  const today = localDateStr(new Date())
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
 
-  const [{ data: recentSessions }, { data: allSessions }, { data: todayNutrition }] = await Promise.all([
+  const [{ data: recentSessions }, { data: allSessions }, { data: nutritionRows }] = await Promise.all([
     supabase.from('sport_sessions').select('*').eq('user_id', f.friendId).lte('date', localDateStr(new Date())).order('date', { ascending: false }).limit(8),
     supabase.from('sport_sessions').select('data').eq('user_id', f.friendId),
-    supabase.from('nutrition_daily').select('repas, eau').eq('user_id', f.friendId).eq('date', localDateStr(new Date())).limit(1),
+    supabase.from('nutrition_daily').select('date, repas, eau, cibles').eq('user_id', f.friendId).in('date', [today, localDateStr(yesterday)]),
   ])
 
   const totalVolume = calcVolume(allSessions)
-  const todayMeals = todayNutrition?.[0]?.repas || []
+  // Ses besoins sont enregistrés avec chaque journée : ceux d'hier s'il n'a pas encore ouvert Nutrition aujourd'hui
+  // (un ami ne voit que le journal d'aujourd'hui et d'hier)
+  const todayRow = nutritionRows?.find(r => r.date === today)
+  const yesterdayRow = nutritionRows?.find(r => r.date !== today)
   friendProfile.value = {
     ...f,
     recentSessions: recentSessions || [],
     allSessionsData: allSessions || [],
     totalSessions: allSessions?.length || 0,
     totalVolume,
-    todayMeals,
-    todayWater: Number(todayNutrition?.[0]?.eau) || 0
+    todayMeals: todayRow?.repas || [],
+    todayWater: Number(todayRow?.eau) || 0,
+    cibles: todayRow?.cibles || yesterdayRow?.cibles || null
   }
 }
 
@@ -546,7 +553,8 @@ function localDateStr(d) {
 function mealsSummary(p) {
   const n = p.todayMeals?.length || 0
   if (!n) return 'Rien d\'enregistré aujourd\'hui'
-  return `${sumMeals(p.todayMeals).kcal} kcal · ${n} aliment${n > 1 ? 's' : ''}`
+  const target = p.cibles?.kcal ? ` / ${Math.round(p.cibles.kcal)}` : ''
+  return `${sumMeals(p.todayMeals).kcal}${target} kcal · ${n} aliment${n > 1 ? 's' : ''}`
 }
 
 function sessionsSummary(p) {
